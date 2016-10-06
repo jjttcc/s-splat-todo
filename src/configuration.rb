@@ -1,3 +1,5 @@
+require 'logger'
+
 # Configuration settings for the current run
 class Configuration
   # path of the stodo specification files
@@ -6,4 +8,7 @@ class Configuration
   def initialize
     @spec_path = './testdir'  # (Temporarily hard-coded for early testing)
   end
+
+  $log = Logger.new(STDERR)
+  $log.level = Logger::WARN
 end

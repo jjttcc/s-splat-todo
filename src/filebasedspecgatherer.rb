@@ -8,25 +8,23 @@ class FileBasedSpecGatherer
   private
 
   def initialize config
-#p "spec methods early list: #{STodoSpec.instance_methods}"
     @specs = []
     oldpath = Dir.pwd
     Dir.chdir config.spec_path
     process_specs
     Dir.chdir oldpath
 @specs.each do |s|
-  p '=' * 68
-  p "type: #{s.type}"
-  p "title: #{s.title}"
-  p "description: #{s.description}"
-  p "start: #{s.start_date}"
-  p "due_date: #{s.due_date}"
-  p "goal: #{s.goal}"
-  p "handle: #{s.handle}"
-  p "reminders: #{s.reminders}"
-  p "comment: #{s.comment}"
+  puts '-' * 68
+  puts "type: #{s.type}"
+  puts "title: #{s.title}"
+  puts "description: #{s.description}"
+  puts "start: #{s.start_date}"
+  puts "due_date: #{s.due_date}"
+  puts "goal: #{s.goal}"
+  puts "handle: #{s.handle}"
+  puts "reminders: #{s.reminders}"
+  puts "comment: #{s.comment}"
 end
-#p "spec methods late list: #{STodoSpec.instance_methods}"
   end
 
   def process_specs

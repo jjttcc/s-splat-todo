@@ -10,9 +10,12 @@ class Task
   def initialize spec
     super spec
     if spec.due_date != nil then
-#!!!!!!To-do: handle exception:
-      @due_date = DateTime.parse(spec.due_date)
-p "due date: #{@due_date}"
+      begin
+        @due_date = DateTime.parse(spec.due_date)
+      rescue ArgumentError => e
+        # spec.due_date is invalid, so leave @due_date as nil.
+        $log.error "due_date invalid [#{e}] (#{spec.due_date}) in #{self}"
+      end
     end
   end
 end
