@@ -7,9 +7,15 @@ class STodoSpec
 
   REMINDER_EXPR, START_EXPR = 'reminders?', 'start[a-z_]*'
 
+  public
+
+  def action_manager
+    @config.action_manager
+  end
+
   private
 
-  def initialize spec_string
+  def initialize spec_string, config
     split_expr = '('
     for k in [TYPE_KEY, TITLE_KEY, DESCRIPTION_KEY, HANDLE_KEY, PRIORITY_KEY,
         DUE_DATE_KEY, GOAL_KEY, MEDIA_KEY, COMMENT_KEY, PARENT_KEY] do
@@ -17,7 +23,8 @@ class STodoSpec
     end
     split_expr += '^' + REMINDER_EXPR + ':\s*|^' + START_EXPR + ':\s*)'
     split_regex = Regexp.new(split_expr)
-    components = spec_string.split(split_regex)
+    components = spec_string.split(split_regex, -1)
+#    components = spec_string.split(split_regex)
     if components.length > 0 and components[0] == "" then
       components.shift  # Remove useless empty first element.
     end
@@ -29,6 +36,7 @@ class STodoSpec
         @setting_for[key] = value.chomp
       end
     end
+    @config = config
   end
 
   def method_missing method_name

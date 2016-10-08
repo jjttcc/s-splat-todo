@@ -4,9 +4,9 @@ require_relative 'task'
 class CompositeTask < Task
   attr_reader :tasks
 
-  def initialize spec
-    @tasks = []
+  def set_fields spec
     super spec
+    @tasks = []
   end
 
   public

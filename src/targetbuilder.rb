@@ -11,25 +11,34 @@ class TargetBuilder
   def initialize specs
     @targets = []
     for s in specs do
-      @targets << target_for(s)
+      t = target_for(s)
+      if t != nil then
+        @targets << t
+      else
+        $log.error "nil target for spec: #{s.inspect}"
+      end
     end
 puts "targets:\n=============================="
     for t in @targets do
-      p t
+      puts "#{t.class}, #{t.title}"
     end
 puts "=============================="
   end
 
   def target_for spec
+    result = nil
+$log.error "spectype: #{spec.type}"
     builder = @@target_factory_for[spec.type]
     if builder == nil then
-      # !!!!!Deal with invalid value - spec.type!!!!!
+#$log.error "No builder for: #{spec.type}"
+      $log.error "No builder for: #{spec.inspect}"
+$stderr.puts '_' * 68
     else
-      builder.call(spec)
+      result = builder.call(spec)
     end
+    result
   end
 
-  #!!!!!Consider moving this to a module:
   @@target_factory_for = {
     'project' => lambda do |spec| Project.new(spec) end,
     'action' => lambda do |spec| CompositeTask.new(spec) end,

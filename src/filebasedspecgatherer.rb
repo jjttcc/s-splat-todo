@@ -9,10 +9,12 @@ class FileBasedSpecGatherer
 
   def initialize config
     @specs = []
+    @config = config
     oldpath = Dir.pwd
     Dir.chdir config.spec_path
     process_specs
     Dir.chdir oldpath
+=begin
 @specs.each do |s|
   puts '-' * 68
   puts "type: #{s.type}"
@@ -25,6 +27,7 @@ class FileBasedSpecGatherer
   puts "reminders: #{s.reminders}"
   puts "comment: #{s.comment}"
 end
+=end
   end
 
   def process_specs
@@ -38,7 +41,7 @@ end
 
   def spec_for fn
     contents = File.read fn
-    STodoSpec.new contents
+    STodoSpec.new contents, @config
 #  attr_accessor :type, :title, :description, :handle, :priority, :start,
 #    :due_date, :goal, :reminder_dates, :comment, :parent
   end

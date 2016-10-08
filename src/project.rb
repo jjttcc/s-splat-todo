@@ -2,7 +2,7 @@
 class Project < CompositeTask
   attr_reader :goal
 
-  def initialize spec
+  def set_fields spec
     super spec
     if spec.goal != nil then
       @goal = spec.goal
