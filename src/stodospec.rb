@@ -24,7 +24,6 @@ class STodoSpec
     split_expr += '^' + REMINDER_EXPR + ':\s*|^' + START_EXPR + ':\s*)'
     split_regex = Regexp.new(split_expr)
     components = spec_string.split(split_regex, -1)
-#    components = spec_string.split(split_regex)
     if components.length > 0 and components[0] == "" then
       components.shift  # Remove useless empty first element.
     end

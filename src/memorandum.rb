@@ -5,7 +5,23 @@ require_relative 'actiontarget'
 class Memorandum
   include ActionTarget
 
-  def initialize spec
+  # The date, if any, for which the Memorandum is no longer of interest
+  attr_reader :expiration_date
+
+  alias :synopsis :description
+
+  protected
+
+  def set_fields spec
     super spec
+    if spec.expiration_date != nil then
+      begin
+        @expiration_date = DateTime.parse(spec.expiration_date)
+      rescue ArgumentError => e
+        # spec.expiration_date is invalid, so leave @expiration_date as nil.
+        $log.warn "expiration_date invalid [#{e}] (#{spec.expiration_date}) " +
+          "in #{self}"
+      end
+    end
   end
 end
