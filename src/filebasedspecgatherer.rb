@@ -50,6 +50,7 @@ class FileBasedSpecGatherer
       puts "handle: #{s.handle}"
       puts "reminders: #{s.reminders}"
       puts "comment: #{s.comment}"
+      puts "expire date: #{s.expiration_date}"
     end
   end
 

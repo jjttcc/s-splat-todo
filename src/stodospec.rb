@@ -86,6 +86,6 @@ class STodoSpec
 
   # `s' stripped of lines starthing with '#'
   def stripped_of_comments s
-    s
+    s.gsub(/^#.*/, "")
   end
 end
