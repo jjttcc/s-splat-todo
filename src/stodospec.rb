@@ -9,16 +9,29 @@ class STodoSpec
 
   public
 
+  attr_reader :input_file_path
+
+  public
+
   def action_manager
     @config.action_manager
   end
 
   private
 
-  def initialize spec_string, config
+  def initialize input_filename, config
+    spec_string = File.read input_filename
+    @input_file_path = input_filename
+    @config = config
+    scan_spec spec_string
+  end
+
+  # Scan 'spec_string' for settings and use them to set "self"'s fields.
+  def scan_spec spec_string
     split_expr = '('
     for k in [TYPE_KEY, TITLE_KEY, DESCRIPTION_KEY, HANDLE_KEY, PRIORITY_KEY,
-        DUE_DATE_KEY, GOAL_KEY, MEDIA_KEY, COMMENT_KEY, PARENT_KEY] do
+        DUE_DATE_KEY, GOAL_KEY, MEDIA_KEY, COMMENT_KEY, PARENT_KEY,
+        EXPIRATION_DATE_KEY, DATE_TIME_KEY, DURATION_KEY, LOCATION_KEY] do
       split_expr += '^' + k + ':\s*|'
     end
     split_expr += '^' + REMINDER_EXPR + ':\s*|^' + START_EXPR + ':\s*)'
@@ -35,7 +48,7 @@ class STodoSpec
         @setting_for[key] = value.chomp
       end
     end
-    @config = config
+    standardize_values
   end
 
   def method_missing method_name
@@ -53,4 +66,13 @@ class STodoSpec
     end
     result
   end
+
+  # Adjust any values that need to be "standardized".
+  def standardize_values
+    type = @setting_for[TYPE_KEY]
+    if type then
+      @setting_for[TYPE_KEY] = type.downcase
+    end
+  end
+
 end
