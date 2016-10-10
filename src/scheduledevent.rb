@@ -22,7 +22,9 @@ class ScheduledEvent
   end
 
   def duration_from_spec spec
-    #!!!!!TBI
-spec.duration #!!!!
+    # (For now, just use the spec.duration without filtering or processing.
+    # If there's time for refinement later, this could be turned into a
+    # Duration object.)
+    spec.duration
   end
 end

@@ -26,7 +26,7 @@ class FileBasedSpecGatherer
   def process_specs
     d = Dir.new '.'
     d.each do |filename|
-      if filename !~ /^\./
+      if File.file?(filename) && filename !~ /^\./ then
         @specs << spec_for(filename)
       end
     end
