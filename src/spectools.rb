@@ -11,4 +11,7 @@ module SpecTools
 
   # system-wide constants:
   STDEBUG = 'STODO_DEBUG'
+
+  # tags/patterns from spec with special meaning
+  INITIAL_EMAIL_PTRN = Regexp.new('\[send-initial\]')
 end

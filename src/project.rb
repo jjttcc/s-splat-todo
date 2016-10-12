@@ -2,6 +2,8 @@
 class Project < CompositeTask
   attr_reader :goal
 
+  private
+
   def set_fields spec
     super spec
     if spec.goal != nil then

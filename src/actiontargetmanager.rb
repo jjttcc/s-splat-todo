@@ -1,31 +1,25 @@
+require_relative 'mailer'
+
 # Targets of one or more actions to be executed by the system
 class ActionTargetManager
-  attr_reader :targets
+  attr_reader :targets, :mailer, :calendar
 
   public
 
-  # Register `target' for processing.
-  def register target
-puts "#{self} registering:"; p target
-    @targets << target
-    setup target
-    perform_registration_actions target
+  # Call `initiate' on each element of @targets.
+  def perform_initial_processing
+    targets.each do |t|
+      t.initiate(self)
+    end
   end
 
   private
 
-  def initialize
-    @targets = []
-    @registration_actions = []
-    @scheduled_actions = []
+  def initialize targets, config
+    @targets = targets
+    @mailer = Mailer.new config
   end
 
-  # xxx
-  def setup t
-  end
+  ###  Basic operations
 
-  # Perform all actions on target `t' that are to be executed upon t's
-  # registration.
-  def perform_registration_actions t
-  end
 end

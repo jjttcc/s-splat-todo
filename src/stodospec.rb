@@ -11,12 +11,6 @@ class STodoSpec
 
   attr_reader :input_file_path
 
-  public
-
-  def action_manager
-    @config.action_manager
-  end
-
   private
 
   def initialize input_filename, config
