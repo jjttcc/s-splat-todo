@@ -43,6 +43,7 @@ class FileBasedSpecGatherer
       puts '-' * 68
       puts "type: #{s.type}"
       puts "title: #{s.title}"
+      puts "categories: #{s.categories}"
       puts "description: #{s.description}"
       puts "start: #{s.start_date}"
       puts "due_date: #{s.due_date}"

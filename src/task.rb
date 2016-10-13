@@ -33,7 +33,7 @@ class Task
   ### Hook routine implementations
 
   def email_subject
-    "task notification: #{handle}"
+    "task notification: #{handle}" + subject_suffix
   end
 
   def email_body

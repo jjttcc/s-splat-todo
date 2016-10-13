@@ -30,7 +30,7 @@ class Memorandum
   ### Hook routine implementations
 
   def email_subject
-    "memo notification: #{handle}"
+    "memo notification: #{handle}" + subject_suffix
   end
 
   def email_body

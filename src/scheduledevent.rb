@@ -31,7 +31,7 @@ class ScheduledEvent
   ### Hook routine implementations
 
   def email_subject
-    "appointment reminder: #{handle}"
+    "appointment reminder: #{handle}" + subject_suffix
   end
 
   def email_body

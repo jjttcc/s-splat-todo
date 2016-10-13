@@ -21,7 +21,7 @@ class TargetBuilder
     end
 puts "targets:\n=============================="
     for t in @targets do
-      puts "#{t.class}, #{t.title}"
+      puts "#{t.class}; #{t.title}; #{t.categories}"
     end
 puts "=============================="
   end

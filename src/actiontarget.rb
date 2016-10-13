@@ -86,6 +86,15 @@ module ActionTarget
 
   ### Implementation - utilities
 
+  # Constructed suffix for the subject/title/...
+  def subject_suffix
+    result = ""
+    if categories then
+      result = ", cat: " + categories.join(', cat: ')
+    end
+    result
+  end
+
   # Send an email to all recipients designated as initial recipients.
   def send_initial_emails mailer
     subject = 'initial ' + email_subject
