@@ -12,7 +12,6 @@ class Email
   private
 
   def initialize(to_addrs, subject, body)
-#puts "[Email] toadd, subj, body: #{to_addrs}, #{subject}, #{body}"
     @to_addrs = to_addrs; @subject = subject; @body = body
   end
 

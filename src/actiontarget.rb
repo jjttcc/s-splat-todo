@@ -8,7 +8,7 @@ module ActionTarget
   include SpecTools
 
   attr_reader :title, :content, :handle, :email, :calendar, :priority,
-    :comment, :reminder_dates
+    :comment, :reminder_dates, :categories
   alias :description :content
   alias :name :handle
   alias :detail :comment
@@ -70,6 +70,9 @@ module ActionTarget
     @calendar = spec.calendar
     @content = spec.description
     @reminder_dates = date_times_from_reminders spec
+    if spec.categories then
+      @categories = spec.categories.split(/,\s*/)
+    end
   end
 
   def check_fields
@@ -85,14 +88,10 @@ module ActionTarget
 
   # Send an email to all recipients designated as initial recipients.
   def send_initial_emails mailer
-#puts "{#{handle}} init recips: #{initial_email_recipients}"
-#puts "{#{handle}} continuing recips: #{email_recipients}"
     subject = 'initial ' + email_subject
     email = Email.new(initial_email_recipients, subject, email_body)
-    ##!!!Add cc, bcc...!!!
+##!!!Add cc, bcc...!!!
     if not email.to_addrs.empty? then
-print "{#{handle}}Sending init email - to, subj, body: "
-print email.to_addrs, ", ", email.subject, "\n", email.body, "\n"
       email.send mailer
     end
   end
@@ -104,11 +103,8 @@ print email.to_addrs, ", ", email.subject, "\n", email.body, "\n"
   def send_notification_emails mailer
     subject = 'ongoing ' + email_subject
     email = Email.new(email_recipients, subject, email_body)
-#puts "[#{title}]initemail: #{email.inspect}"
-    ##!!!Add cc, bcc...!!!
+##!!!Add cc, bcc...!!!
     if not email.to_addrs.empty? then
-print "{#{handle}}Sending notification email - to, subj, body: "
-print email.to_addrs, ", ", email.subject, "\n", email.body, "\n"
       email.send mailer
     end
   end
