@@ -27,4 +27,20 @@ class ScheduledEvent
     # Duration object.)
     spec.duration
   end
+
+  ### Hook routine implementations
+
+  def email_subject
+    "appointment reminder: #{handle}"
+  end
+
+  def email_body
+    result = "title: #{title}\n" + "date_time: #{date_time}\n" +
+      "duration: #{duration}\n"
+    if location != nil then
+      result += "location: #{location}\n"
+    end
+    result += "description: #{content}\n"
+  end
+
 end

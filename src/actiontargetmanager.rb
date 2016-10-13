@@ -13,6 +13,13 @@ class ActionTargetManager
     end
   end
 
+  # Call `initiate' on each element of @targets.
+  def perform_notifications
+    targets.each do |t|
+      t.perform_current_actions(self)
+    end
+  end
+
   private
 
   def initialize targets, config

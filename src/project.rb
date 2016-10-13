@@ -10,4 +10,15 @@ class Project < CompositeTask
       @goal = spec.goal
     end
   end
+
+  ### Hook routine implementations
+
+  def email_subject
+    "project notification: #{handle}"
+  end
+
+  def email_body
+    result = super + "goal: #{goal}\n"
+  end
+
 end

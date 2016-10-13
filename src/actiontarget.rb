@@ -43,9 +43,15 @@ module ActionTarget
 
   ###  Basic operations
 
+  # Perform required initial actions.
   def initiate manager
     send_initial_emails manager.mailer
     set_initial_calendar_entry manager.calendar
+  end
+
+  #!!!!!Need a better method name!!!!!
+  def perform_current_actions manager
+    send_notification_emails manager.mailer
   end
 
   private
@@ -62,7 +68,7 @@ module ActionTarget
     @handle = spec.handle
     @email = spec.email
     @calendar = spec.calendar
-    @content = spec.content
+    @content = spec.description
     @reminder_dates = date_times_from_reminders spec
   end
 
@@ -77,16 +83,34 @@ module ActionTarget
 
   ### Implementation - utilities
 
+  # Send an email to all recipients designated as initial recipients.
   def send_initial_emails mailer
-#testemail = Email.new(email_recipients, email_subject, email_body)
-#puts "[#{title}]testemail: #{testemail.inspect}"
-    email = Email.new(initial_email_recipients, email_subject, email_body)
-#puts "[#{title}]initemail: #{email.inspect}"
+#puts "{#{handle}} init recips: #{initial_email_recipients}"
+#puts "{#{handle}} continuing recips: #{email_recipients}"
+    subject = 'initial ' + email_subject
+    email = Email.new(initial_email_recipients, subject, email_body)
     ##!!!Add cc, bcc...!!!
-    email.send mailer
+    if not email.to_addrs.empty? then
+print "{#{handle}}Sending init email - to, subj, body: "
+print email.to_addrs, ", ", email.subject, "\n", email.body, "\n"
+      email.send mailer
+    end
   end
 
   def set_initial_calendar_entry calendar
+  end
+
+  # Send a notification email to all recipients.
+  def send_notification_emails mailer
+    subject = 'ongoing ' + email_subject
+    email = Email.new(email_recipients, subject, email_body)
+#puts "[#{title}]initemail: #{email.inspect}"
+    ##!!!Add cc, bcc...!!!
+    if not email.to_addrs.empty? then
+print "{#{handle}}Sending notification email - to, subj, body: "
+print email.to_addrs, ", ", email.subject, "\n", email.body, "\n"
+      email.send mailer
+    end
   end
 
   # Email address of the designated recipients of notification/reminder about
@@ -129,9 +153,13 @@ module ActionTarget
   ### Hook routines
 
   def email_subject
+    raise "<email_subject> descendant class-method implementation required" +
+      " [title: #{title}]"
   end
 
   def email_body
+    raise "<email_body> descendant class-method implementation required" +
+      " [title: #{title}]"
   end
 
 

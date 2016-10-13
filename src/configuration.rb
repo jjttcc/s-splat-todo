@@ -10,7 +10,7 @@ class Configuration
   private
 
   def initialize
-    @spec_path = './testdir'  # (Temporarily hard-coded for early testing)
+    @spec_path = '../testdir'  # (Temporarily hard-coded for early testing)
     # (Temporarily hard-coded for early testing):
     @templated_email_command = 'mutt -s <subject> <addrs>'
   end

@@ -14,4 +14,9 @@ module SpecTools
 
   # tags/patterns from spec with special meaning
   INITIAL_EMAIL_PTRN = Regexp.new('\[send-initial\]')
+
+  SUBJECT_TEMPLATE_PTRN = Regexp.new('<subject>')
+
+  ADDRS_TEMPLATE_PTRN = Regexp.new('<addrs>')
+
 end

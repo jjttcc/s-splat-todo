@@ -30,4 +30,16 @@ class Task
     end
   end
 
+  ### Hook routine implementations
+
+  def email_subject
+    "task notification: #{handle}"
+  end
+
+  def email_body
+    "title: #{title}\n" +
+    "due_date: #{due_date}\n" +
+    "description: #{content}\n"
+  end
+
 end

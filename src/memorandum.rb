@@ -24,4 +24,19 @@ class Memorandum
       end
     end
   end
+
+  private
+
+  ### Hook routine implementations
+
+  def email_subject
+    "memo notification: #{handle}"
+  end
+
+  def email_body
+    "title: #{title}\n" +
+    "expiration_date: #{expiration_date}\n" +
+    "description: #{content}\n"
+  end
+
 end

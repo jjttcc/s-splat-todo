@@ -57,8 +57,9 @@ class STodoSpec
   def extract_settings spec_string
     split_expr = '('
     for k in [TYPE_KEY, TITLE_KEY, DESCRIPTION_KEY, HANDLE_KEY, PRIORITY_KEY,
-        DUE_DATE_KEY, GOAL_KEY, EMAIL_KEY, CALENDAR_KEY, COMMENT_KEY, PARENT_KEY,
-        EXPIRATION_DATE_KEY, DATE_TIME_KEY, DURATION_KEY, LOCATION_KEY] do
+        DUE_DATE_KEY, GOAL_KEY, EMAIL_KEY, CALENDAR_KEY, COMMENT_KEY,
+        PARENT_KEY, EXPIRATION_DATE_KEY, DATE_TIME_KEY, DURATION_KEY,
+        LOCATION_KEY] do
       split_expr += '^' + k + ':\s*|'
     end
     split_expr += '^' + REMINDER_EXPR + ':\s*|^' + START_EXPR + ':\s*)'
@@ -72,7 +73,7 @@ class STodoSpec
       (0 .. components.length - 1).step(2) do |i|
         key = standardized_key(components[i].sub(/: */, ""))
         value = components[i + 1]
-        @setting_for[key] = value.chomp
+        @setting_for[key] = value.chomp("")
       end
     end
     standardize_values
