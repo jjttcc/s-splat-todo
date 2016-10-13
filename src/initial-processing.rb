@@ -2,7 +2,6 @@
 # Execute initial processing of new "s*todo" items based on new specs.
 
 require_relative 'compositetask.rb'
-require_relative 'task'
 require_relative 'memorandum'
 require_relative 'configuration'
 require_relative 'filebasedspecgatherer'

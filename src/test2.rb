@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 
 require_relative 'compositetask.rb'
-require_relative 'task'
 require_relative 'memorandum'
 require_relative 'configuration'
 require_relative 'filebasedspecgatherer'
