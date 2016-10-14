@@ -1,10 +1,9 @@
 require_relative 'email'
 require_relative 'spectools'
 
-# Targets of one or more actions to be executed by the system
-#!!!!NOTE: This class may need to change its name - to find a good name, try
-#coming up with a good (better) description first.  (TodoTarget?)
-module ActionTarget
+# Items - actions, projects, appointments, etc. - to keep track of, not
+# forget about, and/or complete
+module STodoTarget
   include SpecTools
 
   attr_reader :title, :content, :handle, :email, :calendar, :priority,

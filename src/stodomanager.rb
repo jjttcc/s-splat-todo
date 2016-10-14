@@ -1,7 +1,7 @@
 require_relative 'mailer'
 
-# Targets of one or more actions to be executed by the system
-class ActionTargetManager
+# Basic manager of s*todo actions
+class STodoManager
   attr_reader :targets, :mailer, :calendar
 
   public

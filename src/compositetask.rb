@@ -1,9 +1,9 @@
 require 'date'
-require_relative 'actiontarget'
+require_relative 'stodotarget'
 
 # Tasks that, optionally, contain one or more subtasks
 class CompositeTask
-  include ActionTarget
+  include STodoTarget
 
   attr_reader :due_date, :parent_handle, :tasks
 

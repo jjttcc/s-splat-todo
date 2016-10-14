@@ -1,6 +1,6 @@
 # Events scheduled at a specific date and time
 class ScheduledEvent
-  include ActionTarget
+  include STodoTarget
 
   attr_reader :date_time, :duration, :location
 

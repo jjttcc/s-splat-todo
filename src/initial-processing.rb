@@ -6,7 +6,7 @@ require_relative 'memorandum'
 require_relative 'configuration'
 require_relative 'filebasedspecgatherer'
 require_relative 'targetbuilder'
-require_relative 'actiontargetmanager'
+require_relative 'stodomanager'
 
 
 config = Configuration.new
@@ -14,8 +14,8 @@ config = Configuration.new
 spec_collector = FileBasedSpecGatherer.new config
 # Build the "s*todo" targets.
 target_builder = TargetBuilder.new spec_collector.specs
-manager = ActionTargetManager.new target_builder.targets, config
+manager = STodoManager.new target_builder.targets, config
 manager.perform_initial_processing
 manager.perform_notifications
-#!!!!To-do: singleton hash-table: key: handle, value: ActionTarget
+#!!!!To-do: singleton hash-table: key: handle, value: STodoTarget
 #!!!!Use it, among other things, to prevent duplicate handles.

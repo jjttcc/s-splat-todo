@@ -1,9 +1,9 @@
-require_relative 'actiontarget'
+require_relative 'stodotarget'
 
 # Notes/memoranda to be recorded, for the purpose of aiding memory and/or
 # items to be reminded of at a future date.
 class Memorandum
-  include ActionTarget
+  include STodoTarget
 
   # The date, if any, for which the Memorandum is no longer of interest
   attr_reader :expiration_date
