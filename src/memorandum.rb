@@ -34,6 +34,7 @@ class Memorandum < STodoTarget
 
   def email_body
     "title: #{title}\n" +
+    "type: #{formal_type}\n" +
     "expiration_date: #{expiration_date}\n" +
     "description: #{memo_description}\n"
   end

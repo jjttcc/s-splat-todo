@@ -2,6 +2,12 @@
 class Project < CompositeTask
   attr_reader :goal
 
+  ###  Status report
+
+  def formal_type
+    self.class
+  end
+
   private
 
   def set_fields spec

@@ -26,6 +26,10 @@ class CompositeTask < STodoTarget
     self.completion_date != nil
   end
 
+  def formal_type
+    "Task"
+  end
+
   private
 
   def set_fields spec
@@ -53,6 +57,7 @@ class CompositeTask < STodoTarget
   def email_body
     "title: #{title}\n" +
     "due_date: #{due_date}\n" +
+    "type: #{formal_type}\n" +
     "description: #{content}\n"
   end
 

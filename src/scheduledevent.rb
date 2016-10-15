@@ -5,6 +5,10 @@ class ScheduledEvent < STodoTarget
 
   public
 
+  def formal_type
+    "Appointment"
+  end
+
   protected
 
   def set_fields spec
@@ -37,7 +41,7 @@ class ScheduledEvent < STodoTarget
 
   def email_body
     result = "title: #{title}\n" + "date_time: #{date_time}\n" +
-      "duration: #{duration}\n"
+      "duration: #{duration}\ntype: #{formal_type}\n"
     if location != nil then
       result += "location: #{location}\n"
     end

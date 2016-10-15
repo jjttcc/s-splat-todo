@@ -14,6 +14,12 @@ class STodoTarget
 
   public
 
+  ###  Status report
+
+  def formal_type
+    self.class
+  end
+
   ###  Hash-related queries
 
   # hash to allow use in a hashtable (Hash)
