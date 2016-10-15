@@ -3,26 +3,16 @@ require_relative 'spectools'
 
 # Items - actions, projects, appointments, etc. - to keep track of, not
 # forget about, and/or complete
-module STodoTarget
+class STodoTarget
   include SpecTools
 
-  attr_reader :title, :content, :handle, :email, :calendar, :priority,
+  attr_reader :title, :content, :handle, :email, :calendar_ids, :priority,
     :comment, :reminder_dates, :categories
   alias :description :content
   alias :name :handle
   alias :detail :comment
 
   public
-
-  ###  Access
-
-  # Calendar handles for "self"
-  def calendar_handles
-    if @calendar_specs == nil then
-      # (!!!Extract the calendar specs.)
-    end
-    @calendar_specs
-  end
 
   ###  Hash-related queries
 
@@ -42,16 +32,17 @@ module STodoTarget
 
   ###  Basic operations
 
-  # Perform required initial actions.
+  # Perform required initial notifications and related actions.
   def initiate manager
     send_initial_emails manager.mailer
     set_initial_calendar_entry manager.calendar
   end
 
-  #!!!!!Need a better method name!!!!!
-  def perform_current_actions manager
+  # Perform post-"initiate" notifications.
+  def perform_ongoing_actions manager
     send_notification_emails manager.mailer
   end
+
 
   private
 
@@ -66,11 +57,15 @@ module STodoTarget
     @title = spec.title
     @handle = spec.handle
     @email = spec.email
-    @calendar = spec.calendar
     @content = spec.description
+    @comment = spec.comment
     @reminder_dates = date_times_from_reminders spec
     if spec.categories then
       @categories = spec.categories.split(/,\s*/)
+    end
+    @calendar_ids = []
+    if spec.calendar_ids != nil then
+      @calendar_ids = spec.calendar_ids.split(/,\s*/)
     end
   end
 
@@ -104,7 +99,17 @@ module STodoTarget
     end
   end
 
-  def set_initial_calendar_entry calendar
+  def set_initial_calendar_entry calentry
+    #!!!!Needed enhancement: take reminder dates/times into account based
+    # on self's type - e.g., Memorandum should probably create a calendar
+    # entry for each of its reminder-dates.
+    if not calendar_ids.empty? then
+      set_cal_fields calentry
+      calendar_ids.each do |id|
+        calentry.calendar_id = id
+        calentry.submit
+      end
+    end
   end
 
   # Send a notification email to all recipients.
@@ -166,5 +171,16 @@ module STodoTarget
       " [title: #{title}]"
   end
 
+  # Set the fields of `calentry' from self's current state.
+  def set_cal_fields calentry
+    calentry.title = title
+    calentry.description = description + description_appendix
+  end
+
+  # Additional information, if any, to add to the description
+  # postcondition: result != nil
+  def description_appendix
+    result = ""
+  end
 
 end

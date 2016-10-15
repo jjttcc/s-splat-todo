@@ -2,19 +2,28 @@ require 'date'
 require_relative 'stodotarget'
 
 # Tasks that, optionally, contain one or more subtasks
-class CompositeTask
-  include STodoTarget
+class CompositeTask < STodoTarget
 
-  attr_reader :due_date, :parent_handle, :tasks
+  attr_reader :due_date, :parent_handle, :tasks, :completion_date
 
   public
+
+  ###  Element change
 
   def add_task(t)
     @tasks << t
   end
 
-  def has_parent
+  ###  Status report
+
+  # Does 'self' have a parent?
+  def has_parent?
     self.parent_handle != nil
+  end
+
+  # Has 'self' been completed?
+  def completed?
+    self.completion_date != nil
   end
 
   private
@@ -45,6 +54,11 @@ class CompositeTask
     "title: #{title}\n" +
     "due_date: #{due_date}\n" +
     "description: #{content}\n"
+  end
+
+  def set_cal_fields calentry
+    super calentry
+    calentry.time = due_date
   end
 
 end

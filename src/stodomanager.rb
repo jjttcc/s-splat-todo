@@ -1,4 +1,5 @@
 require_relative 'mailer'
+require_relative 'calendarentry'
 
 # Basic manager of s*todo actions
 class STodoManager
@@ -16,7 +17,7 @@ class STodoManager
   # Call `initiate' on each element of @targets.
   def perform_notifications
     targets.each do |t|
-      t.perform_current_actions(self)
+      t.perform_ongoing_actions(self)
     end
   end
 
@@ -25,8 +26,8 @@ class STodoManager
   def initialize targets, config
     @targets = targets
     @mailer = Mailer.new config
+    @calendar = CalendarEntry.new config
+$log.debug "Here's the calendar - what does it look like?: #{@calendar.inspect}"
   end
-
-  ###  Basic operations
 
 end

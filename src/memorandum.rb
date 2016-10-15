@@ -2,8 +2,7 @@ require_relative 'stodotarget'
 
 # Notes/memoranda to be recorded, for the purpose of aiding memory and/or
 # items to be reminded of at a future date.
-class Memorandum
-  include STodoTarget
+class Memorandum < STodoTarget
 
   # The date, if any, for which the Memorandum is no longer of interest
   attr_reader :expiration_date
@@ -36,7 +35,15 @@ class Memorandum
   def email_body
     "title: #{title}\n" +
     "expiration_date: #{expiration_date}\n" +
-    "description: #{content}\n"
+    "description: #{memo_description}\n"
+  end
+
+  ### Implementation - utilities
+
+  def memo_description
+    result = (content != nil)? content: ""
+    result += (comment != nil)? "\n" + comment: ""
+    result
   end
 
 end

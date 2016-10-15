@@ -1,8 +1,9 @@
 # Events scheduled at a specific date and time
-class ScheduledEvent
-  include STodoTarget
+class ScheduledEvent < STodoTarget
 
   attr_reader :date_time, :duration, :location
+
+  public
 
   protected
 
@@ -41,6 +42,13 @@ class ScheduledEvent
       result += "location: #{location}\n"
     end
     result += "description: #{content}\n"
+  end
+
+  def set_cal_fields calentry
+    super calentry
+    calentry.time = date_time
+    calentry.location = location
+    calentry.duration = duration
   end
 
 end

@@ -21,4 +21,8 @@ class Project < CompositeTask
     result = super + "goal: #{goal}\n"
   end
 
+  def description_appendix
+    "goal: #{goal}"
+  end
+
 end

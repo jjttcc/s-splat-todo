@@ -57,7 +57,7 @@ class STodoSpec
   def extract_settings spec_string
     split_expr = '('
     for key in [TYPE_KEY, TITLE_KEY, DESCRIPTION_KEY, HANDLE_KEY, PRIORITY_KEY,
-        DUE_DATE_KEY, GOAL_KEY, EMAIL_KEY, CALENDAR_KEY, COMMENT_KEY,
+        DUE_DATE_KEY, GOAL_KEY, EMAIL_KEY, CALENDAR_IDS_KEY, COMMENT_KEY,
         PARENT_KEY, EXPIRATION_DATE_KEY, DATE_TIME_KEY, DURATION_KEY,
         LOCATION_KEY, CATEGORIES_KEY] do
       split_expr += '^' + key + ':\s*|'
