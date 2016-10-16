@@ -5,12 +5,26 @@ class FileBasedSpecGatherer
   include SpecTools
 
   # the gathered specs, one object per file
-  attr_reader :specs
+  attr_reader :specs, :spec_files
+
+  public
+
+  # Perform any needed "clean up" operations after "gathering" new specs.
+  def initial_cleanup
+    require 'fileutils'
+    sep = File::SEPARATOR
+    # Move the spec files out of the "spec_path" and into the "data_path"
+    # so that they are not seen/used again during initial processing.
+    @spec_files.each do |f|
+      FileUtils.mv(@config.spec_path + sep + f, @config.data_path)
+    end
+  end
 
   private
 
   def initialize config
     @specs = []
+    @spec_files = []
     @config = config
     oldpath = Dir.pwd
     Dir.chdir config.spec_path
@@ -28,6 +42,7 @@ class FileBasedSpecGatherer
     d.each do |filename|
       if File.file?(filename) && filename !~ /^\./ then
         @specs << spec_for(filename)
+        @spec_files << filename
       end
     end
   end

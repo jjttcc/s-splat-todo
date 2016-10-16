@@ -8,6 +8,8 @@ class Configuration
 
   # path of the stodo specification files
   attr_reader :spec_path
+  # main path of the stodo data files
+  attr_reader :data_path
   # command to use to send email
   attr_reader :templated_email_command
   # calendar application for submitting calendar entries
@@ -21,7 +23,8 @@ class Configuration
   private
 
   def initialize
-    @spec_path = '../testdir'  # (Temporarily hard-coded for early testing:)
+    @spec_path = '../testdir'   # (Temporarily hard-coded for early testing:)
+    @data_path = '../datatest'  # (Temporarily hard-coded for early testing:)
     # (Temporarily hard-coded for early testing:)
     @templated_email_command = 'mutt -s <subject> <addrs>'
     # (Again - temporarily hard-coded for early testing:)

@@ -40,7 +40,8 @@ class ScheduledEvent < STodoTarget
   end
 
   def email_body
-    result = "title: #{title}\n" + "date_time: #{date_time}\n" +
+    result = "title: #{title}\n" + "date_time: " +
+      date_time.strftime('%Y-%m-%d %H:%M') + "\n" +
       "duration: #{duration}\ntype: #{formal_type}\n"
     if location != nil then
       result += "location: #{location}\n"

@@ -14,12 +14,11 @@ class CalendarEntry
   # has not been set.
   def submit
     if time != nil then
-puts "I (#{self.class}) was told to submit with:\n#{self.inspect}"
       cmd = entry_creation_command
       exec_cmd cmd
     else
-puts "I (#{self.class}) was told to submit with:\n#{self.inspect}" +
-", but I WILL NOT DO IT!!! because my 'time' field is nil."
+      $log.warn "#{self.class}: Submission requested for item with " +
+        "null 'time' field [#{self.inspect}]"
     end
     clear_fields
   end
@@ -49,7 +48,6 @@ puts "I (#{self.class}) was told to submit with:\n#{self.inspect}" +
     end
     enforce_entry_creation_preconditions
     program = @configuration.calendar_tool
-#    program = 'echo'
     result = [program, '--calendar', calendar_id, '--title', title,
               '--when', time.strftime('%Y-%m-%d %H:%M'),
               '--duration', duration.to_s]
@@ -134,6 +132,7 @@ puts "cmd: <<#{cmd}>>"
   end
 
 end
+
 =begin
 /home/jtc/lib/python2/bin/gcalcli \
   --calendar 'jim.cochrane@gmail.com' \

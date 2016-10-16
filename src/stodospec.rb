@@ -9,7 +9,7 @@ class STodoSpec
 
   public
 
-  attr_reader :input_file_path
+  attr_reader :input_file_path, :config
 
   private
 

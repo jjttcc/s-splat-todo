@@ -12,6 +12,7 @@ class STodoManager
     targets.each do |t|
       t.initiate(self)
     end
+    @target_builder.spec_collector.initial_cleanup
   end
 
   # Call `initiate' on each element of @targets.
@@ -23,10 +24,13 @@ class STodoManager
 
   private
 
-  def initialize targets, config
-    @targets = targets
-    @mailer = Mailer.new config
-    @calendar = CalendarEntry.new config
+  def initialize tgtbuilder, config
+    @target_builder = tgtbuilder
+    @targets = @target_builder.targets
+    @config = config
+    @specs = tgtbuilder.specs
+    @mailer = Mailer.new @config
+    @calendar = CalendarEntry.new @config
 $log.debug "Here's the calendar - what does it look like?: #{@calendar.inspect}"
   end
 

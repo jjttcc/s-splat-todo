@@ -5,13 +5,20 @@ require_relative 'scheduledevent'
 class TargetBuilder
   include SpecTools
 
-  attr_reader :targets
+  attr_reader :targets, :spec_collector
+
+  public
+
+  def specs
+    @spec_collector.specs
+  end
 
   private
 
-  def initialize specs
+  def initialize spec_collector
     @targets = []
-    for s in specs do
+    @spec_collector = spec_collector
+    for s in self.specs do
       t = target_for(s)
       if t != nil then
         @targets << t
