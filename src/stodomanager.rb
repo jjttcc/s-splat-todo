@@ -28,7 +28,7 @@ end
   end
 
   # Call `initiate' on each element of @targets.
-  def perform_notifications
+  def perform_ongoing_processing
     targets.each do |t|
       t.perform_ongoing_actions(self)
     end
@@ -40,6 +40,7 @@ end
     @target_builder = tgtbuilder
     @targets = @target_builder.targets
     @config = config
+#!!!!
     @data_manager = config.data_manager
     @specs = tgtbuilder.specs
     @mailer = Mailer.new @config

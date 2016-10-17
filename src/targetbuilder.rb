@@ -41,6 +41,7 @@ puts "=============================="
         "type: #{spec.type}"
       $log.warn warning
     else
+      # Build the "target".
       result = builder.call(spec)
     end
     result

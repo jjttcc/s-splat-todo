@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-# Execute initial processing of new "s*todo" items based on new specs.
+# Execute initial processing of new s*todo items based on new specs.
 
 require_relative 'compositetask.rb'
 require_relative 'memorandum'
@@ -13,7 +13,7 @@ ongoing_actions_are_to_be_performed_counter_to_commens_sense = false
 config = Configuration.new
 # Gather the new specs.
 spec_collector = FileBasedSpecGatherer.new config
-# Build the "s*todo" targets.
+# Build the s*todo targets.
 target_builder = TargetBuilder.new spec_collector
 manager = STodoManager.new target_builder, config
 manager.perform_initial_processing

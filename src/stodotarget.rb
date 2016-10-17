@@ -46,7 +46,11 @@ class STodoTarget
 
   # Perform post-"initiate" notifications.
   def perform_ongoing_actions manager
+puts "I (#{self.handle}) was told to 'perform_ongoing_actions', but I think I'll skip it."
+puts "(manager: #{manager})"
+if false
     send_notification_emails manager.mailer
+end
   end
 
 

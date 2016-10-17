@@ -27,11 +27,11 @@ class FileBasedSpecGatherer
 
   private
 
-  def initialize config
+  def initialize config, new_specs = true
     @specs = []
     @config = config
-    oldpath = Dir.pwd
-    process_specs
+    path = new_specs ? @config.spec_path : @config.post_init_spec_path
+    process_specs path
     if ENV[STDEBUG] then
       display_specs
     end
@@ -39,11 +39,12 @@ class FileBasedSpecGatherer
 
   ### Internal implementation
 
-  def process_specs
-    d = Dir.new @config.spec_path
+  def process_specs spec_path
+    d = Dir.new spec_path
     d.each do |filename|
-    path = @config.spec_path + File::SEPARATOR + filename
-      if File.file?(path) && filename !~ /^\./ then
+      path = spec_path + File::SEPARATOR + filename
+      if
+        File.file?(path) && filename !~ /^\./ then
         s = spec_for(path)
         if s.valid? then
           @specs << s
