@@ -5,18 +5,23 @@ class FileBasedSpecGatherer
   include SpecTools
 
   # the gathered specs, one object per file
-  attr_reader :specs, :spec_files
+  attr_reader :specs
 
   public
 
   # Perform any needed "clean up" operations after "gathering" new specs.
-  def initial_cleanup
+  def initial_cleanup valid_handle
     require 'fileutils'
-    sep = File::SEPARATOR
-    # Move the spec files out of the "spec_path" and into the "data_path"
-    # so that they are not seen/used again during initial processing.
-    @spec_files.each do |f|
-      FileUtils.mv(@config.spec_path + sep + f, @config.data_path)
+    # Move the spec files out of the "spec_path" and into the
+    # "post_init_spec_path" so that they are not seen/used again during
+    # initial processing.
+    @specs.each do |s|
+      if valid_handle[s.handle] then
+        cur_specfile_path = s.input_file_path
+        if File.exists? cur_specfile_path then
+          FileUtils.mv(cur_specfile_path, @config.post_init_spec_path)
+        end
+      end
     end
   end
 
@@ -24,12 +29,9 @@ class FileBasedSpecGatherer
 
   def initialize config
     @specs = []
-    @spec_files = []
     @config = config
     oldpath = Dir.pwd
-    Dir.chdir config.spec_path
     process_specs
-    Dir.chdir oldpath
     if ENV[STDEBUG] then
       display_specs
     end
@@ -38,17 +40,23 @@ class FileBasedSpecGatherer
   ### Internal implementation
 
   def process_specs
-    d = Dir.new '.'
+    d = Dir.new @config.spec_path
     d.each do |filename|
-      if File.file?(filename) && filename !~ /^\./ then
-        @specs << spec_for(filename)
-        @spec_files << filename
+    path = @config.spec_path + File::SEPARATOR + filename
+      if File.file?(path) && filename !~ /^\./ then
+        s = spec_for(path)
+        if s.valid? then
+          @specs << s
+        else
+          # Leave the invalid spec file as is.
+          $log.warn("Invalid spec for '#{s.title}': #{s.reason_for_invalidity}")
+        end
       end
     end
   end
 
-  def spec_for fn
-    STodoSpec.new fn, @config
+  def spec_for path
+    STodoSpec.new(path, @config)
   end
 
   ### Debugging/testing

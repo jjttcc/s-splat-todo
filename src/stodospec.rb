@@ -11,11 +11,27 @@ class STodoSpec
 
   attr_reader :input_file_path, :config
 
+  public
+
+  # Is 'self' a valid/complete specification?
+  def valid?
+    handle != nil
+  end
+
+  # The reason 
+  def reason_for_invalidity
+    result = ""
+    if not valid? then
+      result = "handle is not set."
+    end
+    result
+  end
+
   private
 
-  def initialize input_filename, config
-    spec_string = File.read input_filename
-    @input_file_path = input_filename
+  def initialize input_filepath, config
+    spec_string = File.read input_filepath
+    @input_file_path = input_filepath
     @config = config
     scan_spec spec_string
   end

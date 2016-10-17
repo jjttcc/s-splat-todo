@@ -32,7 +32,7 @@ class Mailer
 
   def exec_cmd mail_cmd, body
     if @configuration.test_run? then
-      $log.debug "piping to #{mail_cmd}"
+      $log.debug "#{self.class}Pretending to pipe to #{mail_cmd}"
     else
       pipe = IO.popen(mail_cmd, mode='w')
       pipe.write(body)

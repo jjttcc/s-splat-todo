@@ -18,7 +18,7 @@ target_builder = TargetBuilder.new spec_collector
 manager = STodoManager.new target_builder, config
 manager.perform_initial_processing
 if ongoing_actions_are_to_be_performed_counter_to_commens_sense then
+  #!!!!(This belongs in a different script, perhaps called
+  #!!!!"ongoing-processing":)
   manager.perform_notifications
 end
-#!!!!To-do: singleton hash-table: key: handle, value: STodoTarget
-#!!!!Use it, among other things, to prevent duplicate handles.

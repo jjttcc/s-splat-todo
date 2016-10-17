@@ -96,12 +96,9 @@ class CalendarEntry
   end
 
   def exec_cmd cmd
-    if
-false and
-      @configuration.test_run? then
-puts "[exec_cmd]cmd: #{cmd}"
+    if @configuration.test_run? then
+      $log.debug "#{self.class}Pretending to execute #{cmd}"
     else
-puts "cmd: <<#{cmd}>>"
       fork do
         exec(*cmd)
       end
