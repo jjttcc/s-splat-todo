@@ -61,6 +61,7 @@ end
   def initialize spec
     set_fields spec
     check_fields
+    @raw_email_addrs = raw_email_addrs
   end
 
   def set_fields spec
@@ -150,7 +151,7 @@ end
   # emails
   def initial_email_recipients
     if @raw_email_addrs == nil then
-      @raw_email_addrs = raw_email_addrs
+      raise "code defect: nil @raw_email_addrs"
     end
     if @initial_email_addrs == nil then
       @initial_email_addrs = @raw_email_addrs.grep(INITIAL_EMAIL_PTRN) { |a|

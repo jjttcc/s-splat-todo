@@ -29,7 +29,7 @@ class Configuration
 
   def initialize
     @spec_path = '../testdir'   # (Temporarily hard-coded for early testing)
-    @post_init_spec_path = '../datatest/specs'  # (Temporarily hard-coded...)
+    @post_init_spec_path = '../datatest/processed_specs'  # (Temporarily ...)
     @data_path = '../datatest'
     # (Temporarily hard-coded for early testing:)
     @templated_email_command = 'mutt -s <subject> <addrs>'

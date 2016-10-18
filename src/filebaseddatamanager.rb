@@ -2,28 +2,41 @@ class FileBasedDataManager
 
   public
 
-  # Add each element of `handles' to the handles file.
-  def add_handles(handles)
-    if not handles.empty? then
-      hfile = File.new(@handle_fpath, "a")
-      hfile.write(handles.join("\n") + "\n")
-    end
+  # Write `tgts' out to persistent store.
+  def store_targets(tgts)
+    serialized_object = Marshal::dump(tgts)
+    out = File.new(@stored_fpath, 'w')
+    out.write(serialized_object)
   end
 
-  # A hash table of the currently stored handles, where each handle is a
-  # key and the associated value is true
-  def stored_handles
-      handles = File.read @handle_fpath
-      Hash[handles.split("\n").map {|h| [h, true]}]
+  # "STodoTarget"s restored from persistent store.
+  def restored_targets
+    result = {}
+    begin
+      infile = File.new(@stored_fpath, 'r')
+    rescue SystemCallError => e
+      if e.class.name.start_with?('Errno::ENOENT') then
+        $log.debug e.message
+      else
+        raise e
+      end
+    end
+    if infile != nil then
+      data = infile.read
+      result = Marshal.load(data)
+puts "#{self.class}.restored_targets: returning:\n#{result.inspect}"
+    end
+    result
   end
+
 
   private
 
-  HANDLE_FILENAME = 'stodo_handles'
+  STORED_OBJECTS_FILENAME = 'stodo_data'
 
   def initialize(data_path)
     @data_path = data_path
-    @handle_fpath = @data_path + File::SEPARATOR + HANDLE_FILENAME
+    @stored_fpath = @data_path + File::SEPARATOR + STORED_OBJECTS_FILENAME
   end
 
 end

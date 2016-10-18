@@ -5,7 +5,9 @@ require_relative 'scheduledevent'
 class TargetBuilder
   include SpecTools
 
-  attr_reader :targets, :spec_collector
+  # All targets built from specs: Hash[handle -> STodoTarget]
+  attr_reader :targets
+  attr_reader :spec_collector
 
   public
 
@@ -16,18 +18,18 @@ class TargetBuilder
   private
 
   def initialize spec_collector
-    @targets = []
+    @targets = {}
     @spec_collector = spec_collector
     for s in self.specs do
       t = target_for(s)
       if t != nil then
-        @targets << t
+        @targets[t.handle] = t
       else
         $log.debug "nil target for spec: #{s.inspect}"
       end
     end
 puts "targets:\n=============================="
-    for t in @targets do
+    @targets.each do |h, t|
       puts "#{t.class}; #{t.title}; #{t.categories}"
     end
 puts "=============================="

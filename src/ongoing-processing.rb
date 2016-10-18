@@ -10,9 +10,5 @@ require_relative 'stodomanager'
 
 
 config = Configuration.new
-# Gather the new specs.
-spec_collector = FileBasedSpecGatherer.new(config, false)
-# Build the "s*todo" targets.
-target_builder = TargetBuilder.new spec_collector
-manager = STodoManager.new target_builder, config
+manager = STodoManager.new config
 manager.perform_ongoing_processing

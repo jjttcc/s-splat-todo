@@ -9,16 +9,12 @@ require_relative 'targetbuilder'
 require_relative 'stodomanager'
 
 
-ongoing_actions_are_to_be_performed_counter_to_commens_sense = false
 config = Configuration.new
 # Gather the new specs.
 spec_collector = FileBasedSpecGatherer.new config
 # Build the s*todo targets.
 target_builder = TargetBuilder.new spec_collector
-manager = STodoManager.new target_builder, config
-manager.perform_initial_processing
-if ongoing_actions_are_to_be_performed_counter_to_commens_sense then
-  #!!!!(This belongs in a different script, perhaps called
-  #!!!!"ongoing-processing":)
-  manager.perform_notifications
+manager = STodoManager.new config, target_builder
+if manager.new_targets != nil then
+  manager.perform_initial_processing
 end
