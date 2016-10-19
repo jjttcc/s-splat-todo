@@ -97,7 +97,7 @@ class CalendarEntry
 
   def exec_cmd cmd
     if @configuration.test_run? then
-      $log.debug "#{self.class}Pretending to execute #{cmd}"
+      $log.debug "#{self.class} Pretending to execute #{cmd}"
     else
       fork do
         exec(*cmd)

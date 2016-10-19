@@ -46,11 +46,7 @@ class STodoTarget
 
   # Perform post-"initiate" notifications.
   def perform_ongoing_actions manager
-puts "I (#{self.handle}) was told to 'perform_ongoing_actions', but I think I'll skip it."
-puts "(manager: #{manager})"
-if false
     send_notification_emails manager.mailer
-end
   end
 
 
@@ -106,7 +102,6 @@ end
   def send_initial_emails mailer
     subject = 'initial ' + email_subject
     email = Email.new(initial_email_recipients, subject, email_body)
-##!!!Add cc, bcc...!!!
     if not email.to_addrs.empty? then
       email.send mailer
     end
@@ -129,7 +124,6 @@ end
   def send_notification_emails mailer
     subject = 'ongoing ' + email_subject
     email = Email.new(email_recipients, subject, email_body)
-##!!!Add cc, bcc...!!!
     if not email.to_addrs.empty? then
       email.send mailer
     end

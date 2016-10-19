@@ -1,5 +1,3 @@
-#require_relative 'spectools'
-
 # Objects that extract needed fields (subject, addresses, body, ...) from
 # an Email in order to send the resulting email message.
 class Mailer
@@ -32,7 +30,7 @@ class Mailer
 
   def exec_cmd mail_cmd, body
     if @configuration.test_run? then
-      $log.debug "#{self.class}Pretending to pipe to #{mail_cmd}"
+      $log.debug "#{self.class} Pretending to pipe to #{mail_cmd}"
     else
       pipe = IO.popen(mail_cmd, mode='w')
       pipe.write(body)
