@@ -11,7 +11,7 @@ class STodoManager
   # Call `initiate' on each element of @new_targets.
   # precondition: new_targets != nil
   def perform_initial_processing
-    if ! new_targets then raise PreconditionError, 'new_targets != nil' end
+    raise PreconditionError, 'new_targets != nil' if new_targets == nil
     new_targets.each do |h, t|
       t.initiate(self)
     end
@@ -20,25 +20,7 @@ class STodoManager
     @data_manager.store_targets(all_targets)
   end
 
-  # Call `initiate' on each element of @new_targets.
-  # precondition: new_targets != nil
-  def old____perform_initial_processing
-    if ! new_targets then raise PreconditionError, 'new_targets != nil' end
-    new_targets.each do |h, t|
-      if not @existing_targets[t.handle] then
-        t.initiate(self)
-      else
-#!!!        $log.warn "Handle #{t.handle} already exists - cannot process the" +
-#!!!          " associated #{t.formal_type}; skipping this item."
-      end
-    end
-    @target_builder.spec_collector.initial_cleanup self.existing_targets
-    all_targets = @existing_targets.merge(@new_targets)
-    @data_manager.store_targets(all_targets)
-  end
-
   def perform_ongoing_processing
-    usethese_targets = @data_manager.restored_targets
     existing_targets.values.each do |t|
       t.perform_ongoing_actions(self)
     end

@@ -58,10 +58,12 @@ end
 
   ###  Initialization
 
+  # postcondition: @raw_email_addrs != nil
   def initialize spec
     set_fields spec
     check_fields
     @raw_email_addrs = raw_email_addrs
+    raise PostconditionError, '@raw_email_addrs != nil' if ! @raw_email_addrs
   end
 
   def set_fields spec
@@ -135,10 +137,9 @@ end
 
   # Email address of the designated recipients of notification/reminder about
   # "self"
+  # precondition: @raw_email_addrs != nil
   def email_recipients
-    if @raw_email_addrs == nil then
-      @raw_email_addrs = raw_email_addrs
-    end
+    raise PreconditionError, '@raw_email_addrs != nil' if ! @raw_email_addrs
     if @email_addrs == nil then
       @email_addrs = @raw_email_addrs.map { |a|
         a.gsub(INITIAL_EMAIL_PTRN, "")
@@ -149,10 +150,9 @@ end
 
   # Email address designated to be recipients of the initial (initiate)
   # emails
+  # precondition: @raw_email_addrs != nil
   def initial_email_recipients
-    if @raw_email_addrs == nil then
-      raise "code defect: nil @raw_email_addrs"
-    end
+    raise PreconditionError, '@raw_email_addrs != nil' if ! @raw_email_addrs
     if @initial_email_addrs == nil then
       @initial_email_addrs = @raw_email_addrs.grep(INITIAL_EMAIL_PTRN) { |a|
         a.gsub(INITIAL_EMAIL_PTRN, "")
@@ -161,12 +161,14 @@ end
     @initial_email_addrs
   end
 
+  # postcondition: result != nil
   def raw_email_addrs
     result = []
     e = email
-    if e then
-      result = e.split(/,\s*/)
+    if email then
+      result = email.split(/,\s*/)
     end
+    raise PostconditionError, 'result != nil' if result == nil
     result
   end
 
