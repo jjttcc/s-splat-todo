@@ -6,8 +6,9 @@ require_relative 'spectools'
 class STodoTarget
   include SpecTools
 
-  attr_reader :title, :content, :handle, :email, :calendar_ids, :priority,
-    :comment, :reminder_dates, :categories
+  attr_reader :title, :content, :handle, :email_spec, :calendar_ids,
+    :priority, :comment, :reminder_dates, :categories,
+    :initial_email_addrs, :ongoing_email_addrs
   alias :description :content
   alias :name :handle
   alias :detail :comment
@@ -49,7 +50,6 @@ class STodoTarget
     send_notification_emails manager.mailer
   end
 
-
   private
 
   ###  Initialization
@@ -58,14 +58,15 @@ class STodoTarget
   def initialize spec
     set_fields spec
     check_fields
-    @raw_email_addrs = raw_email_addrs
-    raise PostconditionError, '@raw_email_addrs != nil' if ! @raw_email_addrs
+    set_email_addrs
+#!!!@raw_email_addrs = raw_email_addrs
+#!!!raise PostconditionError, '@raw_email_addrs != nil' if ! @raw_email_addrs
   end
 
   def set_fields spec
     @title = spec.title
     @handle = spec.handle
-    @email = spec.email
+    @email_spec = spec.email
     @content = spec.description
     @comment = spec.comment
     @reminder_dates = date_times_from_reminders spec
@@ -98,10 +99,28 @@ class STodoTarget
     result
   end
 
+  def set_email_addrs
+    emails = raw_email_addrs
+    @initial_email_addrs = []
+    @ongoing_email_addrs = []
+    emails.each do |e|
+      if not e.match(ONGOING_EMAIL_PTRN) then
+        @initial_email_addrs << e.gsub(INITIAL_EMAIL_PTRN, "")
+      end
+      if not e.match(INITIAL_EMAIL_PTRN) then
+        @ongoing_email_addrs << e.gsub(ONGOING_EMAIL_PTRN, "")
+      end
+    end
+$log.debug "[#{handle}]"
+$log.debug "initemails: #{@initial_email_addrs}"
+$log.debug "ongemails: #{@ongoing_email_addrs}"
+  end
+
   # Send an email to all recipients designated as initial recipients.
   def send_initial_emails mailer
     subject = 'initial ' + email_subject
-    email = Email.new(initial_email_recipients, subject, email_body)
+#!!!email = Email.new(initial_email_recipients, subject, email_body)
+    email = Email.new(initial_email_addrs, subject, email_body)
     if not email.to_addrs.empty? then
       email.send mailer
     end
@@ -123,7 +142,8 @@ class STodoTarget
   # Send a notification email to all recipients.
   def send_notification_emails mailer
     subject = 'ongoing ' + email_subject
-    email = Email.new(email_recipients, subject, email_body)
+#!!!email = Email.new(ongoing_email_recipients, subject, email_body)
+    email = Email.new(ongoing_email_addrs, subject, email_body)
     if not email.to_addrs.empty? then
       email.send mailer
     end
@@ -132,25 +152,40 @@ class STodoTarget
   # Email address of the designated recipients of notification/reminder about
   # "self"
   # precondition: @raw_email_addrs != nil
-  def email_recipients
+  def old_____ongoing_email_recipients
     raise PreconditionError, '@raw_email_addrs != nil' if ! @raw_email_addrs
+    if @ongoing_email_addrs == nil then
+      @ongoing_email_addrs = []
+      @raw_email_addrs.each do |e|
+        if not e.match(INITIAL_EMAIL_PTRN) then
+          @ongoing_email_addrs << e.gsub(ONGOING_EMAIL_PTRN, "")
+        end
+      end
+    end
+
+=begin
     if @email_addrs == nil then
       @email_addrs = @raw_email_addrs.map { |a|
         a.gsub(INITIAL_EMAIL_PTRN, "")
       }
     end
     @email_addrs
+=end
   end
 
   # Email address designated to be recipients of the initial (initiate)
   # emails
   # precondition: @raw_email_addrs != nil
-  def initial_email_recipients
+  def old_____initial_email_recipients
     raise PreconditionError, '@raw_email_addrs != nil' if ! @raw_email_addrs
+#grap addrs without the ONGOING_EMAIL_PTRN
     if @initial_email_addrs == nil then
-      @initial_email_addrs = @raw_email_addrs.grep(INITIAL_EMAIL_PTRN) { |a|
-        a.gsub(INITIAL_EMAIL_PTRN, "")
-      }
+      @initial_email_addrs = []
+      @raw_email_addrs.each do |e|
+        if not e.match(ONGOING_EMAIL_PTRN) then
+          @initial_email_addrs << e.gsub(INITIAL_EMAIL_PTRN, "")
+        end
+      end
     end
     @initial_email_addrs
   end
@@ -158,9 +193,8 @@ class STodoTarget
   # postcondition: result != nil
   def raw_email_addrs
     result = []
-    e = email
-    if email then
-      result = email.split(/,\s*/)
+    if email_spec then
+      result = email_spec.split(/,\s*/)
     end
     raise PostconditionError, 'result != nil' if result == nil
     result

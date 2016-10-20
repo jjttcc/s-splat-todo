@@ -18,18 +18,18 @@ class TargetBuilder
   private
 
   def initialize spec_collector
-    @targets = {}
+    @targets = []
     @spec_collector = spec_collector
     for s in self.specs do
       t = target_for(s)
       if t != nil then
-        @targets[t.handle] = t
+        @targets << t
       else
         $log.debug "nil target for spec: #{s.inspect}"
       end
     end
 puts "targets:\n=============================="
-    @targets.each do |h, t|
+    @targets.each do |t|
       puts "#{t.class}; #{t.title}; #{t.categories}"
     end
 puts "=============================="

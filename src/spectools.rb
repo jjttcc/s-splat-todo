@@ -14,11 +14,11 @@ module SpecTools
   STTESTRUN = 'STODO_TEST'
   STLOG_LEVEL = 'STODO_LOG_LEVEL'
 
-  # tags/patterns from spec with special meaning
-  INITIAL_EMAIL_PTRN = Regexp.new('\[send-initial\]')
+  ### tags/patterns from spec with special meaning
 
+  INITIAL_EMAIL_PTRN = Regexp.new('\[initial\]')
+  ONGOING_EMAIL_PTRN = Regexp.new('\[ongoing\]')
   SUBJECT_TEMPLATE_PTRN = Regexp.new('<subject>')
-
   ADDRS_TEMPLATE_PTRN = Regexp.new('<addrs>')
 
 end
