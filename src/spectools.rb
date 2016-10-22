@@ -8,6 +8,8 @@ module SpecTools
     'type', 'title', 'description', 'handle', 'priority', 'due_date', 'goal',
     'email', 'comment', 'parent', 'reminders', 'start_date', 'expiration_date',
     'date_time', 'duration', 'location', 'calendar_ids', 'categories'
+  SINGULAR_REMINDER_KEY = 'reminder'
+  SPEC_FIELD_DELIMITER = /,\s*/
 
   # system-wide constants:
   STDEBUG = 'STODO_DEBUG'

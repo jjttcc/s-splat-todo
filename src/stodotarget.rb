@@ -1,4 +1,5 @@
 require_relative 'email'
+require_relative 'reminder'
 require_relative 'spectools'
 
 # Items - actions, projects, appointments, etc. - to keep track of, not
@@ -7,7 +8,7 @@ class STodoTarget
   include SpecTools
 
   attr_reader :title, :content, :handle, :email_spec, :calendar_ids,
-    :priority, :comment, :reminder_dates, :categories,
+    :priority, :comment, :reminders, :categories,
     :initial_email_addrs, :ongoing_email_addrs
   alias :description :content
   alias :name :handle
@@ -19,6 +20,11 @@ class STodoTarget
 
   def formal_type
     self.class
+  end
+
+  # Is 'self' valid - i.e., are the field values all valid?
+  def valid?
+    @valid
   end
 
   ###  Hash-related queries
@@ -54,13 +60,11 @@ class STodoTarget
 
   ###  Initialization
 
-  # postcondition: @raw_email_addrs != nil
   def initialize spec
+    @valid = true
     set_fields spec
     check_fields
     set_email_addrs
-#!!!@raw_email_addrs = raw_email_addrs
-#!!!raise PostconditionError, '@raw_email_addrs != nil' if ! @raw_email_addrs
   end
 
   def set_fields spec
@@ -69,13 +73,13 @@ class STodoTarget
     @email_spec = spec.email
     @content = spec.description
     @comment = spec.comment
-    @reminder_dates = date_times_from_reminders spec
+    @reminders = reminders_from_spec spec
     if spec.categories then
-      @categories = spec.categories.split(/,\s*/)
+      @categories = spec.categories.split(SPEC_FIELD_DELIMITER)
     end
     @calendar_ids = []
     if spec.calendar_ids != nil then
-      @calendar_ids = spec.calendar_ids.split(/,\s*/)
+      @calendar_ids = spec.calendar_ids.split(SPEC_FIELD_DELIMITER)
     end
   end
 
@@ -84,8 +88,27 @@ class STodoTarget
     if not self.handle then $log.warn "No handle for #{self.title}" end
   end
 
-  def date_times_from_reminders spec
-    # Extract the list of reminders from spec.reminders.
+  def reminders_from_spec spec
+    reminders_string = spec.reminders
+    result = []
+    if reminders_string != nil then
+      reminders_string.split(SPEC_FIELD_DELIMITER).each do |r|
+        begin
+          rem = Reminder.new(r)
+          result << Reminder.new(r)
+        rescue Exception => e
+          $log.warn e.message
+          @valid = false  # (1 or more bad reminders makes 'self' invalid.)
+          break
+        end
+      end
+    end
+if result then $log.debug "#{handle}'s reminders:"
+result.each do |r|
+  $log.debug "#{r.date_time.to_time}, expired? #{r.expired?}"
+end
+end
+    result
   end
 
   ### Implementation - utilities
@@ -119,7 +142,6 @@ $log.debug "ongemails: #{@ongoing_email_addrs}"
   # Send an email to all recipients designated as initial recipients.
   def send_initial_emails mailer
     subject = 'initial ' + email_subject
-#!!!email = Email.new(initial_email_recipients, subject, email_body)
     email = Email.new(initial_email_addrs, subject, email_body)
     if not email.to_addrs.empty? then
       email.send mailer
@@ -142,59 +164,17 @@ $log.debug "ongemails: #{@ongoing_email_addrs}"
   # Send a notification email to all recipients.
   def send_notification_emails mailer
     subject = 'ongoing ' + email_subject
-#!!!email = Email.new(ongoing_email_recipients, subject, email_body)
     email = Email.new(ongoing_email_addrs, subject, email_body)
     if not email.to_addrs.empty? then
       email.send mailer
     end
   end
 
-  # Email address of the designated recipients of notification/reminder about
-  # "self"
-  # precondition: @raw_email_addrs != nil
-  def old_____ongoing_email_recipients
-    raise PreconditionError, '@raw_email_addrs != nil' if ! @raw_email_addrs
-    if @ongoing_email_addrs == nil then
-      @ongoing_email_addrs = []
-      @raw_email_addrs.each do |e|
-        if not e.match(INITIAL_EMAIL_PTRN) then
-          @ongoing_email_addrs << e.gsub(ONGOING_EMAIL_PTRN, "")
-        end
-      end
-    end
-
-=begin
-    if @email_addrs == nil then
-      @email_addrs = @raw_email_addrs.map { |a|
-        a.gsub(INITIAL_EMAIL_PTRN, "")
-      }
-    end
-    @email_addrs
-=end
-  end
-
-  # Email address designated to be recipients of the initial (initiate)
-  # emails
-  # precondition: @raw_email_addrs != nil
-  def old_____initial_email_recipients
-    raise PreconditionError, '@raw_email_addrs != nil' if ! @raw_email_addrs
-#grap addrs without the ONGOING_EMAIL_PTRN
-    if @initial_email_addrs == nil then
-      @initial_email_addrs = []
-      @raw_email_addrs.each do |e|
-        if not e.match(ONGOING_EMAIL_PTRN) then
-          @initial_email_addrs << e.gsub(INITIAL_EMAIL_PTRN, "")
-        end
-      end
-    end
-    @initial_email_addrs
-  end
-
   # postcondition: result != nil
   def raw_email_addrs
     result = []
     if email_spec then
-      result = email_spec.split(/,\s*/)
+      result = email_spec.split(SPEC_FIELD_DELIMITER)
     end
     raise PostconditionError, 'result != nil' if result == nil
     result

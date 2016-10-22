@@ -44,7 +44,10 @@ puts "=============================="
       $log.warn warning
     else
       # Build the "target".
-      result = builder.call(spec)
+      t = builder.call(spec)
+      if t.valid? then
+        result = t
+      end
     end
     result
   end

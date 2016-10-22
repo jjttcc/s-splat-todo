@@ -66,6 +66,11 @@ class STodoSpec
     if type then
       @setting_for[TYPE_KEY] = type.downcase
     end
+    rem = @setting_for[SINGULAR_REMINDER_KEY]
+    if rem then
+      rems = @setting_for[REMINDER_KEY]
+      @setting_for[REMINDER_KEY] = rems ? "#{rems}, #{rem}" : rem
+    end
   end
 
   # Extract the settings implied in `spec_string' and use them to set
@@ -93,6 +98,7 @@ class STodoSpec
       end
     end
     standardize_values
+@setting_for.each {|k, v| $log.debug "#{k}: #{v}" }
   end
 
   # `s' stripped of lines starthing with '#'
