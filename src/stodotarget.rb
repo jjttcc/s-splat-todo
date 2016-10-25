@@ -166,6 +166,7 @@ $log.debug "ongemails: #{@ongoing_email_addrs}"
     rems = []
     reminders.each { |r| if r.is_due? then rems << r end }
     rems.each do |r|
+$log.debug "r.date_time, r.is_due?: #{r.date_time}, #{r.is_due?}"
       subject = "Reminder: #{r.date_time}: " + email_subject
       email = Email.new(ongoing_email_addrs, subject, email_body + r)
       if not email.to_addrs.empty? then

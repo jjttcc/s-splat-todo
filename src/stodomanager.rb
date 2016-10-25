@@ -24,6 +24,8 @@ class STodoManager
     existing_targets.values.each do |t|
       t.perform_ongoing_actions(self)
     end
+    # (Calling perform_ongoing_actions above can change a target's state.)
+    @data_manager.store_targets(existing_targets)
   end
 
   private
@@ -31,33 +33,40 @@ class STodoManager
   def initialize config, tgt_builder = nil
     @data_manager = config.data_manager
     @existing_targets = @data_manager.restored_targets
-    new_duphndles = {}
-$log.debug "#{self.class} old target count: #{existing_targets.length}"
     if tgt_builder != nil then
-      @new_targets = {}
-      @target_builder = tgt_builder
-      tgts = @target_builder.targets
-      tgts.each do |tgt|
-        hndl = tgt.handle
-        if @existing_targets[hndl] != nil then
-          t = @existing_targets[hndl]
-          $log.warn "Handle #{hndl} already exists - cannot process the" +
-            " associated #{t.formal_type} - skipping this item."
-        else
-          if @new_targets[hndl] != nil then
-            new_duphndles[hndl] = true
-            report_new_conflict @new_targets[hndl], tgt
-          else
-            @new_targets[hndl] = tgt
-          end
-        end
-      end
-$log.debug "#{self.class} new target count: #{new_targets.length}"
+      init_new_targets tgt_builder
     end
-    # Remove any remaining new targets with a conflicting/duplicate handle.
-    new_duphndles.keys.each {|h| @new_targets.delete(h) }
     @mailer = Mailer.new config
     @calendar = CalendarEntry.new config
+  end
+
+  def init_new_targets tgt_builder
+    new_duphndles = {}
+$log.debug "#{self.class} old target count: #{existing_targets.length}"
+    @new_targets = {}
+    @target_builder = tgt_builder
+    tgts = @target_builder.targets
+    tgts.each do |tgt|
+      hndl = tgt.handle
+      if @existing_targets[hndl] != nil then
+        t = @existing_targets[hndl]
+        $log.warn "Handle #{hndl} already exists - cannot process the" +
+          " associated #{t.formal_type} - skipping this item."
+      else
+        if @new_targets[hndl] != nil then
+          new_duphndles[hndl] = true
+          report_new_conflict @new_targets[hndl], tgt
+        else
+          @new_targets[hndl] = tgt
+        end
+      end
+    end
+$log.debug "#{self.class} new target count: #{new_targets.length}"
+    # Remove any remaining new targets with a conflicting/duplicate handle.
+    new_duphndles.keys.each {|h| @new_targets.delete(h) }
+    @new_targets.values.each do |t|
+      add_child(t)
+    end
   end
 
   def report_new_conflict target1, target2
@@ -65,6 +74,32 @@ $log.debug "#{self.class} new target count: #{new_targets.length}"
       "items: item1: #{target1.title}/#{target1.formal_type}, item2: " +
       "#{target2.title}/#{target2.formal_type}"
     $log.warn msg
+  end
+
+  # If 't' has a parent, find its parent and add 't', via 'add_task", to
+  # the parent's tasks.
+  def add_child(t)
+    p = t.parent_handle
+    if p then
+$log.debug "looking for #{t.handle}'s parent: '#{p}'"
+      candidate_parent = @new_targets[p]
+      if not candidate_parent then
+        candidate_parent = @existing_targets[p]
+        if candidate_parent then
+          $log.debug "#{t.handle}'s parent found among old targets: " +
+            "'#{candidate_parent.title}'"
+        end
+      else
+        $log.debug "#{t.handle}'s parent found among new targets: " +
+          "'#{candidate_parent.title}'"
+      end
+      if candidate_parent then
+        candidate_parent.add_task(t)
+$log.debug "new child [#{t.inspect}] for #{candidate_parent.inspect}"
+      else
+        $log.warn "target #{t.handle} has a nonexistent parent: #{p}"
+      end
+    end
   end
 
 end

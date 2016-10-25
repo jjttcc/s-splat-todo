@@ -30,9 +30,14 @@ class Reminder
   # date/time?
   # postcondition: result implies not triggered?
   def is_due?
-    current_unix_secs = DateTime.now.strftime('%s').to_i
-    reminder_unix_secs = date_time.strftime('%s').to_i
-    result = (not triggered?) and (current_unix_secs >= reminder_unix_secs)
+    result = ! triggered?
+    if result then
+      current_unix_secs = DateTime.now.strftime('%s').to_i
+      reminder_unix_secs = date_time.strftime('%s').to_i
+      result = (current_unix_secs >= reminder_unix_secs)
+$log.debug "nowsecs, remsecs: #{current_unix_secs}, #{reminder_unix_secs}"
+$log.debug "result: #{result}"
+    end
     if not implies(result, ! triggered?) then
       raise PostconditionError, 'result implies not triggered?'
     end

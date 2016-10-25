@@ -10,6 +10,7 @@ class CompositeTask < STodoTarget
 
   ###  Element change
 
+  # precondition: t != nil and t.parent_handle == handle
   def add_task(t)
     @tasks << t
   end
@@ -43,8 +44,14 @@ class CompositeTask < STodoTarget
         $log.warn "due_date invalid [#{e}] (#{spec.due_date}) in #{self}"
       end
     end
+=begin #old:
     if spec.parent_handle != nil then
       @parent_handle = spec.parent_handle
+    end
+=end
+    if spec.parent != nil then
+      @parent_handle = spec.parent
+$log.debug "ph: #{@parent_handle}"
     end
   end
 
