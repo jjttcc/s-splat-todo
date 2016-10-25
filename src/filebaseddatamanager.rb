@@ -1,3 +1,4 @@
+# !!!!To-do: lock the persistent store file.
 class FileBasedDataManager
 
   public

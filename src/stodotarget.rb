@@ -74,6 +74,11 @@ class STodoTarget
     @content = spec.description
     @comment = spec.comment
     @reminders = reminders_from_spec spec
+if @reminders then $log.debug "#{handle}'s reminders:"
+@reminders.each do |r|
+  $log.debug "#{r.date_time.to_time}, expired? #{r.expired?}"
+end
+end
     if spec.categories then
       @categories = spec.categories.split(SPEC_FIELD_DELIMITER)
     end
@@ -97,18 +102,13 @@ class STodoTarget
           rem = Reminder.new(r)
           result << Reminder.new(r)
         rescue Exception => e
-          $log.warn e.message
+          $log.warn "#{handle}: #{e.message}"
           @valid = false  # (1 or more bad reminders makes 'self' invalid.)
           break
         end
       end
     end
-if result then $log.debug "#{handle}'s reminders:"
-result.each do |r|
-  $log.debug "#{r.date_time.to_time}, expired? #{r.expired?}"
-end
-end
-    result
+    result.sort
   end
 
   ### Implementation - utilities
@@ -163,10 +163,15 @@ $log.debug "ongemails: #{@ongoing_email_addrs}"
 
   # Send a notification email to all recipients.
   def send_notification_emails mailer
-    subject = 'ongoing ' + email_subject
-    email = Email.new(ongoing_email_addrs, subject, email_body)
-    if not email.to_addrs.empty? then
-      email.send mailer
+    rems = []
+    reminders.each { |r| if r.is_due? then rems << r end }
+    rems.each do |r|
+      subject = "Reminder: #{r.date_time}: " + email_subject
+      email = Email.new(ongoing_email_addrs, subject, email_body + r)
+      if not email.to_addrs.empty? then
+        email.send mailer
+      end
+      r.trigger
     end
   end
 
