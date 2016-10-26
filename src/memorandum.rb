@@ -15,7 +15,7 @@ class Memorandum < STodoTarget
     super spec
     if spec.expiration_date != nil then
       begin
-        @expiration_date = DateTime.parse(spec.expiration_date)
+        @expiration_date = Time.parse(spec.expiration_date)
       rescue ArgumentError => e
         # spec.expiration_date is invalid, so leave @expiration_date as nil.
         $log.warn "expiration_date invalid [#{e}] (#{spec.expiration_date}) " +

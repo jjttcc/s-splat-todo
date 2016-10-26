@@ -1,4 +1,4 @@
-require 'date'
+require 'time'
 require_relative 'stodotarget'
 
 # Tasks that, optionally, contain one or more subtasks
@@ -54,7 +54,7 @@ class CompositeTask < STodoTarget
     @tasks = []
     if spec.due_date != nil then
       begin
-        @due_date = DateTime.parse(spec.due_date)
+        @due_date = Time.parse(spec.due_date)
       rescue ArgumentError => e
         # spec.due_date is invalid, so leave @due_date as nil.
         $log.warn "due_date invalid [#{e}] (#{spec.due_date}) in #{self}"

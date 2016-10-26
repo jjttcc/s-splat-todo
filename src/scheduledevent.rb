@@ -15,7 +15,7 @@ class ScheduledEvent < STodoTarget
     super spec
     if spec.date_time != nil then
       begin
-        @date_time = DateTime.parse(spec.date_time)
+        @date_time = Time.parse(spec.date_time)
       rescue ArgumentError => e
         # spec.date_time is invalid, so leave @date_time as nil.
         $log.warn "date_time invalid [#{e}] (#{spec.date_time}) " +

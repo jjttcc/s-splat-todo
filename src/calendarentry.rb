@@ -73,30 +73,6 @@ class CalendarEntry
     result
   end
 
-  def entry_creation_command_try1
-    if duration == nil then
-      # (nil duration implies "infinitely small" "meeting".)
-      @duration = 1
-    end
-    enforce_entry_creation_preconditions
-    result = "#{@configuration.calendar_tool} --calendar '#{calendar_id}' " +
-      "--title '" + cleaned_for_shell(title) + "' --when #{time}" +
-      " --duration #{duration}"
-    if location != nil then
-      result += " --where '#{cleaned_for_shell(location)}'"
-    end
-    if description != nil then
-      result += " --description '#{cleaned_for_shell(description)}'"
-    end
-    if reminder_spec != nil then
-      result += " --reminder '#{reminder_spec}'"
-    end
-    if invitees != nil then
-      result += " --who '" + reminder_spec.split(' ') + "'"
-    end
-    result
-  end
-
   def exec_cmd cmd
     if @configuration.test_run? then
       $log.debug "#{self.class} Pretending to execute #{cmd}"

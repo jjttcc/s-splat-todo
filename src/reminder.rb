@@ -21,7 +21,7 @@ class Reminder
 
   # Has this reminder expired?
   def expired?
-    current_unix_secs = DateTime.now.strftime('%s').to_i
+    current_unix_secs = Time.now.strftime('%s').to_i
     reminder_unix_secs = date_time.strftime('%s').to_i
     current_unix_secs - reminder_unix_secs > time_tolerance
   end
@@ -32,7 +32,7 @@ class Reminder
   def is_due?
     result = ! triggered?
     if result then
-      current_unix_secs = DateTime.now.strftime('%s').to_i
+      current_unix_secs = Time.now.strftime('%s').to_i
       reminder_unix_secs = date_time.strftime('%s').to_i
       result = (current_unix_secs >= reminder_unix_secs)
 $log.debug "nowsecs, remsecs: #{current_unix_secs}, #{reminder_unix_secs}"
@@ -47,7 +47,7 @@ $log.debug "result: #{result}"
   # Is the current date/time more than 'time_tolerance' seconds later than
   # `date_time'?
   def is_late?
-    current_unix_secs = DateTime.now.strftime('%s').to_i
+    current_unix_secs = Time.now.strftime('%s').to_i
     reminder_unix_secs = date_time.strftime('%s').to_i
     current_unix_secs - reminder_unix_secs > time_tolerance
   end
@@ -88,7 +88,7 @@ $log.debug "result: #{result}"
 
   def initialize(datetime, time_tolerance = DEFAULT_TOLERANCE)
     begin
-      @date_time = DateTime.parse(datetime)
+      @date_time = Time.parse(datetime)
     rescue ArgumentError => e
       raise "Bad datetime: #{datetime} [#{e.inspect}]"
     end
