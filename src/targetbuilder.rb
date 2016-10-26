@@ -28,11 +28,6 @@ class TargetBuilder
         $log.debug "nil target for spec: #{s.inspect}"
       end
     end
-puts "new targets:\n=============================="
-    @targets.each do |t|
-      puts "#{t.class}; #{t.title}; #{t.categories}"
-    end
-puts "=============================="
   end
 
   def target_for spec

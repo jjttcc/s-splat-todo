@@ -1,6 +1,7 @@
 require_relative 'mailer'
 require_relative 'calendarentry'
 require_relative 'preconditionerror'
+require_relative 'targetbuilder'
 
 # Basic manager of s*todo actions
 class STodoManager
@@ -20,15 +21,23 @@ class STodoManager
     @data_manager.store_targets(all_targets)
   end
 
+  # Perform any "ongoing processing" required for existing_targets.
   def perform_ongoing_processing
     existing_targets.values.each do |t|
       t.perform_ongoing_actions(self)
+    end
+    # (Calling perform_ongoing_actions above can change a target's state.)
+    @data_manager.store_targets(existing_targets)
+  end
+
+  # Report all descendants (child targets, their children, ...) for each
+  # item in `targets'.
+  def report_targets_descendants targets
+    targets.values.each do |t|
       if t.can_have_children? then
         report_descendants(t)
       end
     end
-    # (Calling perform_ongoing_actions above can change a target's state.)
-    @data_manager.store_targets(existing_targets)
   end
 
   private
@@ -45,7 +54,6 @@ class STodoManager
 
   def init_new_targets tgt_builder
     new_duphndles = {}
-$log.debug "#{self.class} old target count: #{existing_targets.length}"
     @new_targets = {}
     @target_builder = tgt_builder
     tgts = @target_builder.targets
@@ -64,7 +72,6 @@ $log.debug "#{self.class} old target count: #{existing_targets.length}"
         end
       end
     end
-$log.debug "#{self.class} new target count: #{new_targets.length}"
     # Remove any remaining new targets with a conflicting/duplicate handle.
     new_duphndles.keys.each {|h| @new_targets.delete(h) }
     @new_targets.values.each do |t|
@@ -84,7 +91,6 @@ $log.debug "#{self.class} new target count: #{new_targets.length}"
   def add_child(t)
     p = t.parent_handle
     if p then
-$log.debug "looking for #{t.handle}'s parent: '#{p}'"
       candidate_parent = @new_targets[p]
       if not candidate_parent then
         candidate_parent = @existing_targets[p]
@@ -99,7 +105,6 @@ $log.debug "looking for #{t.handle}'s parent: '#{p}'"
       if candidate_parent then
         if candidate_parent.can_have_children? then
           candidate_parent.add_task(t)
-$log.debug "new child [#{t.inspect}] for #{candidate_parent.inspect}"
         else
           $log.warn "target #{t.handle} is specified with a parent, " +
             "#{p}, that can't have children."
@@ -115,12 +120,12 @@ $log.debug "new child [#{t.inspect}] for #{candidate_parent.inspect}"
     # To prevent redundancy, only report descendants for the top-level
     # ancestor.
     if ! target.has_parent? then
-      $log.debug "#{target.handle}'s descendants:"
+      puts "#{target.handle}'s descendants:"
       desc = target.descendants
       desc.keys.sort.each do |k|
         indent = ' ' * (2 * k)
         desc[k].each do |t|
-          $log.debug "#{indent}#{t.handle}"
+          puts "#{indent}#{t.handle}"
         end
       end
     end

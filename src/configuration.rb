@@ -1,6 +1,7 @@
 require 'logger'
 require 'fileutils'
 require_relative 'filebaseddatamanager'
+require_relative 'spectools'
 require_relative 'configtools'
 
 # Configuration settings for the current run
@@ -74,7 +75,6 @@ class Configuration
     cfgfile = opened_config_file 'r'
     lines = cfgfile.read.split("\n")
     result = Hash[lines.map { |l| l.split(/\s*=\s*/, 2) }]
-$log.debug result.inspect
     result
   end
 
@@ -102,7 +102,7 @@ $log.debug result.inspect
       end
     end
     if errors.length > 0 then
-      $log.error "Needed directories are not readable:\n" + errors.join("\n")
+      $log.fatal "Needed directories are not readable:\n" + errors.join("\n")
       raise "Fatal error: Missing or unreadable system directories"
     end
   end

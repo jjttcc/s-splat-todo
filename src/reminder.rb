@@ -35,8 +35,6 @@ class Reminder
       current_unix_secs = Time.now.strftime('%s').to_i
       reminder_unix_secs = date_time.strftime('%s').to_i
       result = (current_unix_secs >= reminder_unix_secs)
-$log.debug "nowsecs, remsecs: #{current_unix_secs}, #{reminder_unix_secs}"
-$log.debug "result: #{result}"
     end
     if not implies(result, ! triggered?) then
       raise PostconditionError, 'result implies not triggered?'

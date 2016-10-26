@@ -11,7 +11,6 @@ class FileBasedSpecGatherer
 
   # Perform any needed "clean up" operations after "gathering" new specs.
   def initial_cleanup new_handle
-$log.debug "initial_cleanup called with nh size of #{new_handle.length}"
     require 'fileutils'
     # Move the spec files out of the "spec_path" and into the
     # "post_init_spec_path" so that they are not seen/used again during
@@ -20,7 +19,6 @@ $log.debug "initial_cleanup called with nh size of #{new_handle.length}"
       if new_handle[s.handle] then
         cur_specfile_path = s.input_file_path
         if File.exists? cur_specfile_path then
-$log.debug "moving #{cur_specfile_path}"
           FileUtils.mv(cur_specfile_path, @config.post_init_spec_path)
         end
       end

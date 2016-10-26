@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-# Execute ongoing processing of s*todo items.
+# Display a report of existing s*todo items.
 
 require_relative 'configuration'
 require_relative 'stodomanager'
@@ -7,4 +7,4 @@ require_relative 'stodomanager'
 
 config = Configuration.new
 manager = STodoManager.new config
-manager.perform_ongoing_processing
+manager.report_targets_descendants(manager.existing_targets)

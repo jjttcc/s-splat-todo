@@ -25,7 +25,6 @@ class FileBasedDataManager
     if infile != nil then
       data = infile.read
       result = Marshal.load(data)
-puts "#{self.class}.restored_targets: returning:\n#{result.inspect}"
     end
     result
   end

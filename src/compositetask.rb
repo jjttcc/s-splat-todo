@@ -62,7 +62,6 @@ class CompositeTask < STodoTarget
     end
     if spec.parent != nil then
       @parent_handle = spec.parent
-$log.debug "ph: #{@parent_handle}"
     end
   end
 

@@ -85,11 +85,6 @@ class STodoTarget
     @content = spec.description
     @comment = spec.comment
     @reminders = reminders_from_spec spec
-if @reminders then $log.debug "#{handle}'s reminders:"
-@reminders.each do |r|
-  $log.debug "#{r.date_time.to_time}, expired? #{r.expired?}"
-end
-end
     if spec.categories then
       @categories = spec.categories.split(SPEC_FIELD_DELIMITER)
     end
@@ -145,9 +140,6 @@ end
         @ongoing_email_addrs << e.gsub(ONGOING_EMAIL_PTRN, "")
       end
     end
-$log.debug "[#{handle}]"
-$log.debug "initemails: #{@initial_email_addrs}"
-$log.debug "ongemails: #{@ongoing_email_addrs}"
   end
 
   # Send an email to all recipients designated as initial recipients.
@@ -160,9 +152,6 @@ $log.debug "ongemails: #{@ongoing_email_addrs}"
   end
 
   def set_initial_calendar_entry calentry
-    #!!!!Needed enhancement: take reminder dates/times into account based
-    # on self's type - e.g., Memorandum should probably create a calendar
-    # entry for each of its reminder-dates.
     if not calendar_ids.empty? then
       set_cal_fields calentry
       calendar_ids.each do |id|
@@ -177,7 +166,6 @@ $log.debug "ongemails: #{@ongoing_email_addrs}"
     rems = []
     reminders.each { |r| if r.is_due? then rems << r end }
     rems.each do |r|
-$log.debug "r.date_time, r.is_due?: #{r.date_time}, #{r.is_due?}"
       subject = "Reminder: #{r.date_time}: " + email_subject
       email = Email.new(ongoing_email_addrs, subject, email_body + r)
       if not email.to_addrs.empty? then

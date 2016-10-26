@@ -1,3 +1,5 @@
+require_relative 'compositetask'
+
 # Composite tasks of some importance
 class Project < CompositeTask
   attr_reader :goal

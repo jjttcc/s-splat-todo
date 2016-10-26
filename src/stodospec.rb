@@ -98,7 +98,6 @@ class STodoSpec
       end
     end
     standardize_values
-@setting_for.each {|k, v| $log.debug "#{k}: #{v}" }
   end
 
   # `s' stripped of lines starthing with '#'
