@@ -23,6 +23,9 @@ class STodoManager
   def perform_ongoing_processing
     existing_targets.values.each do |t|
       t.perform_ongoing_actions(self)
+      if t.can_have_children? then
+        report_descendants(t)
+      end
     end
     # (Calling perform_ongoing_actions above can change a target's state.)
     @data_manager.store_targets(existing_targets)
@@ -94,10 +97,31 @@ $log.debug "looking for #{t.handle}'s parent: '#{p}'"
           "'#{candidate_parent.title}'"
       end
       if candidate_parent then
-        candidate_parent.add_task(t)
+        if candidate_parent.can_have_children? then
+          candidate_parent.add_task(t)
 $log.debug "new child [#{t.inspect}] for #{candidate_parent.inspect}"
+        else
+          $log.warn "target #{t.handle} is specified with a parent, " +
+            "#{p}, that can't have children."
+          t.parent_handle = nil
+        end
       else
         $log.warn "target #{t.handle} has a nonexistent parent: #{p}"
+      end
+    end
+  end
+
+  def report_descendants target
+    # To prevent redundancy, only report descendants for the top-level
+    # ancestor.
+    if ! target.has_parent? then
+      $log.debug "#{target.handle}'s descendants:"
+      desc = target.descendants
+      desc.keys.sort.each do |k|
+        indent = ' ' * (2 * k)
+        desc[k].each do |t|
+          $log.debug "#{indent}#{t.handle}"
+        end
       end
     end
   end

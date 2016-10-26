@@ -8,11 +8,13 @@ class STodoTarget
   include SpecTools
 
   attr_reader :title, :content, :handle, :email_spec, :calendar_ids,
-    :priority, :comment, :reminders, :categories,
-    :initial_email_addrs, :ongoing_email_addrs
+    :priority, :comment, :reminders, :categories, :initial_email_addrs,
+    :ongoing_email_addrs, :parent_handle
   alias :description :content
   alias :name :handle
   alias :detail :comment
+
+  attr_writer :parent_handle
 
   public
 
@@ -25,6 +27,15 @@ class STodoTarget
   # Is 'self' valid - i.e., are the field values all valid?
   def valid?
     @valid
+  end
+
+  def can_have_children?
+    false
+  end
+
+  # Does 'self' have a parent?
+  def has_parent?
+    self.parent_handle != nil
   end
 
   ###  Hash-related queries

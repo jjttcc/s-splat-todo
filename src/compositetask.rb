@@ -4,22 +4,25 @@ require_relative 'stodotarget'
 # Tasks that, optionally, contain one or more subtasks
 class CompositeTask < STodoTarget
 
-  attr_reader :due_date, :parent_handle, :tasks, :completion_date
+  attr_reader :due_date, :tasks, :completion_date
 
   public
 
   ###  Element change
 
+  # Add a child task.
   # precondition: t != nil and t.parent_handle == handle
   def add_task(t)
+    if ! (t != nil and t.parent_handle == handle) then
+      raise PreconditionError, 't != nil and t.parent_handle == handle'
+    end
     @tasks << t
   end
 
   ###  Status report
 
-  # Does 'self' have a parent?
-  def has_parent?
-    self.parent_handle != nil
+  def can_have_children?
+    true
   end
 
   # Has 'self' been completed?
@@ -29,6 +32,19 @@ class CompositeTask < STodoTarget
 
   def formal_type
     "Task"
+  end
+
+  ###  Miscellaneous
+
+  def descendants level = 0
+    result = {}
+    if tasks then
+      result[level + 1] = tasks
+    end
+    tasks.each do |t|
+      result.merge!(t.descendants(level + 1))
+    end
+    result
   end
 
   private
@@ -44,11 +60,6 @@ class CompositeTask < STodoTarget
         $log.warn "due_date invalid [#{e}] (#{spec.due_date}) in #{self}"
       end
     end
-=begin #old:
-    if spec.parent_handle != nil then
-      @parent_handle = spec.parent_handle
-    end
-=end
     if spec.parent != nil then
       @parent_handle = spec.parent
 $log.debug "ph: #{@parent_handle}"
