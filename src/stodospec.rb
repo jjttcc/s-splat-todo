@@ -18,7 +18,7 @@ class STodoSpec
     handle != nil
   end
 
-  # The reason 
+  # If self is not valid, the reason for it
   def reason_for_invalidity
     result = ""
     if not valid? then

@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+
+progname=$(basename $0)
+stodopath=$(dirname $0)
+initproc=initial-processing.rb
+notifyproc=ongoing-processing.rb
+mktmpl=stodo-template.rb
+report=report.rb
+stodo_envpath="$STODO_PATH"
+
+
+help() {
+    echo -e "usage: $progname <command>\n\ncommands:"
+    echo -e "  new|init  look for and process new to-do items"
+    echo -e "  notify    send pending notifications to-do items"
+    echo -e "  combined  combine notifications with processing of new items"
+    echo -e "  report    display a report of existing to-do items"
+    echo -e "  temp      output a to-do item template"
+}
+
+checkpath() {
+    for f in $*; do
+        STEXEC_PATH=
+        for p in $stodopath $stodo_envpath; do
+            if [ -x "$p/$f" ]; then
+                STEXEC_PATH=$p
+            fi
+        done
+        if [ -z "$STEXEC_PATH" ]; then
+            echo "Error: file $f not found"
+            exit 11
+        fi
+    done
+}
+
+run() {
+    cmd=$1; shift
+    $STEXEC_PATH/$cmd $*
+}
+
+process_new_items() {
+    checkpath $initproc
+    run $initproc
+}
+
+process_notifications() {
+    checkpath $notifyproc
+    run $notifyproc
+}
+
+do_combined_processing() {
+    checkpath $initproc $notifyproc
+    run $initproc
+    sleep 1
+    run $notifyproc
+}
+
+do_report() {
+    checkpath $report
+    run $report
+}
+
+make_template() {
+    checkpath $mktmpl
+    run $mktmpl $*
+}
+
+case $1 in
+    new|init) process_new_items
+        ;;
+    noti*) process_notifications
+        ;;
+    comb*) do_combined_processing
+        ;;
+    rep*) do_report
+        ;;
+    temp*) shift; make_template $*
+        ;;
+    *) help
+        ;;
+esac

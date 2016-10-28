@@ -58,7 +58,7 @@ class Reminder
   end
 
   def to_str
-    "#{self.class}: (#{date_time}) To be implemented"
+    "#{self.class}: (#{date_time})"
   end
 
   ###  Comparison
@@ -73,22 +73,27 @@ class Reminder
   # precondition: not triggered?
   # postcondition: triggered? and not is_due?
   def trigger
-    raise PreconditionError, 'not triggered?' if triggered?
+    assert_precondition('not triggered?') {not triggered?}
     @triggered = true
-    if ! (triggered? and not is_due?) then
-      raise PostconditionError, 'triggered? and not is_due?'
-    end
+    assert_postcondition('triggered? and not is_due?') {
+      triggered? and not is_due?}
   end
 
   private
 
   DEFAULT_TOLERANCE = 300
 
+  # precondition: datetime != nil
   def initialize(datetime, time_tolerance = DEFAULT_TOLERANCE)
-    begin
-      @date_time = Time.parse(datetime)
-    rescue ArgumentError => e
-      raise "Bad datetime: #{datetime} [#{e.inspect}]"
+    assert_precondition {datetime != nil}
+    if datetime.class.to_s == 'String' then
+      begin
+        @date_time = Time.parse(datetime)
+      rescue ArgumentError => e
+        raise "Bad datetime: #{datetime} [#{e.inspect}]"
+      end
+    else
+      @date_time = datetime
     end
     @triggered = false
     @time_tolerance = time_tolerance

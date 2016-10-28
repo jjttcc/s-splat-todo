@@ -2,3 +2,7 @@
 tags
 testdir
 td
+.yardoc
+datatest
+obsolete
+hide*

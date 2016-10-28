@@ -9,6 +9,25 @@ class Memorandum < STodoTarget
 
   alias :synopsis :description
 
+  public
+
+  ###  Access
+
+  def final_reminder
+    if @final_reminder == nil and expiration_date != nil then
+        @final_reminder = Reminder.new(expiration_date)
+    end
+    @final_reminder
+  end
+
+  def to_s_appendix
+    "#{EXPIRATION_DATE_KEY}: #{expiration_date}\n"
+  end
+
+  ###  Status report
+
+  def spec_type; "note" end
+
   protected
 
   def set_fields spec

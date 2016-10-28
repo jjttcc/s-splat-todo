@@ -5,6 +5,26 @@ class ScheduledEvent < STodoTarget
 
   public
 
+  ###  Access
+
+  def final_reminder
+    assert_invariant {invariant}
+    if @final_reminder == nil then
+      @final_reminder = Reminder.new(date_time)
+    end
+    @final_reminder
+  end
+
+  def to_s_appendix
+    "#{DATE_TIME_KEY}: #{date_time}\n" +
+    "#{DURATION_KEY}: #{duration}\n" +
+    "#{LOCATION_KEY}: #{location}\n"
+  end
+
+  ###  Status report
+
+  def spec_type; "appointment" end
+
   def formal_type
     "Appointment"
   end
@@ -17,13 +37,17 @@ class ScheduledEvent < STodoTarget
       begin
         @date_time = Time.parse(spec.date_time)
       rescue ArgumentError => e
-        # spec.date_time is invalid, so leave @date_time as nil.
+        # spec.date_time is invalid or empty - not allowed for appointments.
         $log.warn "date_time invalid [#{e}] (#{spec.date_time}) " +
-          "in #{self}"
+          "in #{formal_type} #{self.handle}"
       end
+    else
+      $log.warn "date_time is not set in #{formal_type} #{self.handle}"
     end
     @duration = duration_from_spec spec
     @location = spec.location
+    # Prevent use of appointments with nil @date_time:
+    if @date_time == nil then @valid = false end
   end
 
   def duration_from_spec spec
@@ -54,6 +78,12 @@ class ScheduledEvent < STodoTarget
     calentry.time = date_time
     calentry.location = location
     calentry.duration = duration
+  end
+
+  ###  class invariant
+
+  def invariant
+    @date_time != nil and super
   end
 
 end

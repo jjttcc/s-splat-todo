@@ -8,6 +8,19 @@ class CompositeTask < STodoTarget
 
   public
 
+  ###  Access
+
+  def final_reminder
+    if @final_reminder == nil and due_date != nil then
+        @final_reminder = Reminder.new(due_date)
+    end
+    @final_reminder
+  end
+
+  def to_s_appendix
+    "#{DUE_DATE_KEY}: #{due_date}\n"
+  end
+
   ###  Element change
 
   # Add a child task.
@@ -20,6 +33,8 @@ class CompositeTask < STodoTarget
   end
 
   ###  Status report
+
+  def spec_type; "task" end
 
   def can_have_children?
     true

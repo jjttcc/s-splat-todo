@@ -4,7 +4,15 @@ require_relative 'compositetask'
 class Project < CompositeTask
   attr_reader :goal
 
+  ###  Access
+
+  def to_s_appendix
+    super + "#{GOAL_KEY}: #{goal}\n"
+  end
+
   ###  Status report
+
+  def spec_type; "project" end
 
   def formal_type
     self.class

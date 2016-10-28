@@ -5,7 +5,7 @@ require_relative 'spectools'
 # Items - actions, projects, appointments, etc. - to keep track of, not
 # forget about, and/or complete
 class STodoTarget
-  include SpecTools
+  include SpecTools, ErrorTools
 
   attr_reader :title, :content, :handle, :email_spec, :calendar_ids,
     :priority, :comment, :reminders, :categories, :initial_email_addrs,
@@ -18,7 +18,41 @@ class STodoTarget
 
   public
 
+  ###  Access
+
+  # "final" reminder - e.g., based on expiration date or due date
+  def final_reminder
+    nil
+  end
+
+  # self's fields, labeled with associated tags, for use as a template in a
+  # specification file
+  def to_s
+    result = "#{TYPE_KEY}: #{spec_type}\n"
+    for tag in [TITLE_KEY, HANDLE_KEY, DESCRIPTION_KEY, PRIORITY_KEY,
+                COMMENT_KEY, PARENT_KEY] do
+      v = self.instance_variable_get("@#{tag}")
+      if v == nil then v = "" end
+      result += "#{tag}: #{v}\n"
+    end
+    result += "#{REMINDER_KEY}: #{reminders.join(', ')}\n"
+    if initial_email_addrs != nil then
+      result += "#{EMAIL_KEY}: #{initial_email_addrs.join(', ')}\n"
+    end
+    result += "#{CALENDAR_IDS_KEY}: #{calendar_ids.join(', ')}\n"
+    result += "#{CATEGORIES_KEY}: #{categories.join(', ')}\n"
+    result + to_s_appendix
+  end
+
+  def to_s_appendix
+    ""
+  end
+
   ###  Status report
+
+  def spec_type
+    raise "<spec_type>: descendant class-method implementation required"
+  end
 
   def formal_type
     self.class
@@ -165,6 +199,9 @@ class STodoTarget
   def send_notification_emails mailer
     rems = []
     reminders.each { |r| if r.is_due? then rems << r end }
+    if final_reminder != nil and ! final_reminder.triggered? then
+      rems << final_reminder
+    end
     rems.each do |r|
       subject = "Reminder: #{r.date_time}: " + email_subject
       email = Email.new(ongoing_email_addrs, subject, email_body + r)
@@ -207,6 +244,12 @@ class STodoTarget
   # postcondition: result != nil
   def description_appendix
     result = ""
+  end
+
+  ###  class invariant
+
+  def invariant
+    true
   end
 
 end

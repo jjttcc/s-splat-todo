@@ -22,7 +22,9 @@ class STodoManager
   end
 
   # Perform any "ongoing processing" required for existing_targets.
+  # precondition: existing_targets != nil
   def perform_ongoing_processing
+    raise PreconditionError,'existing_targets != nil' if existing_targets == nil
     existing_targets.values.each do |t|
       t.perform_ongoing_actions(self)
     end
@@ -40,16 +42,27 @@ class STodoManager
     end
   end
 
+  def output_template target_builder
+    tgts = target_builder.targets
+    if tgts then
+      tgts.each do |t|
+        puts t
+      end
+    end
+  end
+
   private
 
-  def initialize config, tgt_builder = nil
-    @data_manager = config.data_manager
-    @existing_targets = @data_manager.restored_targets
+  def initialize config = nil, tgt_builder = nil
+    if config != nil then
+      @data_manager = config.data_manager
+      @existing_targets = @data_manager.restored_targets
+      @mailer = Mailer.new config
+      @calendar = CalendarEntry.new config
+    end
     if tgt_builder != nil then
       init_new_targets tgt_builder
     end
-    @mailer = Mailer.new config
-    @calendar = CalendarEntry.new config
   end
 
   def init_new_targets tgt_builder

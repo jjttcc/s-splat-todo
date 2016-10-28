@@ -19,7 +19,7 @@ class FileBasedSpecGatherer
       if new_handle[s.handle] then
         cur_specfile_path = s.input_file_path
         if File.exists? cur_specfile_path then
-          FileUtils.mv(cur_specfile_path, @config.post_init_spec_path)
+          archive_spec_file(cur_specfile_path)
         end
       end
     end
@@ -58,6 +58,22 @@ class FileBasedSpecGatherer
 
   def spec_for path
     STodoSpec.new(path, @config)
+  end
+
+  def archive_spec_file source_path
+    base_target_path = @config.post_init_spec_path + File::SEPARATOR +
+      File.basename(source_path)
+    if File.exists?(base_target_path) then
+      target_path = "#{base_target_path}" + (rand).to_s[1..-1]
+      while File.exists?(target_path) do
+        target_path = "#{base_target_path}" + (rand).to_s[1..-1]
+      end
+    else
+      target_path = base_target_path
+    end
+    # Note: There is a very small chance that some other process will create
+    # a file with this path after the above logic and before this call:
+    FileUtils.mv(source_path, target_path)
   end
 
   ### Debugging/testing

@@ -1,5 +1,6 @@
 require_relative 'project'
 require_relative 'scheduledevent'
+require_relative 'memorandum'
 
 # Builder of s*todo target objects
 class TargetBuilder
