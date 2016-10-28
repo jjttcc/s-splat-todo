@@ -48,6 +48,13 @@ class STodoManager
       tgts.each do |t|
         puts t
       end
+      if existing_targets then
+        cand_parents = existing_targets.values.select {|t| t.can_have_children?}
+        if ! cand_parents.empty? then
+          print "#candidate-parents: "
+          puts (cand_parents.map {|t| t.handle }).join(', ')
+        end
+      end
     end
   end
 
