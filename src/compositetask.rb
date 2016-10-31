@@ -82,11 +82,11 @@ class CompositeTask < STodoTarget
 
   ### Hook routine implementations
 
-  def email_subject
-    "task notification: #{handle}" + subject_suffix
+  def current_message_subject
+    "task notification: #{handle}"
   end
 
-  def email_body
+  def current_message
     "title: #{title}\n" +
     "due_date: #{due_date}\n" +
     "type: #{formal_type}\n" +

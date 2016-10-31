@@ -1,18 +1,22 @@
 # Self-sending (with the help of a "mailer") emails
 class Email
 
-  attr_reader :to_addrs, :cc_addrs, :bcc_addrs, :subject, :body
+  attr_reader :to_addrs, :subject, :body, :mailer
 
   public
 
-  def send mailer
+  # Send the email
+  def send source
+    @to_addrs = source.notification_email_addrs
+    @subject = source.notification_subject
+    @body = source.full_notification_message
     mailer.send self
   end
 
   private
 
-  def initialize(to_addrs, subject, body)
-    @to_addrs = to_addrs; @subject = subject; @body = body
+  def initialize(mailer)
+    @mailer = mailer
   end
 
 end

@@ -59,11 +59,11 @@ class ScheduledEvent < STodoTarget
 
   ### Hook routine implementations
 
-  def email_subject
-    "appointment reminder: #{handle}" + subject_suffix
+  def current_message_subject
+    "appointment reminder: #{handle}"
   end
 
-  def email_body
+  def current_message
     result = "title: #{title}\n" + "date_time: " +
       date_time.strftime('%Y-%m-%d %H:%M') + "\n" +
       "duration: #{duration}\ntype: #{formal_type}\n"

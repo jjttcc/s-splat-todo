@@ -9,8 +9,11 @@ module ErrorTools
     not expr1 or expr2
   end
 
-  def assert &block
-    raise AssertionError unless yield
+  def assert(msg = "", &block)
+    if ! yield then
+      trace = caller.join("\n")
+      raise AssertionError, msg, [block.source_location.to_s, trace]
+    end
   end
 
   def assert_invariant(msg = "", &block)

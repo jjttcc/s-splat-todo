@@ -47,11 +47,11 @@ class Memorandum < STodoTarget
 
   ### Hook routine implementations
 
-  def email_subject
-    "memo notification: #{handle}" + subject_suffix
+  def current_message_subject
+    "memo notification: #{handle}"
   end
 
-  def email_body
+  def current_message
     "title: #{title}\n" +
     "type: #{formal_type}\n" +
     "expiration_date: #{expiration_date}\n" +

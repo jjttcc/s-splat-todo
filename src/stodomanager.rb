@@ -13,8 +13,11 @@ class STodoManager
   # precondition: new_targets != nil
   def perform_initial_processing
     raise PreconditionError, 'new_targets != nil' if new_targets == nil
-    new_targets.each do |h, t|
+    email = Email.new(mailer)
+    new_targets.values.each do |t|
+      t.add_notifier(email)
       t.initiate(self)
+      t.clear_notifiers # notifiers should not be stored.
     end
     @target_builder.spec_collector.initial_cleanup new_targets
     all_targets = existing_targets.merge(new_targets)
@@ -25,7 +28,9 @@ class STodoManager
   # precondition: existing_targets != nil
   def perform_ongoing_processing
     raise PreconditionError,'existing_targets != nil' if existing_targets == nil
+    email = Email.new(mailer)
     existing_targets.values.each do |t|
+      t.add_notifier(email)
       t.perform_ongoing_actions(self)
     end
     # (Calling perform_ongoing_actions above can change a target's state.)

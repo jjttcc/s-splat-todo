@@ -9,10 +9,12 @@ class STodoTarget
 
   attr_reader :title, :content, :handle, :email_spec, :calendar_ids,
     :priority, :comment, :reminders, :categories, :initial_email_addrs,
-    :ongoing_email_addrs, :parent_handle
+    :ongoing_email_addrs, :parent_handle, :notifiers
   alias :description :content
   alias :name :handle
   alias :detail :comment
+  attr_reader :notification_subject, :full_notification_message,
+    :notification_email_addrs, :short_notification_message
 
   attr_writer :parent_handle
 
@@ -72,6 +74,21 @@ class STodoTarget
     self.parent_handle != nil
   end
 
+  ###  Element change
+
+  # Add a notifier to the list of notifiers to be used by `initiate' and
+  # `perform_ongoing_actions'.
+  # precondition:  n != nil
+  # postcondition: notifiers.length == old notifiers.length + 1
+  def add_notifier n
+    assert_precondition 'n != nil' { n != nil }
+    @notifiers << n
+  end
+
+  def clear_notifiers
+    @notifiers = []
+  end
+
   ###  Hash-related queries
 
   # hash to allow use in a hashtable (Hash)
@@ -92,13 +109,13 @@ class STodoTarget
 
   # Perform required initial notifications and related actions.
   def initiate manager
-    send_initial_emails manager.mailer
+    send_initial_notifications
     set_initial_calendar_entry manager.calendar
   end
 
   # Perform post-"initiate" notifications.
   def perform_ongoing_actions manager
-    send_notification_emails manager.mailer
+    send_ongoing_notifications
   end
 
   private
@@ -110,6 +127,7 @@ class STodoTarget
     set_fields spec
     check_fields
     set_email_addrs
+    @notifiers = []
   end
 
   def set_fields spec
@@ -176,12 +194,19 @@ class STodoTarget
     end
   end
 
-  # Send an email to all recipients designated as initial recipients.
-  def send_initial_emails mailer
-    subject = 'initial ' + email_subject
-    email = Email.new(initial_email_addrs, subject, email_body)
-    if not email.to_addrs.empty? then
-      email.send mailer
+  # Send an notification to all recipients designated as initial recipients.
+  def send_initial_notifications
+    assert('initial_email_addrs != nil') { initial_email_addrs != nil }
+    if ! initial_email_addrs.empty? then
+      # Set notification components to be used by the 'notifiers'.
+      @notification_subject = 'initial ' + current_message_subject +
+        subject_suffix
+      @full_notification_message = current_message
+      @notification_email_addrs = initial_email_addrs
+      @short_notification_message = ""
+      notifiers.each do |n|
+        n.send self
+      end
     end
   end
 
@@ -196,17 +221,28 @@ class STodoTarget
   end
 
   # Send a notification email to all recipients.
-  def send_notification_emails mailer
+  def send_ongoing_notifications
+    assert('ongoing_email_addrs != nil') { ongoing_email_addrs != nil }
     rems = []
     reminders.each { |r| if r.is_due? then rems << r end }
-    if final_reminder != nil and ! final_reminder.triggered? then
+    if
+      final_reminder != nil and ! final_reminder.triggered? and
+        final_reminder.is_due?
+    then
       rems << final_reminder
+      final_reminder.addendum = "Final "
     end
     rems.each do |r|
-      subject = "Reminder: #{r.date_time}: " + email_subject
-      email = Email.new(ongoing_email_addrs, subject, email_body + r)
-      if not email.to_addrs.empty? then
-        email.send mailer
+      if ! ongoing_email_addrs.empty? then
+        # Set notification components to be used by the 'notifiers'.
+        @notification_subject = r.addendum + "Reminder: #{r.date_time}: " +
+          current_message_subject + subject_suffix
+        @full_notification_message = current_message
+        @notification_email_addrs = ongoing_email_addrs
+        @short_notification_message = ""
+        notifiers.each do |n|
+          n.send self
+        end
       end
       r.trigger
     end
@@ -223,16 +259,6 @@ class STodoTarget
   end
 
   ### Hook routines
-
-  def email_subject
-    raise "<email_subject> descendant class-method implementation required" +
-      " [title: #{title}]"
-  end
-
-  def email_body
-    raise "<email_body> descendant class-method implementation required" +
-      " [title: #{title}]"
-  end
 
   # Set the fields of `calentry' from self's current state.
   def set_cal_fields calentry

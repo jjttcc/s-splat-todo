@@ -6,7 +6,7 @@ class Reminder
 
   public
 
-  attr_reader :date_time
+  attr_reader :date_time, :addendum
 
   public
 
@@ -79,6 +79,12 @@ class Reminder
       triggered? and not is_due?}
   end
 
+  ###  Element change
+
+  def addendum=(arg)
+    if arg != nil then @addendum = arg end
+  end
+
   private
 
   DEFAULT_TOLERANCE = 300
@@ -97,6 +103,7 @@ class Reminder
     end
     @triggered = false
     @time_tolerance = time_tolerance
+    @addendum = ""
   end
 
 end

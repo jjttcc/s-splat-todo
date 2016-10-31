@@ -29,11 +29,11 @@ class Project < CompositeTask
 
   ### Hook routine implementations
 
-  def email_subject
-    "project notification: #{handle}" + subject_suffix
+  def current_message_subject
+    "project notification: #{handle}"
   end
 
-  def email_body
+  def current_message
     result = super + "goal: #{goal}\n"
   end
 
