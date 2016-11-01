@@ -7,6 +7,8 @@ require_relative 'spectools'
 class STodoTarget
   include SpecTools, ErrorTools
 
+  public
+
   attr_reader :title, :content, :handle, :email_spec, :calendar_ids,
     :priority, :comment, :reminders, :categories, :initial_email_addrs,
     :ongoing_email_addrs, :parent_handle, :notifiers
@@ -81,12 +83,8 @@ class STodoTarget
   # precondition:  n != nil
   # postcondition: notifiers.length == old notifiers.length + 1
   def add_notifier n
-    assert_precondition 'n != nil' { n != nil }
+    assert_precondition('n != nil') { n != nil }
     @notifiers << n
-  end
-
-  def clear_notifiers
-    @notifiers = []
   end
 
   ###  Hash-related queries
@@ -270,6 +268,41 @@ class STodoTarget
   # postcondition: result != nil
   def description_appendix
     result = ""
+  end
+
+  ###  Persistence
+
+  def marshal_dump
+    {
+      'title' => title,
+      'content' => content,
+      'handle' => handle,
+      'calendar_ids' => calendar_ids,
+      'priority' => priority,
+      'comment' => comment,
+      'reminders' => reminders,
+      'categories' => categories,
+      'initial_email_addrs' => initial_email_addrs,
+      'ongoing_email_addrs' => ongoing_email_addrs,
+      'valid' => @valid,
+      'parent_handle' => parent_handle
+    }
+  end
+
+  def marshal_load(data)
+    @title = data['title']
+    @content = data['content']
+    @handle = data['handle']
+    @calendar_ids = data['calendar_ids']
+    @priority = data['priority']
+    @comment = data['comment']
+    @reminders = data['reminders']
+    @categories = data['categories']
+    @initial_email_addrs = data['initial_email_addrs']
+    @ongoing_email_addrs = data['ongoing_email_addrs']
+    @valid = data['valid']
+    @parent_handle = data['parent_handle']
+    @notifiers = []
   end
 
   ###  class invariant

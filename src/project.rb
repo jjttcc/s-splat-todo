@@ -41,4 +41,19 @@ class Project < CompositeTask
     "goal: #{goal}"
   end
 
+  ###  Persistence
+
+  def marshal_dump
+    result = super
+    result.merge!({
+      'goal' => goal,
+    })
+    result
+  end
+
+  def marshal_load(data)
+    super(data)
+    @goal = data['goal']
+  end
+
 end

@@ -43,6 +43,8 @@ class TargetBuilder
       t = builder.call(spec)
       if t.valid? then
         result = t
+      else
+        $log.warn "#{t.handle} is not valid [#{t}]"
       end
     end
     result

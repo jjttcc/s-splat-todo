@@ -17,7 +17,6 @@ class STodoManager
     new_targets.values.each do |t|
       t.add_notifier(email)
       t.initiate(self)
-      t.clear_notifiers # notifiers should not be stored.
     end
     @target_builder.spec_collector.initial_cleanup new_targets
     all_targets = existing_targets.merge(new_targets)

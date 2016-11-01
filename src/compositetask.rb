@@ -98,4 +98,25 @@ class CompositeTask < STodoTarget
     calentry.time = due_date
   end
 
+  ###  Persistence
+
+  def marshal_dump
+    result = super
+    result.merge!({
+      'due_date' => due_date,
+      'tasks' => tasks,
+      'completion_date' => completion_date,
+      'final_reminder' => final_reminder
+    })
+    result
+  end
+
+  def marshal_load(data)
+    super(data)
+    @due_date = data['due_date']
+    @tasks = data['tasks']
+    @completion_date = data['completion_date']
+    @final_reminder = data['final_reminder']
+  end
+
 end

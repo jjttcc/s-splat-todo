@@ -1,5 +1,6 @@
 # Events scheduled at a specific date and time
 class ScheduledEvent < STodoTarget
+  public
 
   attr_reader :date_time, :duration, :location
 
@@ -78,6 +79,27 @@ class ScheduledEvent < STodoTarget
     calentry.time = date_time
     calentry.location = location
     calentry.duration = duration
+  end
+
+  ###  Persistence
+
+  def marshal_dump
+    result = super
+    result.merge!({
+      'date_time' => date_time,
+      'duration' => duration,
+      'location' => location,
+      'final_reminder' => final_reminder
+    })
+    result
+  end
+
+  def marshal_load(data)
+    super(data)
+    @date_time = data['date_time']
+    @duration = data['duration']
+    @location = data['location']
+    @final_reminder = data['final_reminder']
   end
 
   ###  class invariant
