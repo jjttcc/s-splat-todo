@@ -11,10 +11,11 @@ module SpecTools
   SINGULAR_REMINDER_KEY = 'reminder'
   SPEC_FIELD_DELIMITER = /,\s*/
 
-  # system-wide constants:
+  # system-wide constants - Env vars:
   STDEBUG = 'STODO_DEBUG'
   STTESTRUN = 'STODO_TEST'
   STLOG_LEVEL = 'STODO_LOG_LEVEL'
+  ST_CONFIG_PATH = 'STODO_CONFIG_PATH'
 
   ### tags/patterns from spec with special meaning
 

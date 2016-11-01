@@ -1,5 +1,7 @@
 # configuration-related tools
 module ConfigTools
+  include SpecTools
+
   public
 
   def self.home_path
@@ -17,8 +19,18 @@ module ConfigTools
     result
   end
 
+  def self.config_dir_path
+    result = ""
+    if ENV[ST_CONFIG_PATH] then
+      result = ENV[ST_CONFIG_PATH]
+    else
+      result = constructed_path([self::home_path, '.config', 'stodo'])
+    end
+    result
+  end
+
   # path of the configuration directory
-  CONFIG_DIR_PATH = constructed_path([self::home_path, '.config', 'stodo'])
+  CONFIG_DIR_PATH = self.config_dir_path
   # path of the configuration file
   CONFIG_FILE_PATH = self.constructed_path([CONFIG_DIR_PATH, 'config'])
   ### config tags
