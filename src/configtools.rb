@@ -34,9 +34,31 @@ module ConfigTools
   # path of the configuration file
   CONFIG_FILE_PATH = self.constructed_path([CONFIG_DIR_PATH, 'config'])
   ### config tags
-  SPEC_PATH_TAG      = 'specpath'
-  DATA_PATH_TAG      = 'datapath'
-  OLD_SPECS_TAG      = 'processed_specs'
-  EMAIL_TEMPLATE_TAG = 'emailtemplate'
+  SPEC_PATH_TAG        = 'specpath'
+  DATA_PATH_TAG        = 'datapath'
+  OLD_SPECS_TAG        = 'processed_specs'
+  EMAIL_TEMPLATE_TAG   = 'emailtemplate'
+  CALENDAR_COMMAND_TAG = 'calendarcmd'
+
+  # http://stackoverflow.com/questions/2108727/which-in-ruby-checking-if-program-exists-in-path-from-ruby)
+  # The path of the executable `cmd', if it is in the user's path -
+  # otherwise, nil; if `cmd' is an absolete path of an executable file,
+  # `cmd' is returned (unaltered).
+  def self.which(cmd)
+    result = nil
+    if cmd =~ /^\// && File.file?(cmd) && File.executable?(cmd) then
+      result = cmd
+    else
+      ENV['PATH'].split(File::PATH_SEPARATOR).each do |path|
+        candidate = File.join(path, "#{cmd}")
+        if File.file?(candidate) && File.executable?(candidate) then
+          result = candidate
+          break
+        end
+        if result != nil then break end
+      end
+    end
+    result
+  end
 
 end

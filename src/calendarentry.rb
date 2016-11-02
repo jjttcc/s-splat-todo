@@ -77,8 +77,21 @@ class CalendarEntry
     if @configuration.test_run? then
       $log.debug "#{self.class} Pretending to execute #{cmd}"
     else
-      fork do
-        exec(*cmd)
+      pid = fork
+      if pid == nil then  # child
+        begin
+          exec(*cmd)
+        rescue SystemCallError => e
+          msg = "#{cmd} failed: #{e}"
+          $log.error msg
+          raise msg
+        end
+      else
+        wpid, status = waitpid2(pid)
+        if status.exitstatus != 0 then
+          msg = "Calendar command failed with status #{status}\n[#{cmd}]"
+          $log.error msg
+        end
       end
     end
   end

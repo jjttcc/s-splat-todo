@@ -10,12 +10,14 @@ module SpecTools
     'date_time', 'duration', 'location', 'calendar_ids', 'categories'
   SINGULAR_REMINDER_KEY = 'reminder'
   SPEC_FIELD_DELIMITER = /,\s*/
+  DEFAULT_LOG_PATH = "/tmp/stodo-debug-#{$$}"
 
   # system-wide constants - Env vars:
   STDEBUG = 'STODO_DEBUG'
   STTESTRUN = 'STODO_TEST'
   STLOG_LEVEL = 'STODO_LOG_LEVEL'
   ST_CONFIG_PATH = 'STODO_CONFIG_PATH'
+  ST_LOG_PATH = 'STODO_LOG'
 
   ### tags/patterns from spec with special meaning
 

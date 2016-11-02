@@ -28,6 +28,12 @@ class Configuration
     @test_run
   end
 
+  if ENV[ST_LOG_PATH] then
+    LOGPATH = ENV[ST_LOG_PATH]
+  else
+    LOGPATH = DEFAULT_LOG_PATH
+  end
+
   private
 
   def initialize
@@ -44,9 +50,9 @@ class Configuration
     @post_init_spec_path =
       ConfigTools::constructed_path([data_path, OLD_SPECS_TAG])
     @templated_email_command = settings[EMAIL_TEMPLATE_TAG]
-    # Hard-coded - may or may-not be made configurable later:
-    @calendar_tool = 'gcalcli'
+    @calendar_tool = settings[CALENDAR_COMMAND_TAG]
     validate_paths(spec_path, data_path, post_init_spec_path)
+    validate_exefiles(@calendar_tool)
   end
 
   def setup_config_path
@@ -107,7 +113,22 @@ class Configuration
     end
   end
 
-  $log = Logger.new(STDERR)
+  # Validate the specified paths - raise an exception if any are not found in
+  # the path or are not executable.
+  def validate_exefiles *paths
+    errors = []
+    paths.each do |p|
+      if ConfigTools::which(p) == nil then
+        errors << "Executable file '#{p}' is not in the path."
+      end
+    end
+    if errors.length > 0 then
+      $log.fatal "Needed executables were not found:\n" + errors.join("\n")
+      raise "Fatal error: Missing executable files (See #{LOGPATH})"
+    end
+  end
+
+  $log = Logger.new(LOGPATH)
   $debug = ENV[STDEBUG] != nil
   if ENV[STLOG_LEVEL] then
     $log.level = ENV[STLOG_LEVEL]
