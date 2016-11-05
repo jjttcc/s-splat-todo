@@ -1,6 +1,6 @@
-require_relative 'project'
-require_relative 'scheduledevent'
-require_relative 'memorandum'
+require 'project'
+require 'scheduledevent'
+require 'memorandum'
 
 # Builder of s*todo target objects
 class TargetBuilder

@@ -2,10 +2,10 @@
 
 progname=$(basename $0)
 stodopath=$(dirname $0)
-initproc=initial-processing.rb
-notifyproc=ongoing-processing.rb
-mktmpl=stodo-template.rb
-report=report.rb
+initproc=main/initial-processing.rb
+notifyproc=main/ongoing-processing.rb
+mktmpl=main/stodo-template.rb
+report=main/report.rb
 stodo_envpath="$STODO_PATH"
 
 
@@ -16,6 +16,15 @@ help() {
     echo -e "  combined  combine notifications with processing of new items"
     echo -e "  report    display a report of existing to-do items"
     echo -e "  temp      output a to-do item template"
+}
+
+set_rubylib() {
+    moredirs="facility error configuration notification specs data"
+    moredirs="$moredirs coordination"
+    rubylib="RUBYLIB=$STEXEC_PATH/core"
+    for d in $moredirs; do
+        rubylib="$rubylib:$STEXEC_PATH/$d"
+    done
 }
 
 checkpath() {
@@ -31,11 +40,14 @@ checkpath() {
             exit 11
         fi
     done
+    if [ -z "$rubylib" ]; then
+        set_rubylib
+    fi
 }
 
 run() {
     cmd=$1; shift
-    $STEXEC_PATH/$cmd $*
+    eval $rubylib $STEXEC_PATH/$cmd $*
 }
 
 process_new_items() {

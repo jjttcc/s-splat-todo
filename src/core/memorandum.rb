@@ -1,4 +1,4 @@
-require_relative 'stodotarget'
+require 'stodotarget'
 
 # Notes/memoranda to be recorded, for the purpose of aiding memory and/or
 # items to be reminded of at a future date.

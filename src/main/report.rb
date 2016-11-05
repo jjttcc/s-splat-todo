@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 # Display a report of existing s*todo items.
 
-require_relative 'configuration'
-require_relative 'stodomanager'
+require 'configuration'
+require 'stodomanager'
 
 
 config = Configuration.new

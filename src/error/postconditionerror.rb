@@ -1,4 +1,4 @@
-require_relative 'assertionerror'
+require 'assertionerror'
 
 class PostconditionError < AssertionError
   def initialize(msg="")

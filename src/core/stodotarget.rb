@@ -1,6 +1,6 @@
-require_relative 'email'
-require_relative 'reminder'
-require_relative 'spectools'
+require 'email'
+require 'reminder'
+require 'spectools'
 
 # Items - actions, projects, appointments, etc. - to keep track of, not
 # forget about, and/or complete

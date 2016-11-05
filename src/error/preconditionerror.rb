@@ -1,6 +1,6 @@
-require_relative 'assertionerror'
+require 'assertionerror'
 
-class InvariantError < AssertionError
+class PreconditionError < AssertionError
   def initialize(msg="")
     super(msg)
   end

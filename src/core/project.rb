@@ -1,4 +1,4 @@
-require_relative 'compositetask'
+require 'compositetask'
 
 # Composite tasks of some importance
 class Project < CompositeTask

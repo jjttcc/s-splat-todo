@@ -1,5 +1,5 @@
-require_relative 'targetbuilder'
-require_relative 'stubbedspec'
+require 'targetbuilder'
+require 'stubbedspec'
 
 # Builder of "template" s*todo target objects
 class TemplateTargetBuilder < TargetBuilder

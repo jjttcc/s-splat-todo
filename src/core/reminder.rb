@@ -1,6 +1,8 @@
-require_relative 'errortools'
-require_relative 'postconditionerror'
+require 'errortools'
+require 'postconditionerror'
 
+# Objects that represent a promise to remind, on a certain date and time,
+# a client/user of an event or occurrence scheduled for that date/time
 class Reminder
   include ErrorTools
 

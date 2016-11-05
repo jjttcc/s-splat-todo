@@ -1,4 +1,4 @@
-require_relative 'stodospec'
+require 'stodospec'
 
 # Stubbed-out STodoSpec, for templating
 class StubbedSpec < STodoSpec

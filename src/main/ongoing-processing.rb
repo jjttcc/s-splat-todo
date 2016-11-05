@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 # Execute ongoing processing of s*todo items.
 
-require_relative 'configuration'
-require_relative 'stodomanager'
+require 'configuration'
+require 'stodomanager'
 
 
 config = Configuration.new

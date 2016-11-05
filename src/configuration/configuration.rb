@@ -1,8 +1,8 @@
 require 'logger'
 require 'fileutils'
-require_relative 'filebaseddatamanager'
-require_relative 'spectools'
-require_relative 'configtools'
+require 'filebaseddatamanager'
+require 'spectools'
+require 'configtools'
 
 # Configuration settings for the current run
 class Configuration

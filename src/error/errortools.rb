@@ -1,6 +1,6 @@
-require_relative 'preconditionerror'
-require_relative 'postconditionerror'
-require_relative 'invarianterror'
+require 'preconditionerror'
+require 'postconditionerror'
+require 'invarianterror'
 
 module ErrorTools
   public

@@ -1,4 +1,4 @@
-require_relative 'stodospec'
+require 'stodospec'
 
 # "gatherer" of specifications stored in files
 class FileBasedSpecGatherer

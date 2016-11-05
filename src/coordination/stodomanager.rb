@@ -1,7 +1,7 @@
-require_relative 'mailer'
-require_relative 'calendarentry'
-require_relative 'preconditionerror'
-require_relative 'targetbuilder'
+require 'mailer'
+require 'calendarentry'
+require 'preconditionerror'
+require 'targetbuilder'
 
 # Basic manager of s*todo actions
 class STodoManager

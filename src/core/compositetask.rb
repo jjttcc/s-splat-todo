@@ -1,5 +1,5 @@
 require 'time'
-require_relative 'stodotarget'
+require 'stodotarget'
 
 # Tasks that, optionally, contain one or more subtasks
 class CompositeTask < STodoTarget

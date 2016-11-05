@@ -1,4 +1,4 @@
-require_relative 'spectools'
+require 'spectools'
 
 # Specification for a target (action, project, or memorandum) of the s*todo
 # system
