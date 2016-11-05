@@ -233,8 +233,8 @@ class STodoTarget
     rems.each do |r|
       if ! ongoing_email_addrs.empty? then
         # Set notification components to be used by the 'notifiers'.
-        @notification_subject = r.addendum + "Reminder: #{r.date_time}: " +
-          current_message_subject + subject_suffix
+        @notification_subject = r.addendum + "todo: " +
+          current_message_subject + subject_suffix + " #{r.date_time}"
         @full_notification_message = current_message
         @notification_email_addrs = ongoing_email_addrs
         @short_notification_message = ""
