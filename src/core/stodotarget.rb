@@ -134,6 +134,7 @@ class STodoTarget
     @email_spec = spec.email
     @content = spec.description
     @comment = spec.comment
+    @priority = spec.priority
     @reminders = reminders_from_spec spec
     if spec.categories then
       @categories = spec.categories.split(SPEC_FIELD_DELIMITER)
@@ -233,7 +234,7 @@ class STodoTarget
     rems.each do |r|
       if ! ongoing_email_addrs.empty? then
         # Set notification components to be used by the 'notifiers'.
-        @notification_subject = r.addendum + "todo: " +
+        @notification_subject = r.addendum + message_subject_label +
           current_message_subject + subject_suffix + " #{r.date_time}"
         @full_notification_message = current_message
         @notification_email_addrs = ongoing_email_addrs

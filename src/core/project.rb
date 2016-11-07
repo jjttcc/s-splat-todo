@@ -29,10 +29,6 @@ class Project < CompositeTask
 
   ### Hook routine implementations
 
-  def current_message_subject
-    "project notification: #{handle}"
-  end
-
   def current_message
     result = super + "goal: #{goal}\n"
   end

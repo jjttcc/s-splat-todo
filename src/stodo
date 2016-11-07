@@ -69,7 +69,7 @@ do_combined_processing() {
 
 do_report() {
     checkpath $report
-    run $report
+    run $report $*
 }
 
 make_template() {

@@ -47,15 +47,24 @@ class Memorandum < STodoTarget
 
   ### Hook routine implementations
 
+  def message_subject_label
+    "memo: "
+  end
+
   def current_message_subject
-    "memo notification: #{handle}"
+    "#{title} [#{handle}]"
   end
 
   def current_message
+    result =
     "title: #{title}\n" +
     "type: #{formal_type}\n" +
-    "expiration_date: #{expiration_date}\n" +
-    "description: #{memo_description}\n"
+    "expiration_date: #{expiration_date}\n"
+    if priority then
+      result += "priority: #{priority}\n"
+    end
+    result += "description: #{memo_description}\n"
+    result
   end
 
   ### Implementation - utilities

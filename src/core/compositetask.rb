@@ -82,15 +82,24 @@ class CompositeTask < STodoTarget
 
   ### Hook routine implementations
 
+  def message_subject_label
+    "todo: "
+  end
+
   def current_message_subject
-    "task notification: #{handle}"
+    "#{title} [#{handle}]"
   end
 
   def current_message
+    result =
     "title: #{title}\n" +
     "due_date: #{due_date}\n" +
-    "type: #{formal_type}\n" +
-    "description: #{content}\n"
+    "type: #{formal_type}\n"
+    if priority then
+      result += "priority: #{priority}\n"
+    end
+    result += "description: #{content}\n"
+    result
   end
 
   def set_cal_fields calentry

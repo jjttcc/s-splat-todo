@@ -36,9 +36,16 @@ class STodoManager
     @data_manager.store_targets(existing_targets)
   end
 
+  # List info about all of the specified targets.
+  def list_targets targets = existing_targets
+    targets.values.each do |t|
+      puts target_info(t)
+    end
+  end
+
   # Report all descendants (child targets, their children, ...) for each
   # item in `targets'.
-  def report_targets_descendants targets
+  def report_targets_descendants targets = existing_targets
     targets.values.each do |t|
       if t.can_have_children? then
         report_descendants(t)
@@ -153,6 +160,14 @@ class STodoManager
         end
       end
     end
+  end
+
+  def target_info t
+#!!!to-do: include date/time
+    result = "[#{t.handle}] #{t.title}; "
+    if t.priority then result += "priority: #{t.priority}; " end
+    result += "cats: " + t.categories.join(',')
+    result += " (#{t.formal_type})"
   end
 
 end

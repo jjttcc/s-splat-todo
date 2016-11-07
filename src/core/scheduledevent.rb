@@ -60,8 +60,12 @@ class ScheduledEvent < STodoTarget
 
   ### Hook routine implementations
 
+  def message_subject_label
+    "appointment: "
+  end
+
   def current_message_subject
-    "appointment reminder: #{handle}"
+    "#{title} [#{handle}]"
   end
 
   def current_message
@@ -70,6 +74,9 @@ class ScheduledEvent < STodoTarget
       "duration: #{duration}\ntype: #{formal_type}\n"
     if location != nil then
       result += "location: #{location}\n"
+    end
+    if priority then
+      result += "priority: #{priority}\n"
     end
     result += "description: #{content}\n"
   end

@@ -19,7 +19,7 @@ class StubbedSpec < STodoSpec
     @setting_for[PRIORITY_KEY] = ''
     @setting_for[DUE_DATE_KEY] = Time.now.to_s
     @setting_for[GOAL_KEY] = ''
-    @setting_for[EMAIL_KEY] = 'template@template.org'
+    @setting_for[EMAIL_KEY] = '<template>@<template.org>'
     @setting_for[COMMENT_KEY] = ''
     @setting_for[PARENT_KEY] = ''
     @setting_for[REMINDER_KEY] = ''

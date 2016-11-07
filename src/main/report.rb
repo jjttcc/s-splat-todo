@@ -7,4 +7,5 @@ require 'stodomanager'
 
 config = Configuration.new
 manager = STodoManager.new config
-manager.report_targets_descendants(manager.existing_targets)
+manager.list_targets
+manager.report_targets_descendants
