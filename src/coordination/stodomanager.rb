@@ -2,6 +2,7 @@ require 'mailer'
 require 'calendarentry'
 require 'preconditionerror'
 require 'targetbuilder'
+require 'stodotargeteditor'
 
 # Basic manager of s*todo actions
 class STodoManager
@@ -69,7 +70,24 @@ class STodoManager
     end
   end
 
+  # Perform `command' on the target with handle `handle'.
+  def edit_target(handle, command)
+    editor.apply_command(handle, command)
+    if editor.last_command_failed then
+      $log.error editor.last_failure_message
+    else
+      @data_manager.store_targets(existing_targets)
+    end
+  end
+
   private
+
+  def editor
+    if @editor == nil then
+      @editor = STodoTargetEditor.new(existing_targets)
+    end
+    @editor
+  end
 
   def initialize config = nil, tgt_builder = nil
     if config != nil then

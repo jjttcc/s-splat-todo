@@ -6,16 +6,18 @@ initproc=main/initial-processing.rb
 notifyproc=main/ongoing-processing.rb
 mktmpl=main/stodo-template.rb
 report=main/report.rb
+edit=main/stodo-mgmt.rb
 stodo_envpath="$STODO_PATH"
 
 
 help() {
     echo -e "usage: $progname <command>\n\ncommands:"
-    echo -e "  new|init  look for and process new to-do items"
-    echo -e "  notify    send pending notifications to-do items"
-    echo -e "  combined  combine notifications with processing of new items"
-    echo -e "  report    display a report of existing to-do items"
-    echo -e "  temp      output a to-do item template"
+    echo -e "  new|init     look for and process new to-do items"
+    echo -e "  notify       send pending notifications to-do items"
+    echo -e "  combined     combine notifications with processing of new items"
+    echo -e "  report       display a report of existing to-do items"
+    echo -e "  del <h>...   delete targets with handles <h>, ..."
+    echo -e "  temp         output a to-do item template"
 }
 
 set_rubylib() {
@@ -72,6 +74,11 @@ do_report() {
     run $report $*
 }
 
+do_edit() {
+    checkpath $edit
+    run $edit $*
+}
+
 make_template() {
     checkpath $mktmpl
     run $mktmpl $*
@@ -84,7 +91,11 @@ case $1 in
         ;;
     comb*) do_combined_processing
         ;;
-    rep*) do_report
+    rep*) do_report $*
+        ;;
+    del*)
+      shift;
+      do_edit delete $*
         ;;
     temp*) shift; make_template $*
         ;;

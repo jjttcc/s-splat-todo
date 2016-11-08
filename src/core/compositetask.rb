@@ -21,17 +21,6 @@ class CompositeTask < STodoTarget
     "#{DUE_DATE_KEY}: #{due_date}\n"
   end
 
-  ###  Element change
-
-  # Add a child task.
-  # precondition: t != nil and t.parent_handle == handle
-  def add_task(t)
-    if ! (t != nil and t.parent_handle == handle) then
-      raise PreconditionError, 't != nil and t.parent_handle == handle'
-    end
-    @tasks << t
-  end
-
   ###  Status report
 
   def spec_type; "task" end
@@ -47,6 +36,24 @@ class CompositeTask < STodoTarget
 
   def formal_type
     "Task"
+  end
+
+  ###  Element change
+
+  # Add a child task (to 'tasks').
+  # precondition: t != nil and t.parent_handle == handle
+  def add_task(t)
+    if ! (t != nil and t.parent_handle == handle) then
+      raise PreconditionError, 't != nil and t.parent_handle == handle'
+    end
+    @tasks << t
+  end
+
+  ###  Removal
+
+  # Remove task `t' from 'tasks'.
+  def remove_task t
+    @tasks.delete(t)
   end
 
   ###  Miscellaneous
