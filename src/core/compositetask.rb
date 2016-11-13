@@ -10,6 +10,10 @@ class CompositeTask < STodoTarget
 
   ###  Access
 
+  def time
+    due_date
+  end
+
   def final_reminder
     if @final_reminder == nil and due_date != nil then
         @final_reminder = Reminder.new(due_date)

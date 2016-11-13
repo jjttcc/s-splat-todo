@@ -9,9 +9,8 @@ class STodoTarget
 
   public
 
-  attr_reader :title, :content, :handle, :email_spec, :calendar_ids,
-    :priority, :comment, :reminders, :categories, :initial_email_addrs,
-    :ongoing_email_addrs, :parent_handle, :notifiers
+  attr_reader :title, :content, :handle, :calendar_ids, :priority, :comment,
+    :reminders, :categories, :parent_handle, :notifiers
   alias :description :content
   alias :name :handle
   alias :detail :comment
@@ -23,6 +22,10 @@ class STodoTarget
   public
 
   ###  Access
+
+  def time
+    raise "<time>: descendant class-method implementation required"
+  end
 
   # "final" reminder - e.g., based on expiration date or due date
   def final_reminder
@@ -40,16 +43,12 @@ class STodoTarget
       result += "#{tag}: #{v}\n"
     end
     result += "#{REMINDER_KEY}: #{reminders.join(', ')}\n"
-    if initial_email_addrs != nil then
-      result += "#{EMAIL_KEY}: #{initial_email_addrs.join(', ')}\n"
+    if @initial_email_addrs != nil then
+      result += "#{EMAIL_KEY}: #{@initial_email_addrs.join(', ')}\n"
     end
     result += "#{CALENDAR_IDS_KEY}: #{calendar_ids.join(', ')}\n"
     result += "#{CATEGORIES_KEY}: #{categories.join(', ')}\n"
     result + to_s_appendix
-  end
-
-  def to_s_appendix
-    ""
   end
 
   ###  Status report
@@ -195,13 +194,13 @@ class STodoTarget
 
   # Send an notification to all recipients designated as initial recipients.
   def send_initial_notifications
-    assert('initial_email_addrs != nil') { initial_email_addrs != nil }
-    if ! initial_email_addrs.empty? then
+    assert('initial_email_addrs != nil') { @initial_email_addrs != nil }
+    if ! @initial_email_addrs.empty? then
       # Set notification components to be used by the 'notifiers'.
       @notification_subject = 'initial ' + current_message_subject +
         subject_suffix
       @full_notification_message = current_message
-      @notification_email_addrs = initial_email_addrs
+      @notification_email_addrs = @initial_email_addrs
       @short_notification_message = ""
       notifiers.each do |n|
         n.send self
@@ -221,7 +220,7 @@ class STodoTarget
 
   # Send a notification email to all recipients.
   def send_ongoing_notifications
-    assert('ongoing_email_addrs != nil') { ongoing_email_addrs != nil }
+    assert('ongoing_email_addrs != nil') { @ongoing_email_addrs != nil }
     rems = []
     reminders.each { |r| if r.is_due? then rems << r end }
     if
@@ -232,12 +231,12 @@ class STodoTarget
       final_reminder.addendum = "Final "
     end
     rems.each do |r|
-      if ! ongoing_email_addrs.empty? then
+      if ! @ongoing_email_addrs.empty? then
         # Set notification components to be used by the 'notifiers'.
         @notification_subject = r.addendum + message_subject_label +
           current_message_subject + subject_suffix + " #{r.date_time}"
         @full_notification_message = current_message
-        @notification_email_addrs = ongoing_email_addrs
+        @notification_email_addrs = @ongoing_email_addrs
         @short_notification_message = ""
         notifiers.each do |n|
           n.send self
@@ -250,8 +249,8 @@ class STodoTarget
   # postcondition: result != nil
   def raw_email_addrs
     result = []
-    if email_spec then
-      result = email_spec.split(SPEC_FIELD_DELIMITER)
+    if @email_spec then
+      result = @email_spec.split(SPEC_FIELD_DELIMITER)
     end
     raise PostconditionError, 'result != nil' if result == nil
     result
@@ -271,6 +270,10 @@ class STodoTarget
     result = ""
   end
 
+  def to_s_appendix
+    ""
+  end
+
   ###  Persistence
 
   def marshal_dump
@@ -283,8 +286,8 @@ class STodoTarget
       'comment' => comment,
       'reminders' => reminders,
       'categories' => categories,
-      'initial_email_addrs' => initial_email_addrs,
-      'ongoing_email_addrs' => ongoing_email_addrs,
+      'initial_email_addrs' => @initial_email_addrs,
+      'ongoing_email_addrs' => @ongoing_email_addrs,
       'valid' => @valid,
       'parent_handle' => parent_handle
     }

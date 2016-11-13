@@ -8,6 +8,10 @@ class ScheduledEvent < STodoTarget
 
   ###  Access
 
+  def time
+    date_time
+  end
+
   def final_reminder
     assert_invariant {invariant}
     if @final_reminder == nil then

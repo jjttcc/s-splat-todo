@@ -10,14 +10,28 @@ edit=main/stodo-mgmt.rb
 stodo_envpath="$STODO_PATH"
 
 
-help() {
-    echo -e "usage: $progname <command>\n\ncommands:"
+mainhelp() {
+    echo -e "Usage: $progname <command>\n\ncommands:"
     echo -e "  new|init     look for and process new to-do items"
     echo -e "  notify       send pending notifications to-do items"
     echo -e "  combined     combine notifications with processing of new items"
     echo -e "  report       display a report of existing to-do items"
     echo -e "  del <h>...   delete targets with handles <h>, ..."
     echo -e "  temp         output a to-do item template"
+}
+
+indepth_help() {
+    case "$1" in
+      rep*) report_help ;;
+    esac
+}
+
+help() {
+  if [ $# == 0 ]; then
+    mainhelp
+  else
+    indepth_help $*
+  fi
 }
 
 set_rubylib() {
@@ -84,6 +98,16 @@ make_template() {
     run $mktmpl $*
 }
 
+report_help() {
+    echo -e "Usage: $progname rep[ort] [<report-type> [handle ...]]"
+    echo -e "\nWhere <report-type> is one of:"
+    echo -e "  short        short report - list only handles and titles"
+    echo -e "  summary      summary report for the specified handles"
+    echo -e "  complete     complete report for the specified handles"
+    echo -e "  children     report of all child relationships"
+    echo -e "\n(If <report-type> is not specified, list all target handles.)"
+}
+
 case $1 in
     new|init) process_new_items
         ;;
@@ -91,7 +115,7 @@ case $1 in
         ;;
     comb*) do_combined_processing
         ;;
-    rep*) do_report $*
+    rep*) shift; do_report $*
         ;;
     del*)
       shift;
@@ -99,6 +123,6 @@ case $1 in
         ;;
     temp*) shift; make_template $*
         ;;
-    *) help
+    *) shift; help $*
         ;;
 esac

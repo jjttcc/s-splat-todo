@@ -13,6 +13,14 @@ class Memorandum < STodoTarget
 
   ###  Access
 
+  def time
+    result = nil
+    if expiration_date != nil
+      result = expiration_date
+    end
+    result
+  end
+
   def final_reminder
     if @final_reminder == nil and expiration_date != nil then
         @final_reminder = Reminder.new(expiration_date)

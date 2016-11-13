@@ -37,23 +37,6 @@ class STodoManager
     @data_manager.store_targets(existing_targets)
   end
 
-  # List info about all of the specified targets.
-  def list_targets targets = existing_targets
-    targets.values.each do |t|
-      puts target_info(t)
-    end
-  end
-
-  # Report all descendants (child targets, their children, ...) for each
-  # item in `targets'.
-  def report_targets_descendants targets = existing_targets
-    targets.values.each do |t|
-      if t.can_have_children? then
-        report_descendants(t)
-      end
-    end
-  end
-
   def output_template target_builder
     tgts = target_builder.targets
     if tgts then
@@ -163,29 +146,6 @@ class STodoManager
         $log.warn "target #{t.handle} has a nonexistent parent: #{p}"
       end
     end
-  end
-
-  def report_descendants target
-    # To prevent redundancy, only report descendants for the top-level
-    # ancestor.
-    if ! target.has_parent? then
-      puts "#{target.handle}'s descendants:"
-      desc = target.descendants
-      desc.keys.sort.each do |k|
-        indent = ' ' * (2 * k)
-        desc[k].each do |t|
-          puts "#{indent}#{t.handle}"
-        end
-      end
-    end
-  end
-
-  def target_info t
-#!!!to-do: include date/time
-    result = "[#{t.handle}] #{t.title}; "
-    if t.priority then result += "priority: #{t.priority}; " end
-    result += "cats: " + t.categories.join(',')
-    result += " (#{t.formal_type})"
   end
 
 end
