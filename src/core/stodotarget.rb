@@ -39,7 +39,9 @@ class STodoTarget
     for tag in [TITLE_KEY, HANDLE_KEY, DESCRIPTION_KEY, PRIORITY_KEY,
                 COMMENT_KEY, PARENT_KEY] do
       v = self.instance_variable_get("@#{tag}")
-      if v == nil then v = "" end
+      if v == nil then  # (description is an alias, not an attribute.)
+        v = (tag == DESCRIPTION_KEY) ? self.description : ""
+      end
       result += "#{tag}: #{v}\n"
     end
     result += "#{REMINDER_KEY}: #{reminders.join(', ')}\n"

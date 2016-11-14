@@ -77,7 +77,7 @@ class ReportManager
     result += " (#{t.formal_type})"
   end
 
-  def targets_for handles
+  def targets_for handles, sorted = true
     result = manager.existing_targets.values
     if handles != nil && handles.length > 0 then
       result = []
@@ -87,7 +87,19 @@ class ReportManager
         end
       end
     end
-    result
+    if sorted then
+      result.sort do |a, b|
+        if a.time == nil then
+          b.time == nil ? 0 : 1
+        elsif b.time == nil then
+          -1
+        else
+          a.time <=> b.time
+        end
+      end
+    else
+      result
+    end
   end
 
 end

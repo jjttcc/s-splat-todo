@@ -16,12 +16,13 @@ class ReportUtil
         result = Proc.new { reporter.list_targets(false, ARGV[1..-1]) }
       when /^com/
         result = Proc.new { reporter.report_complete(ARGV[1..-1]) }
-      when /^chil/
+      when /^chi/
         result = Proc.new {
           reporter.report_targets_descendants(ARGV[1..-1])
         }
       end
-    else
+    end
+    if result == nil then
       result = Proc.new { reporter.list_handles }
     end
     result
