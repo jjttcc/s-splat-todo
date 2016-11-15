@@ -53,6 +53,15 @@ class STodoTarget
     result + to_s_appendix
   end
 
+  # All 'reminders' that are in the future
+  def upcoming_reminders
+    now = Time.now
+    result = reminders.select do |r|
+      r.time > now
+    end
+    result
+  end
+
   ###  Status report
 
   def spec_type

@@ -9,6 +9,7 @@ class Reminder
   public
 
   attr_reader :date_time, :addendum
+  alias :time :date_time
 
   public
 

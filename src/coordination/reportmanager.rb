@@ -46,6 +46,28 @@ class ReportManager
     puts report_array.join("\n")
   end
 
+  # List the first upcoming reminder for the targets with the specified
+  # handles, or if 'handles' is nil, for all targets.
+  def report_reminders(all, handles)
+    targets = targets_for(handles)
+    report_array = targets.map do |t|
+      remtimes = []; reminders = []
+      line = "#{t.handle}"
+      if all then
+        line += ": "
+        reminders = t.reminders
+      else
+        line += "\t"
+        reminders = t.upcoming_reminders.first(1)
+      end
+      remtimes = reminders.map do |r|
+        r.date_time.strftime("%Y-%m-%d %H:%M")
+      end
+      line + remtimes.join('; ')
+    end
+    puts report_array.join("\n")
+  end
+
   private
 
   def initialize manager
@@ -88,18 +110,23 @@ class ReportManager
       end
     end
     if sorted then
-      result.sort do |a, b|
-        if a.time == nil then
-          b.time == nil ? 0 : 1
-        elsif b.time == nil then
-          -1
-        else
-          a.time <=> b.time
-        end
+      result.sort! do |a, b|
+        time_comparison(a, b)
       end
-    else
-      result
     end
+    result
+  end
+
+  def time_comparison(a, b)
+    result = -2
+    if a.time == nil then
+      result = b.time == nil ? 0 : 1
+    elsif b.time == nil then
+      result = -1
+    else
+      result = a.time <=> b.time
+    end
+    result
   end
 
 end
