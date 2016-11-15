@@ -50,22 +50,13 @@ class ReportManager
   # handles, or if 'handles' is nil, for all targets.
   def report_reminders(all, handles)
     targets = targets_for(handles)
-    report_array = targets.map do |t|
-      remtimes = []; reminders = []
-      line = "#{t.handle}"
-      if all then
-        line += ": "
-        reminders = t.reminders
-      else
-        line += "\t"
-        reminders = t.upcoming_reminders.first(1)
-      end
-      remtimes = reminders.map do |r|
-        r.date_time.strftime("%Y-%m-%d %H:%M")
-      end
-      line + remtimes.join('; ')
+    tgt_w_rem = targets.select do |t|
+      ! t.reminders.empty?
     end
-    puts report_array.join("\n")
+    report_items = tgt_w_rem.map do |t|
+      ReminderReportItem.new(t, all)
+    end
+    puts report_items.sort.join("\n")
   end
 
   private
@@ -127,6 +118,52 @@ class ReportManager
       result = a.time <=> b.time
     end
     result
+  end
+
+  class ReminderReportItem
+    include Comparable
+    public
+    attr_accessor :target, :use_all_reminders, :first_reminder, :prefix,
+      :suffix
+    def <=>(other)
+      first_reminder <=> other.first_reminder
+    end
+    def to_s
+      result = ""
+      if use_all_reminders then
+        times = target.reminders.map do |r|
+          r.date_time.strftime("%Y-%m-%d %H:%M")
+        end
+        result = "#{target.handle} - " + times.join(', ')
+      else
+        result = prefix + first_reminder.date_time.strftime("%Y-%m-%d %H:%M") +
+          + suffix + " - #{target.title}"
+      end
+      result
+    end
+    private
+    def initialize(t, all = false)
+      if t == nil or t.reminders.empty? then
+        raise "code defect - invalid target: #{t.inspect}"
+      end
+      @target = t
+      @use_all_reminders = all
+      @prefix = " "
+      @suffix = " "
+      @first_reminder = first_rem
+    end
+    def first_rem
+      result = @target.reminders.first
+      if ! use_all_reminders then
+        result = @target.upcoming_reminders.first
+        if result == nil then # The last reminder is in the past.
+          result = @target.reminders.last
+          @prefix = "("
+          @suffix = ")"
+        end
+      end
+      result
+    end
   end
 
 end
