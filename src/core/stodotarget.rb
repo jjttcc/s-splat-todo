@@ -88,6 +88,25 @@ class STodoTarget
     @notifiers << n
   end
 
+  # Set self's fields from the non-nil fields in spec.
+  # precondition: spec != nil && handle == spec.handle
+  def modify_fields spec
+    assert_precondition('spec != nil && handle == spec.handle') {
+      spec != nil && handle == spec.handle }
+    @title = spec.title if spec.title
+    @email_spec = spec.email if spec.email
+    @content = spec.description if spec.description
+    @comment = spec.comment if spec.comment
+    @priority = spec.priority if spec.priority
+    @reminders = reminders_from_spec spec if spec.reminders != nil
+    if spec.categories then
+      @categories = spec.categories.split(SPEC_FIELD_DELIMITER)
+    end
+    if spec.calendar_ids != nil then
+      @calendar_ids = spec.calendar_ids.split(SPEC_FIELD_DELIMITER)
+    end
+  end
+
   ###  Hash-related queries
 
   # hash to allow use in a hashtable (Hash)
@@ -107,13 +126,13 @@ class STodoTarget
   ###  Basic operations
 
   # Perform required initial notifications and related actions.
-  def initiate manager
+  def initiate calendar
     send_initial_notifications
-    set_initial_calendar_entry manager.calendar
+    set_initial_calendar_entry calendar
   end
 
   # Perform post-"initiate" notifications.
-  def perform_ongoing_actions manager
+  def perform_ongoing_actions
     send_ongoing_notifications
   end
 
@@ -254,7 +273,7 @@ class STodoTarget
     if @email_spec then
       result = @email_spec.split(SPEC_FIELD_DELIMITER)
     end
-    raise PostconditionError, 'result != nil' if result == nil
+    assert_postcondition('result != nil') { result != nil }
     result
   end
 
@@ -270,6 +289,8 @@ class STodoTarget
   # postcondition: result != nil
   def description_appendix
     result = ""
+    assert_postcondition('result != nil') { result != nil }
+    result
   end
 
   def to_s_appendix

@@ -34,18 +34,23 @@ class ScheduledEvent < STodoTarget
     "Appointment"
   end
 
+  ###  Element change
+
+  def modify_fields spec
+    super spec
+    if spec.date_time != nil then
+      set_date_time spec
+    end
+    @duration = duration_from_spec spec if spec.duration
+    @location = spec.location if spec.location
+  end
+
   protected
 
   def set_fields spec
     super spec
     if spec.date_time != nil then
-      begin
-        @date_time = Time.parse(spec.date_time)
-      rescue ArgumentError => e
-        # spec.date_time is invalid or empty - not allowed for appointments.
-        $log.warn "date_time invalid [#{e}] (#{spec.date_time}) " +
-          "in #{formal_type} #{self.handle}"
-      end
+      set_date_time spec
     else
       $log.warn "date_time is not set in #{formal_type} #{self.handle}"
     end
@@ -53,6 +58,16 @@ class ScheduledEvent < STodoTarget
     @location = spec.location
     # Prevent use of appointments with nil @date_time:
     if @date_time == nil then @valid = false end
+  end
+
+  def set_date_time spec
+    begin
+      @date_time = Time.parse(spec.date_time)
+    rescue ArgumentError => e
+      # spec.date_time is invalid or empty - not allowed for appointments.
+      $log.warn "date_time invalid [#{e}] (#{spec.date_time}) " +
+        "in #{formal_type} #{self.handle}"
+    end
   end
 
   def duration_from_spec spec

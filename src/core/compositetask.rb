@@ -53,6 +53,16 @@ class CompositeTask < STodoTarget
     @tasks << t
   end
 
+  def modify_fields spec
+    super spec
+    if spec.due_date != nil then
+      set_due_date spec
+    end
+    if spec.parent != nil then
+      @parent_handle = spec.parent
+    end
+  end
+
   ###  Removal
 
   # Remove task `t' from 'tasks'.
@@ -79,15 +89,19 @@ class CompositeTask < STodoTarget
     super spec
     @tasks = []
     if spec.due_date != nil then
-      begin
-        @due_date = Time.parse(spec.due_date)
-      rescue ArgumentError => e
-        # spec.due_date is invalid, so leave @due_date as nil.
-        $log.warn "due_date invalid [#{e}] (#{spec.due_date}) in #{self}"
-      end
+      set_due_date spec
     end
     if spec.parent != nil then
       @parent_handle = spec.parent
+    end
+  end
+
+  def set_due_date spec
+    begin
+      @due_date = Time.parse(spec.due_date)
+    rescue ArgumentError => e
+      # spec.due_date is invalid, so leave @due_date as nil.
+      $log.warn "due_date invalid [#{e}] (#{spec.due_date}) in #{self}"
     end
   end
 

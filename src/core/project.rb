@@ -18,6 +18,13 @@ class Project < CompositeTask
     self.class
   end
 
+  ###  Element change
+
+  def modify_fields spec
+    super spec
+    @goal = spec.goal if spec.goal
+  end
+
   private
 
   def set_fields spec

@@ -6,32 +6,42 @@ require 'stodotargeteditor'
 
 # Basic manager of s*todo actions
 class STodoManager
-  attr_reader :new_targets, :existing_targets, :mailer, :calendar
+  include ErrorTools
+
+  attr_reader :existing_targets, :mailer, :calendar
 
   public
 
-  # Call `initiate' on each element of @new_targets.
-  # precondition: new_targets != nil
+  # Call `initiate' on all new or edited targets.
   def perform_initial_processing
-    raise PreconditionError, 'new_targets != nil' if new_targets == nil
-    email = Email.new(mailer)
-    new_targets.values.each do |t|
-      t.add_notifier(email)
-      t.initiate(self)
+    if processing_required then
+      email = Email.new(mailer)
+      @new_targets.values.each do |t|
+        t.add_notifier(email)
+        t.initiate(calendar)
+      end
+      @edited_targets.values.each do |t|
+        if @target_builder.time_changed_for[t] then
+          t.initiate(calendar)
+        end
+      end
+      @target_builder.spec_collector.initial_cleanup @new_targets
+      if ! @edited_targets.empty? then
+        @target_builder.spec_collector.initial_cleanup @edited_targets
+      end
+      all_targets = existing_targets.merge(@new_targets)
+      @data_manager.store_targets(all_targets)
     end
-    @target_builder.spec_collector.initial_cleanup new_targets
-    all_targets = existing_targets.merge(new_targets)
-    @data_manager.store_targets(all_targets)
   end
 
   # Perform any "ongoing processing" required for existing_targets.
   # precondition: existing_targets != nil
   def perform_ongoing_processing
-    raise PreconditionError,'existing_targets != nil' if existing_targets == nil
+    assert_precondition('existing_targets != nil') { existing_targets != nil }
     email = Email.new(mailer)
     existing_targets.values.each do |t|
       t.add_notifier(email)
-      t.perform_ongoing_actions(self)
+      t.perform_ongoing_actions
     end
     # (Calling perform_ongoing_actions above can change a target's state.)
     @data_manager.store_targets(existing_targets)
@@ -87,7 +97,9 @@ class STodoManager
   def init_new_targets tgt_builder
     new_duphndles = {}
     @new_targets = {}
+    @edited_targets = {}
     @target_builder = tgt_builder
+    @target_builder.build_targets existing_targets
     tgts = @target_builder.targets
     tgts.each do |tgt|
       hndl = tgt.handle
@@ -109,6 +121,15 @@ class STodoManager
     @new_targets.values.each do |t|
       add_child(t)
     end
+    @target_builder.edited_targets.each do |tgt|
+      @edited_targets[tgt.handle] = tgt
+    end
+  end
+
+  # Have new targets been created or existing targets been edited?
+  def processing_required
+    (@new_targets != nil and ! @new_targets.empty?) or
+    (@edited_targets != nil and ! @edited_targets.empty?)
   end
 
   def report_new_conflict target1, target2

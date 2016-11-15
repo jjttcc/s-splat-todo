@@ -36,22 +36,35 @@ class Memorandum < STodoTarget
 
   def spec_type; "note" end
 
+  ###  Element change
+
+  def modify_fields spec
+    super spec
+    if spec.expiration_date != nil then
+      set_expiration_date spec
+    end
+  end
+
   protected
 
   def set_fields spec
     super spec
     if spec.expiration_date != nil then
-      begin
-        @expiration_date = Time.parse(spec.expiration_date)
-      rescue ArgumentError => e
-        # spec.expiration_date is invalid, so leave @expiration_date as nil.
-        $log.warn "expiration_date invalid [#{e}] (#{spec.expiration_date}) " +
-          "in #{self}"
-      end
+      set_expiration_date spec
     end
   end
 
   private
+
+  def set_expiration_date spec
+    begin
+      @expiration_date = Time.parse(spec.expiration_date)
+    rescue ArgumentError => e
+      # spec.expiration_date is invalid, so leave @expiration_date as nil.
+      $log.warn "expiration_date invalid [#{e}] (#{spec.expiration_date}) " +
+        "in #{self}"
+    end
+  end
 
   ### Hook routine implementations
 
