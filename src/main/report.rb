@@ -17,10 +17,20 @@ class ReportUtil
       when /^com/
         result = Proc.new { reporter.report_complete(ARGV[1..-1]) }
       when /^rem/
-        if ARGV[0] =~ /rem.*all/ then  # all reminders
-          result = Proc.new { reporter.report_reminders(true, ARGV[1..-1]) }
-        else                              # only the first reminder
-          result = Proc.new { reporter.report_reminders(false, ARGV[1..-1]) }
+        case ARGV[0]
+        when /rem.*all/ # all reminders
+          result = Proc.new {
+            reporter.report_reminders(all: true, handles: ARGV[1..-1])
+          }
+        when /rem.*h/   # only the 1st reminder, print handle instead of title
+          result = Proc.new {
+            reporter.report_reminders(all: false, handles: ARGV[1..-1],
+                                     short: true)
+          }
+        else            # only the 1st reminder (with title)
+          result = Proc.new {
+            reporter.report_reminders(all: false, handles: ARGV[1..-1])
+          }
         end
       when /^chi/
         result = Proc.new { reporter.report_targets_descendants(ARGV[1..-1]) }

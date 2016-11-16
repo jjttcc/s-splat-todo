@@ -28,7 +28,7 @@ class ScheduledEvent < STodoTarget
 
   ###  Status report
 
-  def spec_type; "appointment" end
+  def spec_type; APPOINTMENT end
 
   def formal_type
     "Appointment"
@@ -80,7 +80,7 @@ class ScheduledEvent < STodoTarget
   ### Hook routine implementations
 
   def message_subject_label
-    "appointment: "
+    "#{APPOINTMENT}: "
   end
 
   def current_message_subject

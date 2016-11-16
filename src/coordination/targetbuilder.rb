@@ -87,17 +87,18 @@ class TargetBuilder
 
   def init_target_factory
     @target_factory_for = {
-      'project' => lambda do |spec| Project.new(spec) end,
-      'action' => lambda do |spec| CompositeTask.new(spec) end,
-      'note' => lambda do |spec| Memorandum.new(spec) end,
-      'appointment' => lambda do |spec| ScheduledEvent.new(spec) end,
-      'correction' => lambda do |spec| edit_target(spec) end,
+      PROJECT     => lambda do |spec| Project.new(spec) end,
+      TASK_ALIAS1 => lambda do |spec| CompositeTask.new(spec) end,
+      NOTE        => lambda do |spec| Memorandum.new(spec) end,
+      APPOINTMENT => lambda do |spec| ScheduledEvent.new(spec) end,
+      CORRECTION  => lambda do |spec| edit_target(spec) end,
     }
     # Define "type" aliases.
-    @target_factory_for['task'] = @target_factory_for['action']
-    @target_factory_for['memo'] = @target_factory_for['note']
-    @target_factory_for['memorandum'] = @target_factory_for['note']
-    @target_factory_for['event'] = @target_factory_for['appointment']
+    @target_factory_for[TASK] = @target_factory_for[TASK_ALIAS1]
+    @target_factory_for[NOTE_ALIAS1] = @target_factory_for[NOTE]
+    @target_factory_for[NOTE_ALIAS2] = @target_factory_for[NOTE]
+    @target_factory_for[APPOINTMENT_ALIAS1] = @target_factory_for[APPOINTMENT]
+    @target_factory_for[APPOINTMENT_ALIAS2] = @target_factory_for[APPOINTMENT]
   end
 
 end

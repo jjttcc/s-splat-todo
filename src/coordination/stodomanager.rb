@@ -49,7 +49,7 @@ class STodoManager
 
   def output_template target_builder
     tgts = target_builder.targets
-    if tgts then
+    if tgts and ! tgts.empty? then
       tgts.each do |t|
         puts t
       end

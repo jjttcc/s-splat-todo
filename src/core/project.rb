@@ -12,7 +12,7 @@ class Project < CompositeTask
 
   ###  Status report
 
-  def spec_type; "project" end
+  def spec_type; PROJECT end
 
   def formal_type
     self.class

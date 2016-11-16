@@ -46,15 +46,17 @@ class ReportManager
     puts report_array.join("\n")
   end
 
-  # List the first upcoming reminder for the targets with the specified
-  # handles, or if 'handles' is nil, for all targets.
-  def report_reminders(all, handles)
+  # List the first upcoming reminder - or if 'all', all reminders - for the
+  # targets with the specified handles, or if 'handles' is nil, for all
+  # targets.  If 'short', the handle, instead of the title, will be
+  # included in the report for the selected targets.
+  def report_reminders(all: false, handles: [], short: false)
     targets = targets_for(handles)
     tgt_w_rem = targets.select do |t|
       ! t.reminders.empty?
     end
     report_items = tgt_w_rem.map do |t|
-      ReminderReportItem.new(t, all)
+      ReminderReportItem.new(t, all, short)
     end
     puts report_items.sort.join("\n")
   end
@@ -145,13 +147,14 @@ class ReportManager
         end
         result = "#{target.handle} - " + times.join(', ')
       else
+        name = @use_handle ? target.handle : target.title
         result = prefix + first_reminder.date_time.strftime("%Y-%m-%d %H:%M") +
-          + suffix + " - #{target.title}"
+          + suffix + " - #{name}"
       end
       result
     end
     private
-    def initialize(t, all = false)
+    def initialize(t, all = false, print_handle)
       if t == nil or t.reminders.empty? then
         raise "code defect - invalid target: #{t.inspect}"
       end
@@ -160,6 +163,7 @@ class ReportManager
       @prefix = " "
       @suffix = " "
       @first_reminder = first_rem
+      @use_handle = print_handle
     end
     def first_rem
       result = @target.reminders.first

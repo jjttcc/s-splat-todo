@@ -23,6 +23,7 @@ mainhelp() {
 indepth_help() {
     case "$1" in
       rep*) report_help ;;
+      temp*) template_help ;;
     esac
 }
 
@@ -106,9 +107,18 @@ report_help() {
     echo -e "  complete     complete report for the specified handles"
     echo -e "  due          pending items with their \"due\" date"
     echo -e "  remind       upcoming (first) reminder"
+    echo -e "  remindh      upcoming (first) reminder" \
+        "(with handle instead of title)"
     echo -e "  remindall    all upcoming reminders"
     echo -e "  children     report of all child relationships"
     echo -e "\n(If <report-type> is not specified, list all target handles.)"
+}
+
+template_help() {
+    echo -e "Usage: $progname temp [<type>]"
+    echo -e "Where <type> is one of:\c"
+    echo -e " task, memo, appointment (or event), project"
+    echo -e "\n(If <type> is not specified, assume 'task'.)"
 }
 
 case $1 in

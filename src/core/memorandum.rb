@@ -34,7 +34,7 @@ class Memorandum < STodoTarget
 
   ###  Status report
 
-  def spec_type; "note" end
+  def spec_type; NOTE end
 
   ###  Element change
 
@@ -69,7 +69,7 @@ class Memorandum < STodoTarget
   ### Hook routine implementations
 
   def message_subject_label
-    "memo: "
+    "#{NOTE_ALIAS2}: "
   end
 
   def current_message_subject

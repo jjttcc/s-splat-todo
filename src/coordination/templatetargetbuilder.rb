@@ -8,7 +8,12 @@ class TemplateTargetBuilder < TargetBuilder
 
   def initialize type
     spec = StubbedSpec.new type
-    @targets = [target_for(spec)]
+    init_target_factory
+    @targets = []
+    t = target_for(spec)
+    if t != nil then
+      @targets << t
+    end
   end
 
 end

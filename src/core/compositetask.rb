@@ -27,7 +27,7 @@ class CompositeTask < STodoTarget
 
   ###  Status report
 
-  def spec_type; "task" end
+  def spec_type; TASK end
 
   def can_have_children?
     true
