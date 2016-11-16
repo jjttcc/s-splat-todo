@@ -24,6 +24,8 @@ class ReportUtil
         end
       when /^chi/
         result = Proc.new { reporter.report_targets_descendants(ARGV[1..-1]) }
+      when /^due/
+        result = Proc.new { reporter.report_due(ARGV[1..-1]) }
       end
     end
     if result == nil then

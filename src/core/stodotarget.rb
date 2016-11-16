@@ -62,6 +62,16 @@ class STodoTarget
     result
   end
 
+  ###  Comparison
+
+  VERY_LATE = Time.parse('10000-01-01 00:00')
+
+  def <=>(other)
+    other_time = other.time != nil ? other.time : VERY_LATE
+    mytime = time != nil ? time : VERY_LATE
+    time <=> other_time
+  end
+
   ###  Status report
 
   def spec_type

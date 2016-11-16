@@ -104,6 +104,7 @@ report_help() {
     echo -e "  short        short report - list only handles and titles"
     echo -e "  summary      summary report for the specified handles"
     echo -e "  complete     complete report for the specified handles"
+    echo -e "  due          pending items with their \"due\" date"
     echo -e "  remind       upcoming (first) reminder"
     echo -e "  remindall    all upcoming reminders"
     echo -e "  children     report of all child relationships"

@@ -59,6 +59,15 @@ class ReportManager
     puts report_items.sort.join("\n")
   end
 
+  # List the first upcoming reminder for the targets with the specified
+  # handles, or if 'handles' is nil, for all targets.
+  def report_due(handles)
+    targets_due = targets_for(handles).sort.map do |t|
+      TargetDue.new(t)
+    end
+    puts targets_due.join("\n")
+  end
+
   private
 
   def initialize manager
@@ -163,6 +172,34 @@ class ReportManager
         end
       end
       result
+    end
+  end
+
+  class TargetDue
+    attr_accessor :target
+    public
+    def to_s
+      result = ""; time = ""
+      if @target.time == nil then
+        time = "(no due date)   "
+      else
+        time = @target.time.strftime("%Y-%m-%d %H:%M")
+      end
+      result = @prefix + time + @suffix + " - #{target.title}" +
+        " (#{target.formal_type}:#{target.handle})"
+      result
+    end
+
+    private
+    def initialize(t)
+      @target = t
+      @prefix = " "
+      @suffix = " "
+      time = @target.time
+      if time != nil and time < Time.now then
+        @prefix = "("
+        @suffix = ")"
+      end
     end
   end
 
