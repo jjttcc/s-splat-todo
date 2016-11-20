@@ -20,7 +20,7 @@ class ReportManager
 
   # List the handle for all targets.
   def list_handles
-    targets = manager.existing_targets.values
+    targets = manager.existing_targets.values.sort
     targets.each do |t|
       puts "#{t.handle}"
     end

@@ -69,7 +69,8 @@ class STodoTarget
   def <=>(other)
     other_time = other.time != nil ? other.time : VERY_LATE
     mytime = time != nil ? time : VERY_LATE
-    time <=> other_time
+    result = mytime <=> other_time
+    result
   end
 
   ###  Status report
