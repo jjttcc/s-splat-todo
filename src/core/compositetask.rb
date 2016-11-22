@@ -25,6 +25,32 @@ class CompositeTask < STodoTarget
     "#{DUE_DATE_KEY}: #{due_date}\n"
   end
 
+  # All 'tasks', 'tasks' of those 'tasks', etc., recursively
+  def descendants
+    result = []
+    tasks.each do |t|
+      result << t
+      if t.can_have_children? then
+        result.concat(t.descendants)
+      end
+    end
+    result
+  end
+
+  # Array of arrays such that the first element of the inner array is the
+  # level at which the associated target occurs in self's descendant
+  # hierarchy and the second element is the associated target
+  def descendants_with_position(curpos = 0)
+    result = []
+    tasks.each do |t|
+      result << [curpos+1, t]
+      if t.can_have_children? then
+        result.concat(t.descendants_with_position(curpos + 1))
+      end
+    end
+    result
+  end
+
   ###  Status report
 
   def spec_type; TASK end
@@ -72,13 +98,16 @@ class CompositeTask < STodoTarget
 
   ###  Miscellaneous
 
-  def descendants level = 0
+  def descendants_report
     result = {}
-    if tasks then
-      result[level + 1] = tasks
-    end
-    tasks.each do |t|
-      result.merge!(t.descendants(level + 1))
+    desc_w_pos = descendants_with_position
+    desc_w_pos.each do |d|
+      arr = result[d[0]]
+      if arr == nil then
+        arr = []
+        result[d[0]] = arr
+      end
+      arr << d[1]
     end
     result
   end
@@ -124,6 +153,16 @@ class CompositeTask < STodoTarget
       result += "priority: #{priority}\n"
     end
     result += "description: #{content}\n"
+    desc = descendants
+    if ! desc.empty? then
+      result += "subtasks:\n"
+      descendants.each do |subt|
+        time = subt.time
+        time ||= ' ' * 16
+        result +=
+          "#{time} #{subt.title} (#{subt.formal_type}:#{subt.handle})\n"
+      end
+    end
     result
   end
 

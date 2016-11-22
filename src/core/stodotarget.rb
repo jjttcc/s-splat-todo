@@ -40,13 +40,24 @@ class STodoTarget
                 COMMENT_KEY, PARENT_KEY] do
       v = self.instance_variable_get("@#{tag}")
       if v == nil then  # (description is an alias, not an attribute.)
-        v = (tag == DESCRIPTION_KEY) ? self.description : ""
+        case tag
+        when DESCRIPTION_KEY
+          v = self.description
+        when PARENT_KEY
+          v = self.parent_handle
+        else
+          v = ""
+        end
       end
       result += "#{tag}: #{v}\n"
     end
-    result += "#{REMINDER_KEY}: #{reminders.join(', ')}\n"
+#!!!HERE:    result += "#{REMINDER_KEY}: #{reminders.join(', ')}\n"
+reminders.each do |r| result += "#{r.inspect}\n" end
     if @initial_email_addrs != nil then
-      result += "#{EMAIL_KEY}: #{@initial_email_addrs.join(', ')}\n"
+      result += "initial #{EMAIL_KEY}: #{@initial_email_addrs.join(', ')}\n"
+    end
+    if @ongoing_email_addrs != nil then
+      result += "ongoing #{EMAIL_KEY}: #{@ongoing_email_addrs.join(', ')}\n"
     end
     result += "#{CALENDAR_IDS_KEY}: #{calendar_ids.join(', ')}\n"
     result += "#{CATEGORIES_KEY}: #{categories.join(', ')}\n"
@@ -59,6 +70,17 @@ class STodoTarget
     result = reminders.select do |r|
       r.time > now
     end
+    result
+  end
+
+  # All descendants (subtasks, subtasks of subtasks, etc.) of self, if any
+  # postcondition: result != nil && (! can_have_children? implies result.empty?)
+  def descendants
+    result = []
+    assert_postcondition(
+      'result != nil && (! can_have_children? implies result.empty?)') {
+      result != nil && implies(! self.can_have_children?, result.empty?)
+    }
     result
   end
 
@@ -178,6 +200,8 @@ class STodoTarget
     @reminders = reminders_from_spec spec
     if spec.categories then
       @categories = spec.categories.split(SPEC_FIELD_DELIMITER)
+    else
+      @categories = []
     end
     @calendar_ids = []
     if spec.calendar_ids != nil then
@@ -283,7 +307,10 @@ class STodoTarget
           n.send self
         end
       end
+#!!!!!!!!!!!!!!!!!!!!!!
+$log.warn "------------------------------------- triggering #{r.inspect}"
       r.trigger
+$log.warn "------------------------------------- #{r.inspect} was triggered"
     end
   end
 

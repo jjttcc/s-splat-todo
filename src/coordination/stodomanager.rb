@@ -41,9 +41,12 @@ class STodoManager
     email = Email.new(mailer)
     existing_targets.values.each do |t|
       t.add_notifier(email)
+$log.warn "calling perform_ongoing_actions on #{t.handle}"
       t.perform_ongoing_actions
     end
+$log.warn "[perform_ongoing_actions]HERE"
     # (Calling perform_ongoing_actions above can change a target's state.)
+$log.warn "calling @data_manager.store_targets"
     @data_manager.store_targets(existing_targets)
   end
 
@@ -123,6 +126,7 @@ class STodoManager
     end
     @target_builder.edited_targets.each do |tgt|
       @edited_targets[tgt.handle] = tgt
+      add_child(tgt)
     end
   end
 
@@ -139,8 +143,8 @@ class STodoManager
     $log.warn msg
   end
 
-  # If 't' has a parent, find its parent and add 't', via 'add_task", to
-  # the parent's tasks.
+  # If 't' has a 'parent_handle', find its parent and add 't', via
+  # 'add_task", to the parent's tasks.
   def add_child(t)
     p = t.parent_handle
     if p then

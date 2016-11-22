@@ -81,10 +81,10 @@ class ReportManager
     # ancestor.
     if ! target.has_parent? then
       puts "#{target.handle}'s descendants:"
-      desc = target.descendants
-      desc.keys.sort.each do |k|
-        indent = ' ' * (2 * k)
-        desc[k].each do |t|
+      desc = target.descendants_report
+      desc.keys.sort.each do |level|
+        indent = ' ' * (2 * level)
+        desc[level].each do |t|
           puts "#{indent}#{t.handle}"
         end
       end

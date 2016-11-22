@@ -5,6 +5,8 @@ class FileBasedDataManager
 
   # Write `tgts' out to persistent store.
   def store_targets(tgts)
+#!!!!!!!!!!!!!!!!!!!
+$log.warn "FileBasedDataManager.store_targets called with #{tgts.values.length} targets"
     serialized_object = Marshal::dump(tgts)
     out = File.new(@stored_fpath, 'w')
     out.write(serialized_object)
