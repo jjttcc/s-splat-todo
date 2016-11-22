@@ -1,5 +1,6 @@
 require 'time'
 require 'stodotarget'
+require 'treenode'
 
 # Tasks that, optionally, contain one or more subtasks
 class CompositeTask < STodoTarget
@@ -32,20 +33,6 @@ class CompositeTask < STodoTarget
       result << t
       if t.can_have_children? then
         result.concat(t.descendants)
-      end
-    end
-    result
-  end
-
-  # Array of arrays such that the first element of the inner array is the
-  # level at which the associated target occurs in self's descendant
-  # hierarchy and the second element is the associated target
-  def descendants_with_position(curpos = 0)
-    result = []
-    tasks.each do |t|
-      result << [curpos+1, t]
-      if t.can_have_children? then
-        result.concat(t.descendants_with_position(curpos + 1))
       end
     end
     result
@@ -99,17 +86,10 @@ class CompositeTask < STodoTarget
   ###  Miscellaneous
 
   def descendants_report
-    result = {}
-    desc_w_pos = descendants_with_position
-    desc_w_pos.each do |d|
-      arr = result[d[0]]
-      if arr == nil then
-        arr = []
-        result[d[0]] = arr
-      end
-      arr << d[1]
+    tree = TreeNode.new(self)
+    tree.descendants_report do |t|
+      "#{t.handle}, due: #{time_24hour(t.time)}"
     end
-    result
   end
 
   private
@@ -153,14 +133,14 @@ class CompositeTask < STodoTarget
       result += "priority: #{priority}\n"
     end
     result += "description: #{content}\n"
-    desc = descendants
-    if ! desc.empty? then
+    if ! tasks.empty? then
       result += "subtasks:\n"
-      descendants.each do |subt|
-        time = subt.time
-        time ||= ' ' * 16
-        result +=
-          "#{time} #{subt.title} (#{subt.formal_type}:#{subt.handle})\n"
+      tasks.each do |t|
+        tree = TreeNode.new(t)
+        # Append to 'result' t's info and that of all of its descendants.
+        result += tree.descendants_report(1) do |t|
+          "#{time_24hour(t.time)}  #{t.title} (#{t.formal_type}:#{t.handle})"
+        end
       end
     end
     result

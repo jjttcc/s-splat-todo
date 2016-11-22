@@ -1,11 +1,12 @@
 require 'email'
 require 'reminder'
 require 'spectools'
+require 'timetools'
 
 # Items - actions, projects, appointments, etc. - to keep track of, not
 # forget about, and/or complete
 class STodoTarget
-  include SpecTools, ErrorTools
+  include SpecTools, ErrorTools, TimeTools
 
   public
 
@@ -51,8 +52,11 @@ class STodoTarget
       end
       result += "#{tag}: #{v}\n"
     end
-#!!!HERE:    result += "#{REMINDER_KEY}: #{reminders.join(', ')}\n"
-reminders.each do |r| result += "#{r.inspect}\n" end
+    result += "#{REMINDER_KEY}: "
+    remlist = reminders.map do |r|
+      time_24hour(r.time)
+    end
+    result += remlist.join(', ') + "\n"
     if @initial_email_addrs != nil then
       result += "initial #{EMAIL_KEY}: #{@initial_email_addrs.join(', ')}\n"
     end
@@ -237,7 +241,7 @@ reminders.each do |r| result += "#{r.inspect}\n" end
   # Constructed suffix for the subject/title/...
   def subject_suffix
     result = ""
-    if categories then
+    if ! categories.empty? then
       result = ", cat: " + categories.join(', cat: ')
     end
     result
@@ -307,10 +311,7 @@ reminders.each do |r| result += "#{r.inspect}\n" end
           n.send self
         end
       end
-#!!!!!!!!!!!!!!!!!!!!!!
-$log.warn "------------------------------------- triggering #{r.inspect}"
       r.trigger
-$log.warn "------------------------------------- #{r.inspect} was triggered"
     end
   end
 

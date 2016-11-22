@@ -37,7 +37,7 @@ help() {
 
 set_rubylib() {
     moredirs="facility error configuration notification specs data"
-    moredirs="$moredirs coordination"
+    moredirs="$moredirs coordination util"
     rubylib="RUBYLIB=$STEXEC_PATH/core"
     for d in $moredirs; do
         rubylib="$rubylib:$STEXEC_PATH/$d"

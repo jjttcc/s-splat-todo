@@ -32,7 +32,7 @@ class ReportManager
     targets = targets_for(handles)
     targets.each do |t|
       if t.can_have_children? then
-        report_descendants(t)
+        report_descendants(t, ! handles.empty?)
       else
         puts "#{t.handle} cannot have children."
       end
@@ -76,18 +76,11 @@ class ReportManager
     self.manager = manager
   end
 
-  def report_descendants target
+  def report_descendants target, ignore_parent = false
     # To prevent redundancy, only report descendants for the top-level
     # ancestor.
-    if ! target.has_parent? then
-      puts "#{target.handle}'s descendants:"
-      desc = target.descendants_report
-      desc.keys.sort.each do |level|
-        indent = ' ' * (2 * level)
-        desc[level].each do |t|
-          puts "#{indent}#{t.handle}"
-        end
-      end
+    if ignore_parent or ! target.has_parent? then
+      puts target.descendants_report
     end
   end
 

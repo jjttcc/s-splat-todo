@@ -37,7 +37,7 @@ class Project < CompositeTask
   ### Hook routine implementations
 
   def current_message
-    result = super + "goal: #{goal}\n"
+    result = super + "\ngoal: #{goal}\n"
   end
 
   def description_appendix

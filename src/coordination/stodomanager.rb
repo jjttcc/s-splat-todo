@@ -41,12 +41,9 @@ class STodoManager
     email = Email.new(mailer)
     existing_targets.values.each do |t|
       t.add_notifier(email)
-$log.warn "calling perform_ongoing_actions on #{t.handle}"
       t.perform_ongoing_actions
     end
-$log.warn "[perform_ongoing_actions]HERE"
     # (Calling perform_ongoing_actions above can change a target's state.)
-$log.warn "calling @data_manager.store_targets"
     @data_manager.store_targets(existing_targets)
   end
 
