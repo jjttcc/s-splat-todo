@@ -242,7 +242,8 @@ class STodoTarget
   def subject_suffix
     result = ""
     if ! categories.empty? then
-      result = ", cat: " + categories.join(', cat: ')
+      cat = categories.length > 1 ? 'cats: ' : 'cat: '
+      result = ", #{cat}" + categories.join(', ')
     end
     result
   end
