@@ -143,7 +143,7 @@ class STodoManager
   # If 't' has a 'parent_handle', find its parent and add 't', via
   # 'add_task", to the parent's tasks.
   def add_child(t)
-    p = t.parent_handle
+    p, abort_add = t.parent_handle, false
     if p then
       candidate_parent = @new_targets[p]
       if not candidate_parent then
@@ -151,13 +151,22 @@ class STodoManager
         if candidate_parent then
           $log.debug "#{t.handle}'s parent found among old targets: " +
             "'#{candidate_parent.title}'"
+          if candidate_parent.can_have_children? then
+            matching_child = candidate_parent.tasks.find do |c|
+              t.handle == c.handle
+            end
+            if matching_child != nil then
+              # t is already a child of candidate_parent:
+              abort_add = true
+            end
+          end
         end
       else
         $log.debug "#{t.handle}'s parent found among new targets: " +
           "'#{candidate_parent.title}'"
       end
       if candidate_parent then
-        if candidate_parent.can_have_children? then
+        if ! abort_add and candidate_parent.can_have_children? then
           candidate_parent.add_task(t)
         else
           $log.warn "target #{t.handle} is specified with a parent, " +
