@@ -1,7 +1,7 @@
 module TimeTools
   private
 
-  # 'datetime' in 24-hour format
+  # 'datetime' in 24-hour format - all spaces if 'datetime' == nil
   def time_24hour(datetime)
     result = nil
     if datetime == nil then

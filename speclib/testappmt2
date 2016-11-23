@@ -1,0 +1,13 @@
+type: appointment
+title: test appointment
+description: unknown appointment with unknown entity
+date_time: 2017/01/01
+categories: test
+duration: 60
+location: eiffel tower
+# (The first address is to be used only for the initial notification that
+# occurs when the s*todo item is created from this spec.  The second
+# address will be used only for any ongoing/reminder notifications.)
+email: testperson1@test.org[initial], testperson2@test.org[ongoing]
+calendar_ids: testperson2@test.org
+handle: testappmt-002a

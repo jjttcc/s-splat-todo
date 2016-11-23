@@ -1,0 +1,15 @@
+type: action
+comment: example: for testing
+handle: task-example1
+# This is a comment - IOW, it will be discarded.
+title: Wish Dad a happy birthday
+reminders: 2017/02/11 10:00, 2017/02/12 10:00, 2017/02/13 17:00
+description: Visit Dad on his birthday, or, if you're not able to, phone
+him.
+due_date: 2017/02/14
+# Note: If you use this file as a template, remember to change the email
+# addresses to valid addresses - or remove them.
+email: testperson@test.org
+calendar_ids: mr-tester@gmail.com
+categories: test, family
+parent:

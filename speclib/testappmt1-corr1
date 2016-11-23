@@ -1,0 +1,9 @@
+type: correction
+# Correction for test appointment 1a
+# Note: a type of 'correction' means that instead of creating a new item,
+# an existing item with the specified handle will be "corrected" - i.e.
+# updated with any new settings in the spec.  This spec will cause the
+# comment field and date_time to be updated.
+comment: Change the date.
+date_time: 2017/04/09 17:30
+handle: testappmt-001a

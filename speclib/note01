@@ -1,0 +1,44 @@
+type: note
+title: Mom's diary
+categories: family, personal
+handle: momdiary1
+priority: 4
+comment: test/example note
+description: This item is a note, or memorandum - that is, something you
+don't want to forget, but for which it is not appropriate to schedule a
+meeting/appointment or assign a task with a deadline.  The
+expiration_date is optional, but if you fill it in, it represents the
+date/time at which this note either becomes useless to you or that
+represents an approximate final date on which you think you should be reminded
+of the data (which typically will be all or part of the description) attached
+to this note.  For example, if you put your departed mother's diary in a
+special place, but don't want to think about the diary for a few years, you
+could create a note for it, with an expiration date, say, 10 years from now
+and with reminders for 5, 7, and 9 years from now.  This will allow you to
+forget about the diary for years, but be reminded of it in 5 years and in
+2-year increments after that; and you'll get a final reminder in 10 years -
+for the expiration_date.  If the expiration_date is blank or not present, it
+will essentially be regarded as an expiration date infinitely in the future
+(or, put another way, the date of the end of the universe).  This will
+allow you to see the note in reports and not ever allow it to expire, as well
+as, if you've specified reminder-dates, to be reminded of it on those dates.
+For the sake of being complete, here's an actual description of this
+fictional example:
+
+When Mom died in 2013 she left a diary behind - actually, she left behind 7
+notebooks that cover the last 20 years or so of her life.  The diaries are
+now in the safe in the main bedroom in our old house in Houston, Texas.
+This note is to remind myself that this diary exists and to go get it and
+read it and/or put it in a safer place, such as a safety deposit box, at
+some appropriate time in the future.
+comment:
+If you use this file as a template to create your own s*todo memo, don't
+forget to change the email addresses to something valid and useful for you
+(such as, of course, your own address and/or that of someone else you want
+to share this information with).
+reminders: 2021-12-15, 2023-12-15, 2025-12-15
+email: family-auto-biographer@test.org
+expiration_date: 2026/12-15
+# (This is an external comment - IOW, it will be discarded.)
+# google calendar id for event creation via gcalcli:
+calendar_ids: family-auto-biographer@gmail.com

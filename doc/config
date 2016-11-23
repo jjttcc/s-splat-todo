@@ -1,0 +1,6 @@
+# Change these settings as needed/desired.
+specpath = /home/mylogin/.stodo/specs
+datapath = /home/mylogin/.stodo/data
+emailtemplate = mutt -s <subject> <addrs>
+# The path of the gcalcli script:
+calendarcmd = /home/mylogin/lib/python2/bin/gcalcli

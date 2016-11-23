@@ -1,7 +1,10 @@
 require 'preconditionerror'
+require 'timetools'
 
 # Manager of reporting-related actions
 class ReportManager
+  include TimeTools
+
   public
 
   attr_accessor :manager
@@ -13,7 +16,7 @@ class ReportManager
       if short then
         puts "#{t.handle}: #{t.title}"
       else
-        puts target_info(t)
+        puts target_info(t, handles && !handles.empty?)
       end
     end
   end
@@ -84,14 +87,26 @@ class ReportManager
     end
   end
 
-  def target_info t
-    result = "[#{t.handle}] #{t.title}; "
-    if t.time != nil then
-      result += "time: #{t.time}; "
+  def target_info t, include_children = false
+    cutoff = include_children ? -1 : 1
+    tree = TreeNode.new(t)
+    # Append to 'result' t's info and that of all of its descendants.
+    result = tree.descendants_report(0, cutoff) do |t, level|
+      toplevel = (level != nil && level == 0)
+      title = toplevel ? t.title : "#{t.title[0..13]}.."
+      bl_result = "[#{t.handle}] #{title}; "
+      if t.time != nil then
+        bl_result += "time: #{time_24hour(t.time)};"
+      end
+      if toplevel then
+        if t.priority then bl_result += "priority: #{t.priority}; " end
+        if ! t.categories.empty? then
+          bl_result += "cats: " + t.categories.join(',')
+        end
+      end
+      bl_result += " (#{t.formal_type})"
     end
-    if t.priority then result += "priority: #{t.priority}; " end
-    result += "cats: " + t.categories.join(',')
-    result += " (#{t.formal_type})"
+    result
   end
 
   def targets_for handles, sorted = true

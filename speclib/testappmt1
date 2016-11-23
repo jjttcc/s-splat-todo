@@ -1,0 +1,12 @@
+type: meeting
+title: Generic test appointment
+description: unknown appointment with unknown entity
+date_time: 2017/02/15 09:30
+categories: test
+duration: 60
+location: Chrysler Building, main floor
+# Note: ongoing email only - i.e., no email will be sent on
+# appointment-object creation:
+email: nobody@nobody-but-us-iguanas.org[ongoing]
+calendar_ids: generic-dude@overlygeneraldata.org
+handle: testappmt-001a
