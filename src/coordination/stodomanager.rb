@@ -8,9 +8,10 @@ require 'stodotargeteditor'
 class STodoManager
   include ErrorTools
 
-  attr_reader :existing_targets, :mailer, :calendar
-
   public
+
+  attr_reader :existing_targets, :mailer, :calendar
+  attr_accessor :dirty
 
   # Call `initiate' on all new or edited targets.
   def perform_initial_processing
@@ -38,13 +39,16 @@ class STodoManager
   # precondition: existing_targets != nil
   def perform_ongoing_processing
     assert_precondition('existing_targets != nil') { existing_targets != nil }
+    self.dirty = false
     email = Email.new(mailer)
     existing_targets.values.each do |t|
       t.add_notifier(email)
-      t.perform_ongoing_actions
+      # Pass 'self' to allow t to set 'dirty':
+      t.perform_ongoing_actions(self)
     end
-    # (Calling perform_ongoing_actions above can change a target's state.)
-    @data_manager.store_targets(existing_targets)
+    if dirty then
+      @data_manager.store_targets(existing_targets)
+    end
   end
 
   def output_template target_builder

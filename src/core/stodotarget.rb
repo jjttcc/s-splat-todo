@@ -178,8 +178,8 @@ class STodoTarget
   end
 
   # Perform post-"initiate" notifications.
-  def perform_ongoing_actions
-    send_ongoing_notifications
+  def perform_ongoing_actions(status_client = nil)
+    send_ongoing_notifications(status_client)
   end
 
   private
@@ -289,7 +289,7 @@ class STodoTarget
   end
 
   # Send a notification email to all recipients.
-  def send_ongoing_notifications
+  def send_ongoing_notifications(status_client = nil)
     assert('ongoing_email_addrs != nil') { @ongoing_email_addrs != nil }
     rems = []
     reminders.each { |r| if r.is_due? then rems << r end }
@@ -313,6 +313,9 @@ class STodoTarget
         end
       end
       r.trigger
+    end
+    if ! rems.empty? and status_client != nil then
+      status_client.dirty = true
     end
   end
 

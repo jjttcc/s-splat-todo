@@ -3,7 +3,7 @@ require 'timetools'
 
 # Manager of reporting-related actions
 class ReportManager
-  include TimeTools
+  include TimeTools, ErrorTools
 
   public
 
@@ -37,7 +37,7 @@ class ReportManager
       if t.can_have_children? then
         report_descendants(t, ! handles.empty?)
       else
-        puts "#{t.handle} cannot have children."
+        puts "#{t.handle} (cannot have children), due: #{time_24hour(t.time)}"
       end
     end
   end
@@ -79,7 +79,10 @@ class ReportManager
     self.manager = manager
   end
 
+  # precondition: target.can_have_children?
   def report_descendants target, ignore_parent = false
+    assert_precondition('target.can_have_children?') {
+      target.can_have_children? }
     # To prevent redundancy, only report descendants for the top-level
     # ancestor.
     if ignore_parent or ! target.has_parent? then

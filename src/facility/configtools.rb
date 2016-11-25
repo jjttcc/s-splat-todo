@@ -39,6 +39,7 @@ module ConfigTools
   OLD_SPECS_TAG        = 'processed_specs'
   EMAIL_TEMPLATE_TAG   = 'emailtemplate'
   CALENDAR_COMMAND_TAG = 'calendarcmd'
+  USER_TAG             = 'user'
 
   # http://stackoverflow.com/questions/2108727/which-in-ruby-checking-if-program-exists-in-path-from-ruby)
   # The path of the executable `cmd', if it is in the user's path -

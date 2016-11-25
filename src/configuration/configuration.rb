@@ -1,6 +1,6 @@
 require 'logger'
 require 'fileutils'
-require 'filebaseddatamanager'
+require 'yamlstorebaseddatamanager'
 require 'spectools'
 require 'configtools'
 
@@ -10,6 +10,8 @@ class Configuration
 
   public
 
+  # user name/id
+  attr_reader :user
   # path of the stodo specification files
   attr_reader :spec_path
   # path of the stodo specification files after they have been initially
@@ -41,10 +43,11 @@ class Configuration
     settings = config_file_settings
     set_config_vars settings
     @test_run = ENV[STTESTRUN] != nil
-    @data_manager = FileBasedDataManager.new(data_path)
+    @data_manager = YamlStoreBasedDataManager.new(data_path, user)
   end
 
   def set_config_vars settings
+    @user = user_name settings
     @spec_path = settings[SPEC_PATH_TAG]
     @data_path = settings[DATA_PATH_TAG]
     @post_init_spec_path =
@@ -126,6 +129,21 @@ class Configuration
       $log.fatal "Needed executables were not found:\n" + errors.join("\n")
       raise "Fatal error: Missing executable files (See #{LOGPATH})"
     end
+  end
+
+  def user_name(settings)
+    result = settings[USER_TAG]
+    if result == nil || result.empty? then
+      require "etc"
+      result = Etc.getpwuid.name
+    else
+      if result =~ /(?:[^[:print:]]|\s)/ then
+        msg = "Invalid user name in config file #{result}"
+        $log.fatal "#{msg}"
+        raise msg
+      end
+    end
+    result
   end
 
   $log = Logger.new(LOGPATH)

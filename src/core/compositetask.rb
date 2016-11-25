@@ -23,7 +23,7 @@ class CompositeTask < STodoTarget
   end
 
   def to_s_appendix
-    "#{DUE_DATE_KEY}: #{due_date}\n"
+    "#{DUE_DATE_KEY}: #{time_24hour(due_date)}\n"
   end
 
   # All 'tasks', 'tasks' of those 'tasks', etc., recursively
@@ -96,6 +96,7 @@ class CompositeTask < STodoTarget
 
   def set_fields spec
     super spec
+#!!!!Suggestion: Change 'tasks' to a Set:
     @tasks = []
     if spec.due_date != nil then
       set_due_date spec
@@ -127,7 +128,7 @@ class CompositeTask < STodoTarget
   def current_message
     result =
     "title: #{title}\n" +
-    "due_date: #{due_date}\n" +
+    "due_date[c]: #{time_24hour(due_date)}\n" +
     "type: #{formal_type}\n"
     if priority then
       result += "priority: #{priority}\n"

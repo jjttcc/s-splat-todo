@@ -21,7 +21,7 @@ class ScheduledEvent < STodoTarget
   end
 
   def to_s_appendix
-    "#{DATE_TIME_KEY}: #{date_time}\n" +
+    "#{DATE_TIME_KEY}: #{time_24hour(date_time)}\n" +
     "#{DURATION_KEY}: #{duration}\n" +
     "#{LOCATION_KEY}: #{location}\n"
   end
@@ -89,7 +89,7 @@ class ScheduledEvent < STodoTarget
 
   def current_message
     result = "title: #{title}\n" + "date_time: " +
-      date_time.strftime('%Y-%m-%d %H:%M') + "\n" +
+      time_24hour(date_time) + "\n" +
       "duration: #{duration}\ntype: #{formal_type}\n"
     if location != nil then
       result += "location: #{location}\n"

@@ -29,7 +29,7 @@ class Memorandum < STodoTarget
   end
 
   def to_s_appendix
-    "#{EXPIRATION_DATE_KEY}: #{expiration_date}\n"
+    "#{EXPIRATION_DATE_KEY}: #{time_24hour(expiration_date)}\n"
   end
 
   ###  Status report
@@ -80,7 +80,7 @@ class Memorandum < STodoTarget
     result =
     "title: #{title}\n" +
     "type: #{formal_type}\n" +
-    "expiration_date: #{expiration_date}\n"
+    "expiration_date: #{time_24hour(expiration_date)}\n"
     if priority then
       result += "priority: #{priority}\n"
     end
