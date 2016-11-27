@@ -27,6 +27,14 @@ class STodoSpec
     result
   end
 
+  def to_s
+    result = ""
+    @setting_for.each do |k, v|
+      result += "#{k}: #{v}\n"
+    end
+    result
+  end
+
   private
 
   def initialize input_filepath, config

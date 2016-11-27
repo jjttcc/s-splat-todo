@@ -46,7 +46,7 @@ class Project < CompositeTask
 
   ###  Persistence
 
-  def marshal_dump
+  def old_remove__marshal_dump
     result = super
     result.merge!({
       'goal' => goal,
@@ -54,7 +54,7 @@ class Project < CompositeTask
     result
   end
 
-  def marshal_load(data)
+  def old_remove__marshal_load(data)
     super(data)
     @goal = data['goal']
   end

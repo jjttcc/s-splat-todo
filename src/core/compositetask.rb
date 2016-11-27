@@ -1,13 +1,15 @@
 require 'time'
+require 'set'
 require 'stodotarget'
 require 'treenode'
 
 # Tasks that, optionally, contain one or more subtasks
 class CompositeTask < STodoTarget
-
-  attr_reader :due_date, :tasks, :completion_date
+  include ErrorTools
 
   public
+
+  attr_reader :due_date, :tasks, :completion_date
 
   ###  Access
 
@@ -60,6 +62,9 @@ class CompositeTask < STodoTarget
   # Add a child task (to 'tasks').
   # precondition: t != nil and t.parent_handle == handle
   def add_task(t)
+    assert_precondition('t != nil and t.parent_handle == handle') do
+      t != nil and t.parent_handle == handle
+    end
     if ! (t != nil and t.parent_handle == handle) then
       raise PreconditionError, 't != nil and t.parent_handle == handle'
     end
@@ -70,9 +75,6 @@ class CompositeTask < STodoTarget
     super spec
     if spec.due_date != nil then
       set_due_date spec
-    end
-    if spec.parent != nil then
-      @parent_handle = spec.parent
     end
   end
 
@@ -96,8 +98,7 @@ class CompositeTask < STodoTarget
 
   def set_fields spec
     super spec
-#!!!!Suggestion: Change 'tasks' to a Set:
-    @tasks = []
+    @tasks = Set.new
     if spec.due_date != nil then
       set_due_date spec
     end
@@ -128,7 +129,7 @@ class CompositeTask < STodoTarget
   def current_message
     result =
     "title: #{title}\n" +
-    "due_date[c]: #{time_24hour(due_date)}\n" +
+    "due_date: #{time_24hour(due_date)}\n" +
     "type: #{formal_type}\n"
     if priority then
       result += "priority: #{priority}\n"
@@ -154,7 +155,7 @@ class CompositeTask < STodoTarget
 
   ###  Persistence
 
-  def marshal_dump
+  def old_remove__marshal_dump
     result = super
     result.merge!({
       'due_date' => due_date,
@@ -165,7 +166,7 @@ class CompositeTask < STodoTarget
     result
   end
 
-  def marshal_load(data)
+  def old_remove__marshal_load(data)
     super(data)
     @due_date = data['due_date']
     @tasks = data['tasks']

@@ -109,7 +109,7 @@ class ScheduledEvent < STodoTarget
 
   ###  Persistence
 
-  def marshal_dump
+  def old_remove__marshal_dump
     result = super
     result.merge!({
       'date_time' => date_time,
@@ -120,7 +120,7 @@ class ScheduledEvent < STodoTarget
     result
   end
 
-  def marshal_load(data)
+  def old_remove__marshal_load(data)
     super(data)
     @date_time = data['date_time']
     @duration = data['duration']

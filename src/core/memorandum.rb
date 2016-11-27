@@ -98,7 +98,7 @@ class Memorandum < STodoTarget
 
   ###  Persistence
 
-  def marshal_dump
+  def old_remove__marshal_dump
     result = super
     result.merge!({
       'expiration_date' => expiration_date,
@@ -107,7 +107,7 @@ class Memorandum < STodoTarget
     result
   end
 
-  def marshal_load(data)
+  def old_remove__marshal_load(data)
     super(data)
     @expiration_date = data['expiration_date']
     @final_reminder = data['final_reminder']

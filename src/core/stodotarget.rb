@@ -145,6 +145,9 @@ class STodoTarget
     @comment = spec.comment if spec.comment
     @priority = spec.priority if spec.priority
     @reminders = reminders_from_spec spec if spec.reminders != nil
+    if spec.parent != nil then
+      @parent_handle = spec.parent
+    end
     if spec.categories then
       @categories = spec.categories.split(SPEC_FIELD_DELIMITER)
     end
@@ -180,6 +183,18 @@ class STodoTarget
   # Perform post-"initiate" notifications.
   def perform_ongoing_actions(status_client = nil)
     send_ongoing_notifications(status_client)
+  end
+
+  ###  Persistence
+
+  # Make any needed changes before the persistent attributes are saved.
+  def prepare_for_db_write
+    @notifiers = []
+    @email_spec = ""
+    @notification_subject = ""
+    @full_notification_message = ""
+    @notification_email_addrs = nil
+    @short_notification_message = ""
   end
 
   private
@@ -351,7 +366,7 @@ class STodoTarget
 
   ###  Persistence
 
-  def marshal_dump
+  def old_remove__marshal_dump
     {
       'title' => title,
       'content' => content,
@@ -368,7 +383,7 @@ class STodoTarget
     }
   end
 
-  def marshal_load(data)
+  def old_remove__marshal_load(data)
     @title = data['title']
     @content = data['content']
     @handle = data['handle']

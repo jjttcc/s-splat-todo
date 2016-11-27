@@ -30,7 +30,9 @@ class TargetBuilder
       if t != nil then
         @targets << t
       else
-        $log.debug "nil target for spec: #{s.inspect}"
+        msg = "nil target for spec: #{s.handle}:#{s.type}"
+        if s.type == CORRECTION then msg += " (expected)" end
+        $log.debug msg
       end
     end
     assert_postcondition('targets != nil') { targets != nil }

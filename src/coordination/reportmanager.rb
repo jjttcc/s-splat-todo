@@ -45,7 +45,17 @@ class ReportManager
   # List info about the targets with the specified handles.
   def report_complete handles
     targets = targets_for(handles)
-    report_array = targets.map { |t| t.to_s }
+    report_array = targets.map do |t|
+      result = t.to_s
+      if t.can_have_children? then
+        result += "tasks: "
+        children = t.tasks.map do |subt|
+          subt.handle
+        end
+        result += children.join(', ') + "\n"
+      end
+      result
+    end
     puts report_array.join("\n")
   end
 

@@ -7,6 +7,9 @@ class YamlStoreBasedDataManager
   # Write `tgts' out to persistent store.
   def store_targets(tgts)
     @store.transaction do
+      tgts.values.each do |t|
+        t.prepare_for_db_write
+      end
       @store[@user] = tgts
     end
   end
@@ -30,6 +33,7 @@ class YamlStoreBasedDataManager
     @user = user
     @stored_fpath = @data_path + File::SEPARATOR + STORED_OBJECTS_FILENAME
     @store = YAML::Store.new(@stored_fpath)
+    @store.ultra_safe = true
   end
 
 end
