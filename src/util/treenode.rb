@@ -6,7 +6,7 @@ class TreeNode
     if @children == nil then
       @children = []
       if target.can_have_children? then
-        @children = target.tasks.map do |t|
+        @children = target.children.map do |t|
           TreeNode.new(t)
         end
       end

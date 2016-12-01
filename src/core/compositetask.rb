@@ -3,13 +3,13 @@ require 'set'
 require 'stodotarget'
 require 'treenode'
 
-# Tasks that, optionally, contain one or more subtasks
+# Tasks that, optionally, contain one or more children!!!!!
 class CompositeTask < STodoTarget
   include ErrorTools
 
   public
 
-  attr_reader :due_date, :tasks, :completion_date
+  attr_reader :due_date, :children, :completion_date
 
   ###  Access
 
@@ -28,10 +28,10 @@ class CompositeTask < STodoTarget
     "#{DUE_DATE_KEY}: #{time_24hour(due_date)}\n"
   end
 
-  # All 'tasks', 'tasks' of those 'tasks', etc., recursively
+  # All children, grandchildren, etc.
   def descendants
     result = []
-    tasks.each do |t|
+    children.each do |t|
       result << t
       if t.can_have_children? then
         result.concat(t.descendants)
@@ -59,16 +59,16 @@ class CompositeTask < STodoTarget
 
   ###  Element change
 
-  # Add a child task (to 'tasks').
+  # Add a STodoTarget object to 'children'.
   # precondition: t != nil and t.parent_handle == handle
-  def add_task(t)
+  def add_child(t)
     assert_precondition('t != nil and t.parent_handle == handle') do
       t != nil and t.parent_handle == handle
     end
     if ! (t != nil and t.parent_handle == handle) then
       raise PreconditionError, 't != nil and t.parent_handle == handle'
     end
-    @tasks << t
+    @children << t
   end
 
   def modify_fields spec
@@ -80,9 +80,9 @@ class CompositeTask < STodoTarget
 
   ###  Removal
 
-  # Remove task `t' from 'tasks'.
-  def remove_task t
-    @tasks.delete(t)
+  # Remove child `t' from 'children'.
+  def remove_child t
+    @children.delete(t)
   end
 
   ###  Miscellaneous
@@ -98,7 +98,7 @@ class CompositeTask < STodoTarget
 
   def set_fields spec
     super spec
-    @tasks = Set.new
+    @children = Set.new
     if spec.due_date != nil then
       set_due_date spec
     end
@@ -135,9 +135,9 @@ class CompositeTask < STodoTarget
       result += "priority: #{priority}\n"
     end
     result += "description: #{content}\n"
-    if ! tasks.empty? then
-      result += "subtasks:\n"
-      tasks.each do |t|
+    if ! children.empty? then
+      result += "children:\n"
+      children.each do |t|
         tree = TreeNode.new(t)
         # Append to 'result' t's info and that of all of its descendants.
         result += tree.descendants_report(1) do |t|
@@ -159,7 +159,7 @@ class CompositeTask < STodoTarget
     result = super
     result.merge!({
       'due_date' => due_date,
-      'tasks' => tasks,
+      'children' => children,
       'completion_date' => completion_date,
       'final_reminder' => final_reminder
     })
@@ -169,7 +169,7 @@ class CompositeTask < STodoTarget
   def old_remove__marshal_load(data)
     super(data)
     @due_date = data['due_date']
-    @tasks = data['tasks']
+    @children = data['children']
     @completion_date = data['completion_date']
     @final_reminder = data['final_reminder']
   end

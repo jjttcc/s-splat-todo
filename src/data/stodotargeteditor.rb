@@ -39,7 +39,7 @@ class STodoTargetEditor
     if t.parent_handle != nil then
       parent = @target_for[t.parent_handle]
       if parent and parent.can_have_children? then
-        parent.remove_task(t)
+        parent.remove_child(t)
       end
     end
     @target_for.delete(handle)

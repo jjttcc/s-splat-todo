@@ -48,9 +48,9 @@ class ReportManager
     report_array = targets.map do |t|
       result = t.to_s
       if t.can_have_children? then
-        result += "tasks: "
-        children = t.tasks.map do |subt|
-          subt.handle
+        result += "children: "
+        children = t.children.map do |child|
+          child.handle
         end
         result += children.join(', ') + "\n"
       end

@@ -77,7 +77,7 @@ class STodoTarget
     result
   end
 
-  # All descendants (subtasks, subtasks of subtasks, etc.) of self, if any
+  # All descendants (children, grandchildren, etc.) of self, if any
   # postcondition: result != nil && (! can_have_children? implies result.empty?)
   def descendants
     result = []

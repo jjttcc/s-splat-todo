@@ -1,6 +1,6 @@
 require 'compositetask'
 
-# Composite tasks of some importance
+# Tasks that are important enough to have a goal
 class Project < CompositeTask
   attr_reader :goal
 
