@@ -1,7 +1,10 @@
+require 'time'
+require 'set'
 require 'email'
 require 'reminder'
 require 'spectools'
 require 'timetools'
+require 'treenode'
 
 # Items - actions, projects, appointments, etc. - to keep track of, not
 # forget about, and/or complete
@@ -11,7 +14,7 @@ class STodoTarget
   public
 
   attr_reader :title, :content, :handle, :calendar_ids, :priority, :comment,
-    :reminders, :categories, :parent_handle, :notifiers
+    :reminders, :categories, :parent_handle, :notifiers, :children
   alias :description :content
   alias :name :handle
   alias :detail :comment
@@ -81,10 +84,12 @@ class STodoTarget
   # postcondition: result != nil && (! can_have_children? implies result.empty?)
   def descendants
     result = []
-    assert_postcondition(
-      'result != nil && (! can_have_children? implies result.empty?)') {
-      result != nil && implies(! self.can_have_children?, result.empty?)
-    }
+    children.each do |t|
+      result << t
+      if t.can_have_children? then
+        result.concat(t.descendants)
+      end
+    end
     result
   end
 
@@ -101,6 +106,10 @@ class STodoTarget
 
   ###  Status report
 
+  def can_have_children?
+    true
+  end
+
   def spec_type
     raise "<spec_type>: descendant class-method implementation required"
   end
@@ -114,16 +123,21 @@ class STodoTarget
     @valid
   end
 
-  def can_have_children?
-    false
-  end
-
   # Does 'self' have a parent?
   def has_parent?
     self.parent_handle != nil
   end
 
   ###  Element change
+
+  # Add a STodoTarget object to 'children'.
+  # precondition: t != nil and t.parent_handle == handle
+  def add_child(t)
+    assert_precondition('t != nil and t.parent_handle == handle') do
+      t != nil and t.parent_handle == handle
+    end
+    @children << t
+  end
 
   # Add a notifier to the list of notifiers to be used by `initiate' and
   # `perform_ongoing_actions'.
@@ -156,6 +170,13 @@ class STodoTarget
     end
   end
 
+  ###  Removal
+
+  # Remove child `t' from 'children'.
+  def remove_child t
+    @children.delete(t)
+  end
+
   ###  Hash-related queries
 
   # hash to allow use in a hashtable (Hash)
@@ -185,6 +206,15 @@ class STodoTarget
     send_ongoing_notifications(status_client)
   end
 
+  ###  Miscellaneous
+
+  def descendants_report
+    tree = TreeNode.new(self)
+    tree.descendants_report do |t|
+      "#{t.handle}, due: #{time_24hour(t.time)}"
+    end
+  end
+
   ###  Persistence
 
   # Make any needed changes before the persistent attributes are saved.
@@ -210,6 +240,7 @@ class STodoTarget
   end
 
   def set_fields spec
+    @children = Set.new
     @title = spec.title
     @handle = spec.handle
     @email_spec = spec.email
@@ -225,6 +256,9 @@ class STodoTarget
     @calendar_ids = []
     if spec.calendar_ids != nil then
       @calendar_ids = spec.calendar_ids.split(SPEC_FIELD_DELIMITER)
+    end
+    if spec.parent != nil then
+      @parent_handle = spec.parent
     end
   end
 
@@ -263,6 +297,21 @@ class STodoTarget
     result
   end
 
+  def current_message_appendix
+    result = ""
+    if ! children.empty? then
+      result += "subordinates:\n"
+      children.each do |t|
+        tree = TreeNode.new(t)
+        # Append to 'result' t's info and that of all of its descendants.
+        result += tree.descendants_report(1) do |t|
+          "#{time_24hour(t.time)}  #{t.title} (#{t.formal_type}:#{t.handle})"
+        end
+      end
+    end
+    result
+  end
+
   def set_email_addrs
     emails = raw_email_addrs
     @initial_email_addrs = []
@@ -284,7 +333,7 @@ class STodoTarget
       # Set notification components to be used by the 'notifiers'.
       @notification_subject = 'initial ' + current_message_subject +
         subject_suffix
-      @full_notification_message = current_message
+      @full_notification_message = current_message + current_message_appendix
       @notification_email_addrs = @initial_email_addrs
       @short_notification_message = ""
       notifiers.each do |n|
@@ -320,7 +369,7 @@ class STodoTarget
         # Set notification components to be used by the 'notifiers'.
         @notification_subject = r.addendum + message_subject_label +
           current_message_subject + subject_suffix + " #{r.date_time}"
-        @full_notification_message = current_message
+        @full_notification_message = current_message + current_message_appendix
         @notification_email_addrs = @ongoing_email_addrs
         @short_notification_message = ""
         notifiers.each do |n|
@@ -378,6 +427,7 @@ class STodoTarget
       'categories' => categories,
       'initial_email_addrs' => @initial_email_addrs,
       'ongoing_email_addrs' => @ongoing_email_addrs,
+      'children' => children,
       'valid' => @valid,
       'parent_handle' => parent_handle
     }
@@ -394,6 +444,7 @@ class STodoTarget
     @categories = data['categories']
     @initial_email_addrs = data['initial_email_addrs']
     @ongoing_email_addrs = data['ongoing_email_addrs']
+    @children = data['children']
     @valid = data['valid']
     @parent_handle = data['parent_handle']
     @notifiers = []

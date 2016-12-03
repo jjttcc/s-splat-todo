@@ -1,7 +1,7 @@
-require 'compositetask'
+require 'task'
 
 # Tasks that are important enough to have a goal
-class Project < CompositeTask
+class Project < Task
   attr_reader :goal
 
   ###  Access

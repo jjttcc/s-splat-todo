@@ -148,7 +148,7 @@ class STodoManager
   # 'add_child", to the parent's children.
   def add_child(t)
     p, abort_add = t.parent_handle, false
-    $log.debug "[add_child] t, p: #{t.handle}, #{p}"
+    $log.debug "[add_child] t, p: '#{t.handle}', '#{p}'"
     if p then
       candidate_parent = @new_targets[p]
       if not candidate_parent then

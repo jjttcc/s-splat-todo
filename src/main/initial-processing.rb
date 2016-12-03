@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 # Execute initial processing of new s*todo items based on new specs.
 
-require 'compositetask.rb'
 require 'memorandum'
 require 'configuration'
 require 'filebasedspecgatherer'

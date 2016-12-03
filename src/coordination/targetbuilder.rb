@@ -90,7 +90,7 @@ class TargetBuilder
   def init_target_factory
     @target_factory_for = {
       PROJECT     => lambda do |spec| Project.new(spec) end,
-      TASK_ALIAS1 => lambda do |spec| CompositeTask.new(spec) end,
+      TASK_ALIAS1 => lambda do |spec| Task.new(spec) end,
       NOTE        => lambda do |spec| Memorandum.new(spec) end,
       APPOINTMENT => lambda do |spec| ScheduledEvent.new(spec) end,
       CORRECTION  => lambda do |spec| edit_target(spec) end,
