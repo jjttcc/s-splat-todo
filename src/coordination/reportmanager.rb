@@ -74,10 +74,13 @@ class ReportManager
     puts report_items.sort.join("\n")
   end
 
-  # List the first upcoming reminder for the targets with the specified
-  # handles, or if 'handles' is nil, for all targets.
+  # List uncompleted/not-cancelled targets with their due dates.
   def report_due(handles)
-    targets_due = targets_for(handles).sort.map do |t|
+    targets_due = (targets_for(handles).select do |t|
+      state = (t.state != nil)? t.state.value : nil
+      state == nil || (state != StateValues::COMPLETED &&
+                       state != StateValues::CANCELED)
+    end).sort.map do |t|
       TargetDue.new(t)
     end
     puts targets_due.join("\n")

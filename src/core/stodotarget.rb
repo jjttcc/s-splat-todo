@@ -5,6 +5,7 @@ require 'reminder'
 require 'spectools'
 require 'timetools'
 require 'treenode'
+require 'targetstate'
 
 # Items - actions, projects, appointments, etc. - to keep track of, not
 # forget about, and/or complete
@@ -14,7 +15,7 @@ class STodoTarget
   public
 
   attr_reader :title, :content, :handle, :calendar_ids, :priority, :comment,
-    :reminders, :categories, :parent_handle, :notifiers, :children
+    :reminders, :categories, :parent_handle, :notifiers, :children, :state
   alias :description :content
   alias :name :handle
   alias :detail :comment
@@ -46,6 +47,7 @@ class STodoTarget
       if v == nil then  # (description is an alias, not an attribute.)
         case tag
         when DESCRIPTION_KEY
+          result += "status: #{state}\n"
           v = self.description
         when PARENT_KEY
           v = self.parent_handle
@@ -237,6 +239,7 @@ class STodoTarget
     check_fields
     set_email_addrs
     @notifiers = []
+    @state = TargetState.new
   end
 
   def set_fields spec

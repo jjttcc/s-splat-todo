@@ -11,19 +11,25 @@ stodo_envpath="$STODO_PATH"
 
 
 mainhelp() {
+    gap="    "
     echo -e "Usage: $progname <command>\n\ncommands:"
-    echo -e "  new|init     look for and process new to-do items"
-    echo -e "  notify       send pending notifications to-do items"
-    echo -e "  combined     combine notifications with processing of new items"
-    echo -e "  report       display a report of existing to-do items"
-    echo -e "  del <h>...   delete targets with handles <h>, ..."
-    echo -e "  temp         output a to-do item template"
+    echo -e "  help [<x>]${gap}     show help (on topix <x>, if provided)"
+    echo -e "  new|init ${gap}      look for and process new to-do items"
+    echo -e "  notify ${gap}        send pending notifications to-do items"
+    echo -e "  combined${gap}       combine notifications with processing of \c"
+    echo -e "new items"
+    echo -e "  report ${gap}        display a report of existing to-do items"
+    echo -e "  del <h>...${gap}     delete targets with handles <h>, ..."
+    echo -e "  stat <x> <h>...${gap}change status of handles <h>, ... to \c"
+    echo -e "state-change <x>"
+    echo -e "  temp ${gap}          output a to-do item template"
 }
 
 indepth_help() {
     case "$1" in
       rep*) report_help ;;
       temp*) template_help ;;
+      sta*) state_help ;;
     esac
 }
 
@@ -121,6 +127,20 @@ template_help() {
     echo -e "\n(If <type> is not specified, assume 'task'.)"
 }
 
+state_help() {
+    echo -e "Usage: $progname stat[us] <state-change>"
+    echo -e "  Where <state-change> is one of:\c"
+    echo -e "  cancel, resume, finish, suspend"
+    echo -e "  with the following possible state changes:\n"
+    echo -e "   current state | state-change | new state"
+    echo -e "  -------------------------------------------"
+    echo -e "  'in-progress'  | cancel       | 'canceled'"
+    echo -e "  'in-progress'  | suspend      | 'suspended'"
+    echo -e "  'in-progress'  | finish       | 'completed'"
+    echo -e "  'suspended'    | resume       | 'in-progress'"
+    echo -e "  'suspended'    | cancel       | 'canceled'"
+}
+
 case $1 in
     new|init) process_new_items
         ;;
@@ -133,6 +153,11 @@ case $1 in
     del*)
       shift;
       do_edit delete $*
+        ;;
+    sta*)
+      shift;
+      new_state=$1; shift
+      do_edit state:$new_state $*
         ;;
     temp*) shift; make_template $*
         ;;
