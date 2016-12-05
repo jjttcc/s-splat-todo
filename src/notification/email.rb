@@ -6,11 +6,11 @@ class Email
   public
 
   # Send the email
-  def send source
+  def send_message source
     @to_addrs = source.notification_email_addrs
     @subject = source.notification_subject
     @body = source.full_notification_message
-    mailer.send self
+    mailer.send_message self
   end
 
   private

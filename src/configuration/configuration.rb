@@ -6,7 +6,7 @@ require 'configtools'
 
 # Configuration settings for the current run
 class Configuration
-  include SpecTools, ConfigTools, FileTest, FileUtils
+  include ConfigTools, FileTest, FileUtils
 
   public
 
@@ -19,6 +19,8 @@ class Configuration
   attr_reader :post_init_spec_path
   # path for application data files
   attr_reader :data_path
+  # path(s) for backups of data files
+  attr_reader :backup_paths
   # command to use to send email
   attr_reader :templated_email_command
   # calendar application for submitting calendar entries
@@ -54,7 +56,9 @@ class Configuration
       ConfigTools::constructed_path([data_path, OLD_SPECS_TAG])
     @templated_email_command = settings[EMAIL_TEMPLATE_TAG]
     @calendar_tool = settings[CALENDAR_COMMAND_TAG]
+    @backup_paths = scanned_backup_paths(settings[BACKUP_PATH_TAG])
     validate_paths(spec_path, data_path, post_init_spec_path)
+    validate_paths(*backup_paths)
     validate_exefiles(@calendar_tool)
   end
 
@@ -111,8 +115,9 @@ class Configuration
       end
     end
     if errors.length > 0 then
-      $log.fatal "Needed directories are not readable:\n" + errors.join("\n")
-      raise "Fatal error: Missing or unreadable system directories"
+      errs = errors.join("\n")
+      $log.fatal "Needed directories are not readable:\n" + errs
+      raise "Fatal error: Missing or unreadable system directories: #{errs}"
     end
   end
 
@@ -129,6 +134,14 @@ class Configuration
       $log.fatal "Needed executables were not found:\n" + errors.join("\n")
       raise "Fatal error: Missing executable files (See #{LOGPATH})"
     end
+  end
+
+  def scanned_backup_paths p
+    result = []
+    if p then
+      result = p.split(/,\s*/)
+    end
+    result
   end
 
   def user_name(settings)

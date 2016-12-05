@@ -39,7 +39,8 @@ class STodoTarget
 
   # self's fields, labeled with associated tags, for use as a template in a
   # specification file
-  def to_s
+#!!!!![template: Output in original specfile format]!!!!!
+  def to_s(template = false)
     result = "#{TYPE_KEY}: #{spec_type}\n"
     for tag in [TITLE_KEY, HANDLE_KEY, DESCRIPTION_KEY, PRIORITY_KEY,
                 COMMENT_KEY, PARENT_KEY] do
@@ -340,7 +341,7 @@ class STodoTarget
       @notification_email_addrs = @initial_email_addrs
       @short_notification_message = ""
       notifiers.each do |n|
-        n.send self
+        n.send_message self
       end
     end
   end
@@ -376,7 +377,7 @@ class STodoTarget
         @notification_email_addrs = @ongoing_email_addrs
         @short_notification_message = ""
         notifiers.each do |n|
-          n.send self
+          n.send_message self
         end
       end
       r.trigger

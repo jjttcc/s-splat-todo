@@ -7,7 +7,7 @@ class Mailer
 
   public
 
-  def send email
+  def send_message email
     subject, addresses, body = email.subject, email.to_addrs, email.body
     command = email_command(subject, addresses)
     exec_cmd command, body

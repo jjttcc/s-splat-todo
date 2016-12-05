@@ -23,8 +23,6 @@ class CalendarEntry
     clear_fields
   end
 
-  alias :send :submit
-
   ###  Status report
 
   def inspect
