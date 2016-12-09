@@ -85,21 +85,22 @@ class STodoTargetEditor
       valid = false
       case statechg
       when FINISH
-        if StateValues::IN_PROGRESS == old_state then
+        if TargetStateValues::IN_PROGRESS == old_state then
           current_state.send(statechg); valid = true
         end
       when RESUME
-        if StateValues::SUSPENDED == old_state then
+        if TargetStateValues::SUSPENDED == old_state then
           current_state.send(statechg); valid = true
         end
       when CANCEL
         if
-          [StateValues::IN_PROGRESS,StateValues::SUSPENDED].include? old_state
+          [TargetStateValues::IN_PROGRESS,
+           TargetStateValues::SUSPENDED].include?(old_state)
         then
           current_state.send(statechg); valid = true
         end
       when SUSPEND
-        if StateValues::IN_PROGRESS == old_state then
+        if TargetStateValues::IN_PROGRESS == old_state then
           current_state.send(statechg); valid = true
         end
       end

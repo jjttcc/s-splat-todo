@@ -10,6 +10,7 @@ module SpecTools
     'date_time', 'duration', 'location', 'calendar_ids', 'categories'
   SINGULAR_REMINDER_KEY = 'reminder'
   SPEC_FIELD_DELIMITER = /,\s*/
+  SPEC_FIELD_JOINER = ','
   DEFAULT_LOG_PATH = "/tmp/stodo-debug-#{$$}"
 
   # constants - s*todo-target-types and aliases:
@@ -31,5 +32,7 @@ module SpecTools
   ONGOING_EMAIL_PTRN = Regexp.new('\[ongoing\]')
   SUBJECT_TEMPLATE_PTRN = Regexp.new('<subject>')
   ADDRS_TEMPLATE_PTRN = Regexp.new('<addrs>')
+  INITIAL_EMAIL_TAG = '[initial]'
+  ONGOING_EMAIL_TAG = '[ongoing]'
 
 end

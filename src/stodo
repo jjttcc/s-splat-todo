@@ -14,7 +14,7 @@ stodo_envpath="$STODO_PATH"
 mainhelp() {
     gap="    "
     echo -e "Usage: $progname <command>\n\ncommands:"
-    echo -e "  help [<x>]${gap}     show help (on topix <x>, if provided)"
+    echo -e "  help [<x>]${gap}     show help (on topic <x>, if provided)"
     echo -e "  new|init ${gap}      look for and process new to-do items"
     echo -e "  notify ${gap}        send pending notifications to-do items"
     echo -e "  combined${gap}       combine notifications with processing of \c"
@@ -29,11 +29,11 @@ mainhelp() {
 }
 
 indepth_help() {
-    case "$1" in
-      rep*) report_help ;;
-      temp*) template_help ;;
-      sta*) state_help ;;
-    esac
+  case "$1" in
+    rep*) report_help ;;
+    temp*) template_help ;;
+    sta*) state_help ;;
+  esac
 }
 
 help() {
@@ -45,132 +45,171 @@ help() {
 }
 
 set_rubylib() {
-    moredirs="facility error configuration notification specs data"
-    moredirs="$moredirs coordination util"
-    rubylib="RUBYLIB=$STEXEC_PATH/core"
-    for d in $moredirs; do
-        rubylib="$rubylib:$STEXEC_PATH/$d"
-    done
+  moredirs="facility error configuration notification specs data"
+  moredirs="$moredirs coordination util"
+  rubylib="RUBYLIB=$STEXEC_PATH/core"
+  for d in $moredirs; do
+    rubylib="$rubylib:$STEXEC_PATH/$d"
+  done
+  eval export $rubylib
 }
 
 checkpath() {
-    for f in $*; do
-        STEXEC_PATH=
-        for p in $stodopath $stodo_envpath; do
-            if [ -x "$p/$f" ]; then
-                STEXEC_PATH=$p
-            fi
-        done
-        if [ -z "$STEXEC_PATH" ]; then
-            echo "Error: file $f not found"
-            exit 11
-        fi
+  for f in $*; do
+    STEXEC_PATH=
+    for p in $stodopath $stodo_envpath; do
+      if [ -x "$p/$f" ]; then
+        STEXEC_PATH=$p
+      fi
     done
-    if [ -z "$rubylib" ]; then
-        set_rubylib
+    if [ -z "$STEXEC_PATH" ]; then
+      echo "Error: file $f not found"
+      exit 11
     fi
+  done
+  if [ -z "$rubylib" ]; then
+    set_rubylib
+  fi
 }
 
 run() {
-    cmd=$1; shift
-    eval $rubylib $STEXEC_PATH/$cmd $*
+  cmd=$1; shift
+  $STEXEC_PATH/$cmd "$@"
 }
 
 process_new_items() {
-    checkpath $initproc
-    run $initproc
+  checkpath $initproc
+  run $initproc
 }
 
 process_notifications() {
-    checkpath $notifyproc
-    run $notifyproc
+  checkpath $notifyproc
+  run $notifyproc
 }
 
 do_combined_processing() {
-    checkpath $initproc $notifyproc
-    run $initproc
-    sleep 1
-    run $notifyproc
+  checkpath $initproc $notifyproc
+  run $initproc
+  sleep 1
+  run $notifyproc
 }
 
 do_report() {
-    checkpath $report
-    run $report $*
+  checkpath $report
+  modded_args=
+  case $1 in
+    -a*) shift; modded_args=$1:ignore; shift
+      ;;
+    -p*) shift; modded_args=$1:inprog; shift
+      ;;
+    -*) shift
+      ;;
+  esac
+  run $report $modded_args $*
 }
 
 do_edit() {
-    checkpath $edit
-    run $edit $*
+  checkpath $edit
+  run $edit $*
 }
 
 do_backup() {
-    checkpath $admin
-    run $admin backup $*
+  checkpath $admin
+  run $admin backup $*
 }
 
 make_template() {
-    checkpath $mktmpl
-    run $mktmpl $*
+  checkpath $mktmpl
+  if [ -w . ]; then
+    outfile=$(mktemp $1.XXXX)
+    run $mktmpl "$@" >$outfile
+    if [ "$EDITOR" ]; then
+      $EDITOR $outfile
+    fi
+  else
+    run $mktmpl "$@"
+  fi
 }
 
 report_help() {
-    echo -e "Usage: $progname rep[ort] [<report-type> [handle ...]]"
-    echo -e "\nWhere <report-type> is one of:"
-    echo -e "  short        short report - list only handles and titles"
-    echo -e "  summary      summary report for the specified handles"
-    echo -e "  complete     complete report for the specified handles"
-    echo -e "  due          pending items with their \"due\" date"
-    echo -e "  remind       upcoming (first) reminder"
-    echo -e "  remindh      upcoming (first) reminder" \
-        "(with handle instead of title)"
-    echo -e "  remindall    all upcoming reminders"
-    echo -e "  children     report of all child relationships"
-    echo -e "\n(If <report-type> is not specified, list all target handles.)"
+  s='   '
+  echo -e "Usage: $progname rep[ort] [options] [<report-type> [handle ...]]"
+  echo -e "Options:"
+  echo -e "  -a $s         show All items, including those canceled or completed"
+  echo -e "\nWhere <report-type> is one of:"
+  echo -e "  short $s      short report - list only handles and titles"
+  echo -e "  summary $s    summary report for the specified handles"
+  echo -e "  complete $s   complete report for the specified handles"
+  echo -e "  due $s        pending items with their \"due\" date"
+  echo -e "  remind $s     upcoming (first) reminder"
+  echo -e "  remindh $s    upcoming (first) reminder" \
+    "(with handle instead of title)"
+  echo -e "  remindall $s  all upcoming reminders"
+  echo -e "  children $s   report of all child relationships"
+  echo -e "\nNotes:"
+  echo -e " - If <report-type> is not specified, list all target handles."
+  echo -e " - Add :ignore to ignore state (i.e., include canceled and \c"
+  echo -e "completed items) -\n   For example, 'stodo rep rem:ignore'"
 }
 
 template_help() {
-    echo -e "Usage: $progname temp [<type>]"
-    echo -e "Where <type> is one of:\c"
-    echo -e " task, memo, appointment (or event), project"
-    echo -e "\n(If <type> is not specified, assume 'task'.)"
+  s='     '
+  echo -e "Usage: $progname temp [<type>] [options]"
+  echo -e "Where <type> is one of:\c"
+  echo -e " task, memo, appointment (or event), project"
+  echo -e "(If <type> is not specified, assume 'task'.)"
+  echo -e "\nOptions:"
+  echo -e "  -t <title> $s     Use <title> as the Title"
+  echo -e "  -h <handle> $s    Use <handle> as the Handle"
+  echo -e "  -d <desc> $s      Use <desc> as the Description"
+  echo -e "  -c <cat>... $s    Use <cat>... as the Category/Categories"
+  echo -e "  -e <email> $s     Use <email> as the Email address"
+  echo -e "  -ti <datetime>$s  Use <datetime> as the date&time"
+  echo -e "  -ie <email> $s    Use <email> as the Initial Email address"
+  echo -e "  -oe <email> $s    Use <email> as the Ongoing Email address"
+  echo -e "  -p <handle> $s    Use <handle> to specify the Parent"
+  echo -e "  -ci <id>... $s    Use <id>... as the Calendar Ids"
+  echo -e "  -l <loc> $s       Use <loc> as the location (appointment only)"
+  echo -e "  -du <dur> $s      Use <dur> as the duration (appointment only)"
+  echo -e "  -pr <priority> $s Use <priority> as the priority"
 }
 
 state_help() {
-    echo -e "Usage: $progname stat[us] <state-change>"
-    echo -e "  Where <state-change> is one of:\c"
-    echo -e "  cancel, resume, finish, suspend"
-    echo -e "  with the following possible state changes:\n"
-    echo -e "   current state | state-change | new state"
-    echo -e "  -------------------------------------------"
-    echo -e "  'in-progress'  | cancel       | 'canceled'"
-    echo -e "  'in-progress'  | suspend      | 'suspended'"
-    echo -e "  'in-progress'  | finish       | 'completed'"
-    echo -e "  'suspended'    | resume       | 'in-progress'"
-    echo -e "  'suspended'    | cancel       | 'canceled'"
+  echo -e "Usage: $progname stat[us] <state-change> <handle>..."
+  echo -e "  Where <state-change> is one of:\c"
+  echo -e "  cancel, resume, finish, suspend"
+  echo -e "  with the following possible state changes:\n"
+  echo -e "   current state | state-change | new state"
+  echo -e "  -------------------------------------------"
+  echo -e "  'in-progress'  | cancel       | 'canceled'"
+  echo -e "  'in-progress'  | suspend      | 'suspended'"
+  echo -e "  'in-progress'  | finish       | 'completed'"
+  echo -e "  'suspended'    | resume       | 'in-progress'"
+  echo -e "  'suspended'    | cancel       | 'canceled'"
 }
 
 case $1 in
-    new|init) process_new_items
-        ;;
-    noti*) process_notifications
-        ;;
-    comb*) do_combined_processing
-        ;;
-    rep*) shift; do_report $*
-        ;;
-    del*)
-      shift;
-      do_edit delete $*
-        ;;
-    sta*)
-      shift;
-      new_state=$1; shift
-      do_edit state:$new_state $*
-        ;;
-    temp*) shift; make_template $*
-        ;;
-    back*) shift; do_backup $*
-        ;;
-    *) shift; help $*
-        ;;
+  new|init) process_new_items
+    ;;
+  noti*) process_notifications
+    ;;
+  comb*) do_combined_processing
+    ;;
+  rep*) shift; do_report $*
+    ;;
+  del*)
+    shift;
+    do_edit delete $*
+    ;;
+  sta*)
+    shift;
+    new_state=$1; shift
+    do_edit state:$new_state $*
+    ;;
+  temp*) shift; make_template "$@"
+    ;;
+  back*) shift; do_backup $*
+    ;;
+  *) shift; help $*
+    ;;
 esac

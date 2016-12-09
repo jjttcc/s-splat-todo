@@ -39,7 +39,6 @@ class STodoTarget
 
   # self's fields, labeled with associated tags, for use as a template in a
   # specification file
-#!!!!![template: Output in original specfile format]!!!!!
   def to_s(template = false)
     result = "#{TYPE_KEY}: #{spec_type}\n"
     for tag in [TITLE_KEY, HANDLE_KEY, DESCRIPTION_KEY, PRIORITY_KEY,
@@ -63,12 +62,7 @@ class STodoTarget
       time_24hour(r.time)
     end
     result += remlist.join(', ') + "\n"
-    if @initial_email_addrs != nil then
-      result += "initial #{EMAIL_KEY}: #{@initial_email_addrs.join(', ')}\n"
-    end
-    if @ongoing_email_addrs != nil then
-      result += "ongoing #{EMAIL_KEY}: #{@ongoing_email_addrs.join(', ')}\n"
-    end
+    result += email_info(template)
     result += "#{CALENDAR_IDS_KEY}: #{calendar_ids.join(', ')}\n"
     result += "#{CATEGORIES_KEY}: #{categories.join(', ')}\n"
     result + to_s_appendix
@@ -108,6 +102,11 @@ class STodoTarget
   end
 
   ###  Status report
+
+  # Is self in an active state?
+  def active?
+    result = (state == nil) || state.active?
+  end
 
   def can_have_children?
     true
@@ -394,6 +393,44 @@ class STodoTarget
       result = @email_spec.split(SPEC_FIELD_DELIMITER)
     end
     assert_postcondition('result != nil') { result != nil }
+    result
+  end
+
+  # email information for output (to_s)
+  def email_info(template)
+    result = ""
+    if template then
+      email_map = {:initial => [], :ongoing => []}
+      email_set = Set.new
+      @initial_email_addrs.each do |e|
+        email_map[:initial] << e
+        email_set << e
+      end
+      @ongoing_email_addrs.each do |e|
+        email_map[:ongoing] << e
+        email_set << e
+      end
+      emails = []
+      email_set.each do |e|
+        if email_map[:initial].include?(e) then
+          if email_map[:ongoing].include?(e) then
+            emails << e   # (Both initial and ongoing, so no tag.)
+          else
+            emails << e + INITIAL_EMAIL_TAG
+          end
+        else
+          emails << e + ONGOING_EMAIL_TAG
+        end
+      end
+      result = "email: " + emails.join(SPEC_FIELD_JOINER + ' ') + "\n"
+    else
+      if @initial_email_addrs != nil then
+        result += "initial #{EMAIL_KEY}: #{@initial_email_addrs.join(', ')}\n"
+      end
+      if @ongoing_email_addrs != nil then
+        result += "ongoing #{EMAIL_KEY}: #{@ongoing_email_addrs.join(', ')}\n"
+      end
+    end
     result
   end
 

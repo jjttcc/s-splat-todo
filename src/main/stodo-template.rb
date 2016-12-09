@@ -4,11 +4,10 @@
 require 'configuration'
 require 'stodomanager'
 require 'templatetargetbuilder'
+require 'templateoptions'
 
 include SpecTools
 
-DEFAULT_TYPE=APPOINTMENT
-type = ARGV.length > 0 ? ARGV[0] : DEFAULT_TYPE
-target_builder = TemplateTargetBuilder.new type
+target_builder = TemplateTargetBuilder.new TemplateOptions.new
 manager = STodoManager.new Configuration.new
 manager.output_template target_builder

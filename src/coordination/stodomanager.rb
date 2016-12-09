@@ -55,7 +55,7 @@ class STodoManager
     tgts = target_builder.targets
     if tgts and ! tgts.empty? then
       tgts.each do |t|
-        puts t
+        puts t.to_s(true)
       end
       if existing_targets then
         cand_parents = existing_targets.values.select {|t| t.can_have_children?}
@@ -64,6 +64,7 @@ class STodoManager
           puts (cand_parents.map {|t| t.handle }).join(', ')
         end
       end
+      puts "#spec path: #{@config.spec_path}"
     end
   end
 
@@ -92,6 +93,7 @@ class STodoManager
       @existing_targets = @data_manager.restored_targets
       @mailer = Mailer.new config
       @calendar = CalendarEntry.new config
+      @config = config
     end
     if tgt_builder != nil then
       init_new_targets tgt_builder

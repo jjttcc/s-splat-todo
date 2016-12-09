@@ -6,8 +6,8 @@ class TemplateTargetBuilder < TargetBuilder
 
   private
 
-  def initialize type
-    spec = StubbedSpec.new type
+  def initialize options
+    spec = StubbedSpec.new options
     init_target_factory
     @targets = []
     t = target_for(spec)

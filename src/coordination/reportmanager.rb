@@ -10,22 +10,26 @@ class ReportManager
   attr_accessor :manager
 
   # List info about the targets with the specified handles.
-  def list_targets(short = true, handles)
+  def list_targets(short = true, handles, states)
     targets = targets_for(handles)
     targets.each do |t|
-      if short then
-        puts "#{t.handle}: #{t.title}"
-      else
-        puts target_info(t, handles && !handles.empty?)
+      if t.state == nil or states.include?(t) then
+        if short then
+          puts "#{t.handle}: #{t.title}"
+        else
+          puts target_info(t, handles && !handles.empty?)
+        end
       end
     end
   end
 
   # List the handle for all targets.
-  def list_handles
+  def list_handles(states)
     targets = manager.existing_targets.values.sort
     targets.each do |t|
-      puts "#{t.handle}"
+      if t.state == nil or states.include?(t) then
+        puts "#{t.handle}"
+      end
     end
   end
 
@@ -43,8 +47,10 @@ class ReportManager
   end
 
   # List info about the targets with the specified handles.
-  def report_complete handles
-    targets = targets_for(handles)
+  def report_complete handles, states
+    targets = targets_for(handles).select do |t|
+      t.state == nil or states.include?(t)
+    end
     report_array = targets.map do |t|
       result = t.to_s
       if t.can_have_children? then
@@ -63,23 +69,23 @@ class ReportManager
   # targets with the specified handles, or if 'handles' is nil, for all
   # targets.  If 'short', the handle, instead of the title, will be
   # included in the report for the selected targets.
-  def report_reminders(all: false, handles: [], short: false)
+  def report_reminders(all: false, handles: [], short: false, states: stts)
     targets = targets_for(handles)
     tgt_w_rem = targets.select do |t|
       ! t.reminders.empty?
     end
-    report_items = tgt_w_rem.map do |t|
+    report_items = (tgt_w_rem.select do |t|
+      t.state == nil or states.include?(t)
+    end).map do |t|
       ReminderReportItem.new(t, all, short)
     end
     puts report_items.sort.join("\n")
   end
 
   # List uncompleted/not-cancelled targets with their due dates.
-  def report_due(handles)
+  def report_due(handles, states)
     targets_due = (targets_for(handles).select do |t|
-      state = (t.state != nil)? t.state.value : nil
-      state == nil || (state != StateValues::COMPLETED &&
-                       state != StateValues::CANCELED)
+      t.state == nil or states.include?(t)
     end).sort.map do |t|
       TargetDue.new(t)
     end

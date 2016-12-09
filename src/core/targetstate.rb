@@ -1,33 +1,30 @@
-=begin
-Notes on new TargetState class:
-  X It has a creation date/time (time the Target was created).
-  X It defaults to "in-progress" when created.
-  X Other states: canceled, completed, suspended.
-  X When it's canceled or changed to completed, an "end time" (better
-    name?) is created to be associated with the state change; in other
-    words, this gives the time the target was canceled ("cancellation
-    date") or that it was completed ("completion date").
-  X It has a query: 'value', which gives the value or name of the state,
-    which will be one of a set of constants (IN_PROGRESS, COMPLETED, ...).
-=end
-module StateValues
-  include ErrorTools, TimeTools
-
-  public
-
-  IN_PROGRESS, SUSPENDED, CANCELED, COMPLETED =
-  'in-progress', 'suspended', 'canceled', 'completed'
-end
+require 'targetstatevalues'
 
 # Abstraction for the status of a STodoTarget
 class TargetState
-  include StateValues
+  include TargetStateValues
 
   public
 
   attr_reader :creation_time, :value
   # The date/time the associated target was completed or canceled
   attr_reader :completion_time
+
+  ###  Access
+
+  def active?
+    result = value != COMPLETED && value != CANCELED
+  end
+
+  def to_s
+    result = value
+    if value == COMPLETED || value == CANCELED then
+      label = value == COMPLETED ? 'completed on' : 'canceled on'
+      result += " (#{time_24hour(completion_time)})"
+    end
+    assert_invariant {invariant}
+    result
+  end
 
   ## State transitions
 
@@ -71,18 +68,6 @@ class TargetState
     @value = IN_PROGRESS
     assert_postcondition('value == IN_PROGRESS') {value == IN_PROGRESS}
     assert_invariant {invariant}
-  end
-
-  ###  Access
-
-  def to_s
-    result = value
-    if value == COMPLETED || value == CANCELED then
-      label = value == COMPLETED ? 'completed on' : 'canceled on'
-      result += " (#{time_24hour(completion_time)})"
-    end
-    assert_invariant {invariant}
-    result
   end
 
   ### class invariant
