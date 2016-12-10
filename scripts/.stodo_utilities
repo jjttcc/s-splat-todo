@@ -1,0 +1,101 @@
+#!/bin/bash
+
+s_init_addr=me@me.org
+s_ongoing_addr=me@me.org
+cal_email=stodouser.me@gmail.com
+# (-1 days ago means tomorrow)
+default_date='date --date="-1 days ago" +%Y-%m-%d'
+default_time='12:00'
+
+## s*todo convenience aliases
+alias hnd='stodo rep'
+alias due='stodo rep due'
+alias short='stodo rep short'
+alias shrt=short
+alias summ='stodo rep summ'
+alias rem='stodo rep rem'
+alias rema='stodo rep remall'
+alias remh='stodo rep remh'
+alias chi='stodo rep child'
+alias seth='set $(hnd)'
+alias shlp='stodo help'
+alias del='stodo del'
+#alias temp='stodo temp'
+alias sinit='stodo init'
+# complete report:
+comp() {
+    stodo rep comp $*|more
+}
+
+emails() {
+    result=""
+    if [ "$s_init_addr" ]; then
+        result="$result -ie $s_init_addr"
+    fi
+    if [ "$s_ongoing_addr" ]; then
+        result="$result -oe $s_ongoing_addr"
+    fi
+    if [ "$cal_email" ]; then
+        result="$result -ci $cal_email"
+    fi
+    echo $result
+}
+
+stodo_date() {
+    result=""
+    if [ "$default_date" ]; then
+        result="-ti $(eval $default_date) $default_time"
+    fi
+    echo $result
+}
+
+# spec-file template for memo/note
+# usage: tempm <handle> [-t <title>] (etc. - See 'stodo help temp' for
+# remaining "stodo temp" options.)
+tempm() {
+    if [ $# = 0 ]; then
+        echo "Usage: tempm <handle> [...]"
+        return 2
+    fi
+    hndl=$1; shift
+    dt=$(stodo_date)
+    stodo temp memo -h $hndl $(emails) -pr 2 -t $hndl -ti $dt "$@"
+}
+
+# spec-file template for task:
+tempt() {
+    if [ $# = 0 ]; then
+        echo "Usage: tempm <handle> [...]"
+        return 2
+    fi
+    hndl=$1; shift
+    dt=$(stodo_date)
+    stodo temp task -h $hndl $(emails) -pr 2 -t $hndl -ti $dt "$@"
+}
+
+# spec-file template for project:
+tempp() {
+    if [ $# = 0 ]; then
+        echo "Usage: tempm <handle> [...]"
+        return 2
+    fi
+    hndl=$1; shift
+    dt=$(stodo_date)
+    stodo temp project -h $hndl $(emails) -pr 2 -t $hndl -ti $dt "$@"
+}
+
+# spec-file template for appointment/meeting:
+tempa() {
+    if [ $# = 0 ]; then
+        echo "Usage: tempm <handle> [...]"
+        return 2
+    fi
+    hndl=$1; shift
+    dt=$(stodo_date)
+    stodo temp meeting -h $hndl $(emails) -pr 2 -t $hndl -ti $dt "$@"
+}
+
+stodoals='due sh[o]rt summ comp rem rema chi hnd seth del shlp'
+stodoals="$stodoals temp sinit"
+
+alias stal="echo $stodoals"
