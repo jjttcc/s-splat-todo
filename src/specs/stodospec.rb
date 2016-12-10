@@ -102,6 +102,9 @@ class STodoSpec
       (0 .. components.length - 1).step(2) do |i|
         key = standardized_key(components[i].sub(/: */, ""))
         value = components[i + 1]
+        if key == HANDLE_KEY then
+          value = value.sub(/(?m:\n.*)/, "")
+        end
         @setting_for[key] = value.chomp("")
       end
     end

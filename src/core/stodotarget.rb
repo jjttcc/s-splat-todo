@@ -47,7 +47,9 @@ class STodoTarget
       if v == nil then  # (description is an alias, not an attribute.)
         case tag
         when DESCRIPTION_KEY
-          result += "status: #{state}\n"
+          if ! template then
+            result += "status: #{state}\n"
+          end
           v = self.description
         when PARENT_KEY
           v = self.parent_handle
