@@ -9,6 +9,7 @@ default_time='12:00'
 
 ## s*todo convenience aliases
 alias hnd='stodo rep'
+alias rep='stodo rep'
 alias due='stodo rep due'
 alias short='stodo rep short'
 alias shrt=short
@@ -20,8 +21,9 @@ alias chi='stodo rep child'
 alias seth='set $(hnd)'
 alias shlp='stodo help'
 alias del='stodo del'
-#alias temp='stodo temp'
+alias temp='stodo temp'
 alias sinit='stodo init'
+alias sstat='stodo stat'
 # complete report:
 comp() {
     stodo rep comp $*|more
@@ -96,6 +98,6 @@ tempa() {
 }
 
 stodoals='due sh[o]rt summ comp rem rema chi hnd seth del shlp'
-stodoals="$stodoals temp sinit"
+stodoals="$stodoals temp sinit sstat"
 
 alias stal="echo $stodoals"

@@ -64,7 +64,7 @@ class STodoManager
           puts (cand_parents.map {|t| t.handle }).join(', ')
         end
       end
-      puts "#spec path: #{@config.spec_path}"
+      puts "#spec-path: #{@config.spec_path}"
     end
   end
 

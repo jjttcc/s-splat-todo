@@ -59,14 +59,18 @@ class ReportUtil
       if ARGV[0] =~ /ign/ then
         result = TargetStateSet.new   # Report on all items.
       else
+        active_states_only = false
         part2 = ARGV[0].split(/:/)[1]
         if part2 != nil && ! part2.empty? then
           components = part2.split(/,\s*/)
         else
           components = []
+          # (No :<state> component and no handles -> only active states)
+          active_states_only = ARGV.length == 1
         end
         # States for report on user-specified item.
         result = TargetStateSet.new(components)
+        if active_states_only then result.remove_final end
       end
     else
       result = TargetStateSet.new

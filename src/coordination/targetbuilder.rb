@@ -30,8 +30,10 @@ class TargetBuilder
       if t != nil then
         @targets << t
       else
-        msg = "nil target for spec: #{s.handle}:#{s.type}"
-        if s.type == CORRECTION then msg += " (expected)" end
+        msg = "nil target for spec: #{s.handle} (type #{s.type})"
+        if s.type == CORRECTION || s.type == TEMPLATE_TYPE then
+          msg += " (expected)"
+        end
         $log.debug msg
       end
     end
@@ -51,9 +53,12 @@ class TargetBuilder
     result = nil
     builder = @target_factory_for[spec.type]
     if builder == nil then
-      warning = "Invalid type for spec - title: \"#{spec.title}\" " +
-        "type: #{spec.type}"
-      $log.warn warning
+      if spec.type == TEMPLATE_TYPE then
+        $log.warn "(Ignoring spec '#{spec.handle}' with '#{spec.type}' type.)"
+      else
+        warning = "Invalid type for spec: #{spec.type} (title: #{spec.title})"
+        $log.warn warning
+      end
     else
       # Build the "target".
       t = builder.call(spec)

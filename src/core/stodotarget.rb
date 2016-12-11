@@ -41,6 +41,14 @@ class STodoTarget
   # specification file
   def to_s(template = false)
     result = "#{TYPE_KEY}: #{spec_type}\n"
+    if template then
+      # 'type: template' in the spec file indicates that the file should be
+      # ignored by 'stodo init'; the user must remove the line for the file
+      # to be processed - i.e., used to create a new STodoTarget.
+      result += "# NOTE: Remove the 'type:' line, below, to allow " +
+        "this spec to be processed.\n"
+      result += "#{TYPE_KEY}: #{TEMPLATE_TYPE}\n"
+    end
     for tag in [TITLE_KEY, HANDLE_KEY, DESCRIPTION_KEY, PRIORITY_KEY,
                 COMMENT_KEY, PARENT_KEY] do
       v = self.instance_variable_get("@#{tag}")

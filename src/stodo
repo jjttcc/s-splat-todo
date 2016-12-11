@@ -9,6 +9,7 @@ report=main/report.rb
 edit=main/stodo-mgmt.rb
 admin=main/stodo-admin.rb
 stodo_envpath="$STODO_PATH"
+specpath_expr='^# *spec-path:'
 
 
 mainhelp() {
@@ -118,6 +119,19 @@ do_backup() {
   run $admin backup $*
 }
 
+install_specfile() {
+  file=$1
+  specpath=$(awk "/$specpath_expr/"'{print $NF}' $file)
+  if [ "$specpath" ]; then
+    echo "Installing $file to $specpath" >&2
+    mv $file $specpath || {
+      status=$?
+      echo "Error: Move of $file to $specpath failed." >&2
+    }
+  fi
+  return $status
+}
+
 make_template() {
   checkpath $mktmpl
   if [ -w . ]; then
@@ -126,6 +140,8 @@ make_template() {
     if [ "$EDITOR" ]; then
       $EDITOR $outfile
     fi
+    install_specfile $outfile
+    exit $?
   else
     run $mktmpl "$@"
   fi
