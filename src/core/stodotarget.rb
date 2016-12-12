@@ -284,7 +284,7 @@ class STodoTarget
     reminders_string = spec.reminders
     result = []
     if reminders_string != nil then
-      reminders_string.split(SPEC_FIELD_DELIMITER).each do |r|
+      reminders_string.split(REMINDER_DELIMITER).each do |r|
         begin
           rem = Reminder.new(r)
           result << Reminder.new(r)

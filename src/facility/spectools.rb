@@ -11,6 +11,7 @@ module SpecTools
   SINGULAR_REMINDER_KEY = 'reminder'
   SPEC_FIELD_DELIMITER = /,\s*/
   SPEC_FIELD_JOINER = ','
+  REMINDER_DELIMITER = /;\s*/
   DEFAULT_LOG_PATH = "/tmp/stodo-debug-#{$$}"
 
   # constants - s*todo-target-types and aliases:
