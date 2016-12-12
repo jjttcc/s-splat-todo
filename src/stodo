@@ -136,14 +136,14 @@ make_template() {
   checkpath $mktmpl
   type=$1
   case $type in
-    -*) echo "Fatal error: invalid type: $type" >&2
-      template_help
-      return 12
+    -*) type=task
+      ;;
+    *) shift
       ;;
   esac
   if [ -w . ]; then
     outfile=$(mktemp $type.XXXX)
-    run $mktmpl "$@" >$outfile
+    run $mktmpl $type "$@" >$outfile
     if [ "$EDITOR" ]; then
       $EDITOR $outfile
     fi
