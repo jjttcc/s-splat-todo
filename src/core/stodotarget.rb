@@ -286,8 +286,10 @@ class STodoTarget
     if reminders_string != nil then
       reminders_string.split(REMINDER_DELIMITER).each do |r|
         begin
-          rem = Reminder.new(r)
+$log.debug "rfs - Attempting Reminder creation with #{r}"
           result << Reminder.new(r)
+$log.debug "rfs - successful Reminder creation from #{r} " +
+  "(#{result[-1].date_time})"
         rescue Exception => e
           $log.warn "#{handle}: #{e.message}"
           @valid = false  # (1 or more bad reminders makes 'self' invalid.)

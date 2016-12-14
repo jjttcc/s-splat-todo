@@ -1,5 +1,6 @@
 require 'errortools'
 require 'postconditionerror'
+require 'dateparser'
 
 # Objects that represent a promise to remind, on a certain date and time,
 # a client/user of an event or occurrence scheduled for that date/time
@@ -95,15 +96,10 @@ class Reminder
   # precondition: datetime != nil
   def initialize(datetime, time_tolerance = DEFAULT_TOLERANCE)
     assert_precondition {datetime != nil}
-    if datetime.class.to_s == 'String' then
-      begin
-        @date_time = Time.parse(datetime)
-      rescue ArgumentError => e
-        raise "Bad datetime: #{datetime} [#{e.inspect}]"
-      end
-    else
-      @date_time = datetime
-    end
+$log.debug "Reminder.init calling DateParser.new with '#{datetime}"
+    date_constructor = DateParser.new(datetime)
+    @date_time = date_constructor.result
+$log.debug "Reminder.init back with result: #{@date_time}"
     @triggered = false
     @time_tolerance = time_tolerance
     @addendum = ""
