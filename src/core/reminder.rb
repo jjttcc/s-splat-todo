@@ -97,8 +97,8 @@ class Reminder
   def initialize(datetime, time_tolerance = DEFAULT_TOLERANCE)
     assert_precondition {datetime != nil}
 $log.debug "Reminder.init calling DateParser.new with '#{datetime}"
-    date_constructor = DateParser.new(datetime)
-    @date_time = date_constructor.result
+    date_constructor = DateParser.new([datetime])
+    @date_time = date_constructor.result[0]
 $log.debug "Reminder.init back with result: #{@date_time}"
     @triggered = false
     @time_tolerance = time_tolerance

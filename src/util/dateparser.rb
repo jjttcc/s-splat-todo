@@ -35,16 +35,13 @@ $log.debug "ecr - outp, err, status: #{output}, #{error}, #{status.inspect}"
         @result = Time.parse(output.chomp)
 $log.debug "ecr - outp, result: #{output.chomp}, #{@result}"
       rescue ArgumentError => e
-        @error_msg = "datetime invalid [#{e}] (#{datestr}) in #{self}"
+        @error_msg = "date/time invalid"
       end
     else
       @error_msg = "external command #{@exe_path} failed."
       if error then
         @error_msg += " (#{error})"
       end
-    end
-    if ! @error_msg.empty? then
-      $log.warn "@error_msg"
     end
   end
 
@@ -57,19 +54,45 @@ class DateParser
 
   private
 
-  def initialize(datetime)
-    if datetime.is_a?(String) then
-      begin
-        @result = Time.parse(datetime)
-      rescue ArgumentError => e
-        @result = date_from_outside(datetime)
-        if @result == nil then
-          msg = "Bad datetime: #{datetime}"
+  def initialize(datetimes)
+    @result = []
+    datetimes.each do |dt|
+      if dt.is_a?(String) then
+        current_dt = date_from_outside(dt)
+        if current_dt == nil then
+          msg = "Bad datetime: #{dt}"
           if @external_error then
             msg += " - '#{@external_error}'"
           end
           raise msg
+        else
+          @result << current_dt
         end
+      else
+        if dt.is_a?(Time) then
+          @result << dt
+        else
+          msg = 'DateParser.new: '
+          if dt == nil then
+            msg += "datetime argument is nil"
+          else
+            msg += "datetime argument is not a Time (#{dt.class})"
+          end
+          raise msg
+        end
+      end
+    end
+  end
+
+  def old_old___initialize(datetimes)
+    if datetime.is_a?(String) then
+      @result = date_from_outside(datetime)
+      if @result == nil then
+        msg = "Bad datetime: #{datetime}"
+        if @external_error then
+          msg += " - '#{@external_error}'"
+        end
+        raise msg
       end
     else
       if datetime.is_a?(Time) then
