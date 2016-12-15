@@ -6,11 +6,13 @@ require 'spectools'
 require 'timetools'
 require 'treenode'
 require 'targetstate'
+require 'dateparser'
+require 'targetstatevalues'
 
 # Items - actions, projects, appointments, etc. - to keep track of, not
 # forget about, and/or complete
 class STodoTarget
-  include SpecTools, ErrorTools, TimeTools
+  include SpecTools, ErrorTools, TimeTools, TargetStateValues
 
   public
 
@@ -100,6 +102,20 @@ class STodoTarget
     result
   end
 
+  # date and time self was completed or canceled
+  # postcondition:
+  #   (state.value == IN_PROGRESS || state.value == SUSPENDED) implies
+  #      result == nil
+  def completion_date
+    result = state.completion_time
+    assert_postcondition('(state.value == IN_PROGRESS || ' +
+        'state.value == SUSPENDED) implies result == nil') {
+      implies(state.value == IN_PROGRESS || state.value == SUSPENDED,
+              result == nil)
+    }
+    result
+  end
+
   ###  Comparison
 
   VERY_LATE = Time.parse('10000-01-01 00:00')
@@ -138,6 +154,11 @@ class STodoTarget
   # Does 'self' have a parent?
   def has_parent?
     self.parent_handle != nil
+  end
+
+  # Has 'self' been completed?
+  def completed?
+    result = state.value == COMPLETED
   end
 
   ###  Element change
@@ -284,17 +305,16 @@ class STodoTarget
     reminders_string = spec.reminders
     result = []
     if reminders_string != nil then
-      reminders_string.split(REMINDER_DELIMITER).each do |r|
-        begin
-$log.debug "rfs - Attempting Reminder creation with #{r}"
-          result << Reminder.new(r)
-$log.debug "rfs - successful Reminder creation from #{r} " +
-  "(#{result[-1].date_time})"
-        rescue Exception => e
-          $log.warn "#{handle}: #{e.message}"
-          @valid = false  # (1 or more bad reminders makes 'self' invalid.)
-          break
+      begin
+        date_strings = reminders_string.split(REMINDER_DELIMITER)
+        date_parser = DateParser.new(date_strings)
+        dates = date_parser.result
+        dates.each do |d|
+          result << Reminder.new(d)
         end
+      rescue Exception => e
+        $log.warn "#{handle}: #{e.message}"
+        @valid = false  # (1 or more bad reminders makes 'self' invalid.)
       end
     end
     result.sort
@@ -464,43 +484,6 @@ $log.debug "rfs - successful Reminder creation from #{r} " +
 
   def to_s_appendix
     ""
-  end
-
-  ###  Persistence
-
-  def old_remove__marshal_dump
-    {
-      'title' => title,
-      'content' => content,
-      'handle' => handle,
-      'calendar_ids' => calendar_ids,
-      'priority' => priority,
-      'comment' => comment,
-      'reminders' => reminders,
-      'categories' => categories,
-      'initial_email_addrs' => @initial_email_addrs,
-      'ongoing_email_addrs' => @ongoing_email_addrs,
-      'children' => children,
-      'valid' => @valid,
-      'parent_handle' => parent_handle
-    }
-  end
-
-  def old_remove__marshal_load(data)
-    @title = data['title']
-    @content = data['content']
-    @handle = data['handle']
-    @calendar_ids = data['calendar_ids']
-    @priority = data['priority']
-    @comment = data['comment']
-    @reminders = data['reminders']
-    @categories = data['categories']
-    @initial_email_addrs = data['initial_email_addrs']
-    @ongoing_email_addrs = data['ongoing_email_addrs']
-    @children = data['children']
-    @valid = data['valid']
-    @parent_handle = data['parent_handle']
-    @notifiers = []
   end
 
   ###  class invariant

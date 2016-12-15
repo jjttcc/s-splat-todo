@@ -62,11 +62,14 @@ class ScheduledEvent < STodoTarget
 
   def set_date_time spec
     begin
-      @date_time = Time.parse(spec.date_time)
-    rescue ArgumentError => e
-      # spec.date_time is invalid or empty - not allowed for appointments.
-      $log.warn "date_time invalid [#{e}] (#{spec.date_time}) " +
-        "in #{formal_type} #{self.handle}"
+      date_parser = DateParser.new([spec.date_time])
+      dates = date_parser.result
+      if dates != nil && ! dates.empty? then
+        @date_time = dates[0]
+      end
+    rescue Exception => e
+      $log.warn "#{handle}: date_time invalid (#{spec.date_time}): #{e}"
+      @valid = false
     end
   end
 
@@ -105,27 +108,6 @@ class ScheduledEvent < STodoTarget
     calentry.time = date_time
     calentry.location = location
     calentry.duration = duration
-  end
-
-  ###  Persistence
-
-  def old_remove__marshal_dump
-    result = super
-    result.merge!({
-      'date_time' => date_time,
-      'duration' => duration,
-      'location' => location,
-      'final_reminder' => final_reminder
-    })
-    result
-  end
-
-  def old_remove__marshal_load(data)
-    super(data)
-    @date_time = data['date_time']
-    @duration = data['duration']
-    @location = data['location']
-    @final_reminder = data['final_reminder']
   end
 
   ###  class invariant

@@ -44,19 +44,4 @@ class Project < Task
     "goal: #{goal}"
   end
 
-  ###  Persistence
-
-  def old_remove__marshal_dump
-    result = super
-    result.merge!({
-      'goal' => goal,
-    })
-    result
-  end
-
-  def old_remove__marshal_load(data)
-    super(data)
-    @goal = data['goal']
-  end
-
 end

@@ -6,7 +6,7 @@ class Task < STodoTarget
 
   public
 
-  attr_reader :due_date, :completion_date
+  attr_reader :due_date
 
   ###  Access
 
@@ -28,11 +28,6 @@ class Task < STodoTarget
   ###  Status report
 
   def spec_type; TASK end
-
-  # Has 'self' been completed?
-  def completed?
-    self.completion_date != nil
-  end
 
   def formal_type
     "Task"
@@ -58,10 +53,14 @@ class Task < STodoTarget
 
   def set_due_date spec
     begin
-      @due_date = Time.parse(spec.due_date)
-    rescue ArgumentError => e
-      # spec.due_date is invalid, so leave @due_date as nil.
-      $log.warn "due_date invalid [#{e}] (#{spec.due_date}) in #{self}"
+      date_parser = DateParser.new([spec.due_date])
+      dates = date_parser.result
+      if dates != nil && ! dates.empty? then
+        @due_date = dates[0]
+      end
+    rescue Exception => e
+      $log.warn "#{handle}: due_date invalid (#{spec.due_date}): #{e}"
+      @valid = false
     end
   end
 
@@ -90,25 +89,6 @@ class Task < STodoTarget
   def set_cal_fields calentry
     super calentry
     calentry.time = due_date
-  end
-
-  ###  Persistence
-
-  def old_remove__marshal_dump
-    result = super
-    result.merge!({
-      'due_date' => due_date,
-      'completion_date' => completion_date,
-      'final_reminder' => final_reminder
-    })
-    result
-  end
-
-  def old_remove__marshal_load(data)
-    super(data)
-    @due_date = data['due_date']
-    @completion_date = data['completion_date']
-    @final_reminder = data['final_reminder']
   end
 
 end

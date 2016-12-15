@@ -58,11 +58,15 @@ class Memorandum < STodoTarget
 
   def set_expiration_date spec
     begin
-      @expiration_date = Time.parse(spec.expiration_date)
-    rescue ArgumentError => e
-      # spec.expiration_date is invalid, so leave @expiration_date as nil.
-      $log.warn "expiration_date invalid [#{e}] (#{spec.expiration_date}) " +
-        "in #{self}"
+      date_parser = DateParser.new([spec.expiration_date])
+      dates = date_parser.result
+      if dates != nil && ! dates.empty? then
+        @expiration_date = dates[0]
+      end
+    rescue Exception => e
+      $log.warn "#{handle}: expiration_date invalid " +
+        "(#{spec.expiration_date}): #{e}"
+      @valid = false
     end
   end
 
@@ -94,23 +98,6 @@ class Memorandum < STodoTarget
     result = (content != nil)? content: ""
     result += (comment != nil)? "\n" + comment: ""
     result
-  end
-
-  ###  Persistence
-
-  def old_remove__marshal_dump
-    result = super
-    result.merge!({
-      'expiration_date' => expiration_date,
-      'final_reminder' => final_reminder
-    })
-    result
-  end
-
-  def old_remove__marshal_load(data)
-    super(data)
-    @expiration_date = data['expiration_date']
-    @final_reminder = data['final_reminder']
   end
 
 end

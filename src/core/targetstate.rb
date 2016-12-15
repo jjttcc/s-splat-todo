@@ -28,7 +28,7 @@ class TargetState
 
   ## State transitions
 
-  # Set 'value' to CANCELED.
+  # Change state to CANCELED.
   def cancel
     assert_precondition('value == IN_PROGRESS || value == SUSPENDED') {
       value == IN_PROGRESS || value == SUSPENDED
@@ -39,7 +39,7 @@ class TargetState
     assert_invariant {invariant}
   end
 
-  # Set 'value' to COMPLETED.
+  # Change state to COMPLETED.
   def finish
     assert_precondition('value == IN_PROGRESS') {
       value == IN_PROGRESS
@@ -50,7 +50,7 @@ class TargetState
     assert_invariant {invariant}
   end
 
-  # Set 'value' to SUSPENDED.
+  # Change state to SUSPENDED.
   def suspend
     assert_precondition('value == IN_PROGRESS') {
       value == IN_PROGRESS
@@ -60,7 +60,7 @@ class TargetState
     assert_invariant {invariant}
   end
 
-  # Set 'value' from SUSPENDED to IN_PROGRESS.
+  # Change state from SUSPENDED to IN_PROGRESS.
   def resume
     assert_precondition('value == SUSPENDED') {
       value == SUSPENDED

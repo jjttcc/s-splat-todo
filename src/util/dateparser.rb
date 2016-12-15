@@ -3,19 +3,23 @@ class ExternalDateParser
   public
 
   attr_reader :error_msg, :result
+  # Did parsing of date strings (invoked by 'new') fail?
+  attr_reader :parse_failed
 
   private
 
   EXTERNAL_EXE_PATH = 'dates.pl'
+  DATE_SEPARATOR    = "\a"
 
-  def initialize(datestring)
+  def initialize(datestrings)
+    @result = []
     @error_msg = ""
+    @parse_failed = false
     @exe_path = Dir.pwd + File::SEPARATOR + EXTERNAL_EXE_PATH
     if File.executable?(@exe_path) then
-$log.debug "calling set_date_from_external_command with '#{datestring}'"
-      set_date_from_external_command(datestring)
-$log.debug "back from set_date_from_external_command result: #{@result}"
+      set_dates_from_external_command(datestrings)
     else
+      @parse_failed = true
       if File.exist?(@exe_path) then
         @error_msg = "date parser #{@exe_path} is not executable."
       else
@@ -24,24 +28,22 @@ $log.debug "back from set_date_from_external_command result: #{@result}"
     end
   end
 
-  # Set @result by executing @exe_path with 'datestr' as an argument.
-  def set_date_from_external_command(datestr)
-    require 'open3'
-    @result = nil
-    output, error, status = Open3::capture3(@exe_path, datestr)
-$log.debug "ecr - outp, err, status: #{output}, #{error}, #{status.inspect}"
-    if status.success? then
-      begin
-        @result = Time.parse(output.chomp)
-$log.debug "ecr - outp, result: #{output.chomp}, #{@result}"
-      rescue ArgumentError => e
-        @error_msg = "date/time invalid"
+  # Append to @result by executing @exe_path with 'datestrs' as an argument.
+  def set_dates_from_external_command(datestrs)
+    begin
+      cmd = [@exe_path] + datestrs
+      pipe = IO.popen({}, cmd)
+      response = pipe.readlines
+      pipe.close
+      response.each do |datesline|
+        date_strs = datesline.chomp.split(DATE_SEPARATOR)
+        date_strs.each do |d|
+          @result << Time.parse(d)
+        end
       end
-    else
-      @error_msg = "external command #{@exe_path} failed."
-      if error then
-        @error_msg += " (#{error})"
-      end
+    rescue Exception => e
+      @error_msg = "external command #{@exe_path} failed (#{e})."
+      @parse_failed = true
     end
   end
 
@@ -56,18 +58,10 @@ class DateParser
 
   def initialize(datetimes)
     @result = []
+    datestring_array = []
     datetimes.each do |dt|
       if dt.is_a?(String) then
-        current_dt = date_from_outside(dt)
-        if current_dt == nil then
-          msg = "Bad datetime: #{dt}"
-          if @external_error then
-            msg += " - '#{@external_error}'"
-          end
-          raise msg
-        else
-          @result << current_dt
-        end
+        datestring_array << dt
       else
         if dt.is_a?(Time) then
           @result << dt
@@ -82,39 +76,16 @@ class DateParser
         end
       end
     end
+    @result.concat(dates_from_outside(datestring_array))
   end
 
-  def old_old___initialize(datetimes)
-    if datetime.is_a?(String) then
-      @result = date_from_outside(datetime)
-      if @result == nil then
-        msg = "Bad datetime: #{datetime}"
-        if @external_error then
-          msg += " - '#{@external_error}'"
-        end
-        raise msg
-      end
-    else
-      if datetime.is_a?(Time) then
-        @result = datetime
-      else
-        msg = 'DateParser.new: '
-        if datetime == nil then
-          msg += "datetime argument is nil"
-        else
-          msg += "datetime argument is not a Time (#{datetime.class})"
-        end
-        raise msg
-      end
-    end
-  end
-
-  def date_from_outside(datetime)
-    xparser = ExternalDateParser.new(datetime)
+  def dates_from_outside(datetimes)
+    xparser = ExternalDateParser.new(datetimes)
     result = xparser.result
-    if ! result then
-$log.debug "date_from_outside - NOT result"
-      @external_error = xparser.error_msg
+    if ! result or xparser.parse_failed then
+      error = (xparser.error_msg != nil) ? xparser.error_msg :
+        "parse failed for date(s): #{datetimes}"
+      raise error
     end
     result
   end
