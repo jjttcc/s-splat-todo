@@ -40,7 +40,7 @@ class Memorandum < STodoTarget
 
   def modify_fields spec
     super spec
-    if spec.expiration_date != nil then
+    if spec.expiration_date != nil && ! spec.expiration_date.empty? then
       set_expiration_date spec
     end
   end
@@ -49,7 +49,7 @@ class Memorandum < STodoTarget
 
   def set_fields spec
     super spec
-    if spec.expiration_date != nil then
+    if spec.expiration_date != nil && ! spec.expiration_date.empty? then
       set_expiration_date spec
     end
   end
@@ -66,7 +66,7 @@ class Memorandum < STodoTarget
     rescue Exception => e
       $log.warn "#{handle}: expiration_date invalid " +
         "(#{spec.expiration_date}): #{e}"
-      @valid = false
+      @valid = spec.is_template?
     end
   end
 

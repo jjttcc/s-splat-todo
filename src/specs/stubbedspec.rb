@@ -3,6 +3,12 @@ require 'stodospec'
 # Stubbed-out STodoSpec, for templating
 class StubbedSpec < STodoSpec
 
+  public
+
+  def is_template?
+    true
+  end
+
   private
 
   def initialize options

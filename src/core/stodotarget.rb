@@ -314,7 +314,7 @@ class STodoTarget
         end
       rescue Exception => e
         $log.warn "#{handle}: #{e.message}"
-        @valid = false  # (1 or more bad reminders makes 'self' invalid.)
+        @valid = spec.is_template?  # (> 0 bad reminders makes 'self' invalid.)
       end
     end
     result.sort

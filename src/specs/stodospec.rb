@@ -27,6 +27,11 @@ class STodoSpec
     result
   end
 
+  # Is self being used as a template rather than as a normal spec?
+  def is_template?
+    false
+  end
+
   def to_s
     result = ""
     @setting_for.each do |k, v|

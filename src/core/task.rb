@@ -37,7 +37,7 @@ class Task < STodoTarget
 
   def modify_fields spec
     super spec
-    if spec.due_date != nil then
+    if spec.due_date != nil && ! spec.due_date.empty? then
       set_due_date spec
     end
   end
@@ -46,7 +46,7 @@ class Task < STodoTarget
 
   def set_fields spec
     super spec
-    if spec.due_date != nil then
+    if spec.due_date != nil && ! spec.due_date.empty? then
       set_due_date spec
     end
   end
@@ -60,7 +60,7 @@ class Task < STodoTarget
       end
     rescue Exception => e
       $log.warn "#{handle}: due_date invalid (#{spec.due_date}): #{e}"
-      @valid = false
+      @valid = spec.is_template?
     end
   end
 

@@ -38,7 +38,7 @@ class ScheduledEvent < STodoTarget
 
   def modify_fields spec
     super spec
-    if spec.date_time != nil then
+    if spec.date_time != nil && ! spec.date_time.empty? then
       set_date_time spec
     end
     @duration = duration_from_spec spec if spec.duration
@@ -49,7 +49,7 @@ class ScheduledEvent < STodoTarget
 
   def set_fields spec
     super spec
-    if spec.date_time != nil then
+    if spec.date_time != nil && ! spec.date_time.empty? then
       set_date_time spec
     else
       $log.warn "date_time is not set in #{formal_type} #{self.handle}"
@@ -57,7 +57,9 @@ class ScheduledEvent < STodoTarget
     @duration = duration_from_spec spec
     @location = spec.location
     # Prevent use of appointments with nil @date_time:
-    if @date_time == nil then @valid = false end
+    if @date_time == nil then
+      @valid = spec.is_template?
+    end
   end
 
   def set_date_time spec
@@ -69,7 +71,7 @@ class ScheduledEvent < STodoTarget
       end
     rescue Exception => e
       $log.warn "#{handle}: date_time invalid (#{spec.date_time}): #{e}"
-      @valid = false
+      @valid = spec.is_template?
     end
   end
 
