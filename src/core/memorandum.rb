@@ -36,15 +36,6 @@ class Memorandum < STodoTarget
 
   def spec_type; NOTE end
 
-  ###  Element change
-
-  def modify_fields spec
-    super spec
-    if spec.expiration_date != nil && ! spec.expiration_date.empty? then
-      set_expiration_date spec
-    end
-  end
-
   protected
 
   def set_fields spec
@@ -55,6 +46,13 @@ class Memorandum < STodoTarget
   end
 
   private
+
+  def main_modify_fields spec
+    super spec
+    if spec.expiration_date != nil && ! spec.expiration_date.empty? then
+      set_expiration_date spec
+    end
+  end
 
   def set_expiration_date spec
     begin

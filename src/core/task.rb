@@ -33,15 +33,6 @@ class Task < STodoTarget
     "Task"
   end
 
-  ###  Element change
-
-  def modify_fields spec
-    super spec
-    if spec.due_date != nil && ! spec.due_date.empty? then
-      set_due_date spec
-    end
-  end
-
   private
 
   def set_fields spec
@@ -65,6 +56,13 @@ class Task < STodoTarget
   end
 
   ### Hook routine implementations
+
+  def main_modify_fields spec
+    super spec
+    if spec.due_date != nil && ! spec.due_date.empty? then
+      set_due_date spec
+    end
+  end
 
   def message_subject_label
     "todo: "

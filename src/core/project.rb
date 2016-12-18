@@ -18,14 +18,12 @@ class Project < Task
     self.class
   end
 
-  ###  Element change
+  private
 
-  def modify_fields spec
+  def main_modify_fields spec
     super spec
     @goal = spec.goal if spec.goal
   end
-
-  private
 
   def set_fields spec
     super spec

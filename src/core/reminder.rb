@@ -18,6 +18,8 @@ class Reminder
   # Has this reminder been triggered - i.e., is the current time later than
   # 'date_time' and, as a result, has the target, the person to be reminded,
   # been notified that the reminder has come due, chronologically?
+#!!!  def old__remove__triggered?
+#!!!!Remove this feature, if possible!!!!!!!
   def triggered?
     @triggered
   end

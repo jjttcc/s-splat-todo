@@ -8,6 +8,7 @@ require 'treenode'
 require 'targetstate'
 require 'dateparser'
 require 'targetstatevalues'
+require 'periodicdateparser'
 
 # Items - actions, projects, appointments, etc. - to keep track of, not
 # forget about, and/or complete
@@ -184,23 +185,8 @@ class STodoTarget
   # Set self's fields from the non-nil fields in spec.
   # precondition: spec != nil && handle == spec.handle
   def modify_fields spec
-    assert_precondition('spec != nil && handle == spec.handle') {
-      spec != nil && handle == spec.handle }
-    @title = spec.title if spec.title
-    @email_spec = spec.email if spec.email
-    @content = spec.description if spec.description
-    @comment = spec.comment if spec.comment
-    @priority = spec.priority if spec.priority
-    @reminders = reminders_from_spec spec if spec.reminders != nil
-    if spec.parent != nil then
-      @parent_handle = spec.parent
-    end
-    if spec.categories then
-      @categories = spec.categories.split(SPEC_FIELD_DELIMITER)
-    end
-    if spec.calendar_ids != nil then
-      @calendar_ids = spec.calendar_ids.split(SPEC_FIELD_DELIMITER)
-    end
+    main_modify_fields spec
+    post_modify_fields spec
   end
 
   ###  Removal
@@ -271,6 +257,9 @@ class STodoTarget
     set_email_addrs
     @notifiers = []
     @state = TargetState.new
+    # Build @reminders last because it depends on 'time' (which is an
+    # attribute in descendant classes) being set/non-nil.
+    @reminders = reminders_from_spec spec
   end
 
   def set_fields spec
@@ -281,7 +270,6 @@ class STodoTarget
     @content = spec.description
     @comment = spec.comment
     @priority = spec.priority
-    @reminders = reminders_from_spec spec
     if spec.categories then
       @categories = spec.categories.split(SPEC_FIELD_DELIMITER)
     else
@@ -301,17 +289,59 @@ class STodoTarget
     if not self.handle then $log.warn "No handle for #{self.title}" end
   end
 
+  def main_modify_fields spec
+    assert_precondition('spec != nil && handle == spec.handle') {
+      spec != nil && handle == spec.handle }
+    @title = spec.title if spec.title
+    @email_spec = spec.email if spec.email
+    @content = spec.description if spec.description
+    @comment = spec.comment if spec.comment
+    @priority = spec.priority if spec.priority
+    @reminders = reminders_from_spec spec if spec.reminders != nil
+    if spec.parent != nil then
+      @parent_handle = spec.parent
+    end
+    if spec.categories then
+      @categories = spec.categories.split(SPEC_FIELD_DELIMITER)
+    end
+    if spec.calendar_ids != nil then
+      @calendar_ids = spec.calendar_ids.split(SPEC_FIELD_DELIMITER)
+    end
+  end
+
+  def post_modify_fields spec
+    @reminders = reminders_from_spec spec
+  end
+
+  # precondition: time != nil
   def reminders_from_spec spec
+    assert_precondition('time != nil') { time != nil }
     reminders_string = spec.reminders
     result = []
     if reminders_string != nil then
       begin
         date_strings = reminders_string.split(REMINDER_DELIMITER)
-        date_parser = DateParser.new(date_strings)
+        date_parser = DateParser.new(date_strings, true)
         dates = date_parser.result
-        dates.each do |d|
-          result << Reminder.new(d)
+$log.debug "date_strings, dates: #{date_strings}, #{dates}"
+        periodic_reminder_candidates = []
+        for i in 0 .. dates.length - 1 do
+          d = dates[i]
+          if d != nil then
+            result << Reminder.new(d)
+          else
+            periodic_reminder_candidates << date_strings[i]
+          end
+$log.debug "per-rem-cand: #{periodic_reminder_candidates}"
         end
+        if periodic_reminder_candidates.length > 0 then
+$log.debug "calling PeriodicDateParser.new..."
+          periodic_date_parser = PeriodicDateParser.new(
+            periodic_reminder_candidates, time)
+          periodic_reminders = periodic_date_parser.result
+          result.concat(periodic_reminders)
+        end
+$log.debug "periodic possibilities: #{periodic_reminder_candidates}"
       rescue Exception => e
         $log.warn "#{handle}: #{e.message}"
         @valid = spec.is_template?  # (> 0 bad reminders makes 'self' invalid.)
@@ -333,7 +363,8 @@ class STodoTarget
   end
 
   def current_message_appendix
-    result = ""
+    now = Time.now
+    result = "notification sent on: #{time_24hour(now)}\n"
     if ! children.empty? then
       result += "subordinates:\n"
       children.each do |t|
@@ -393,8 +424,11 @@ class STodoTarget
     rems = []
     reminders.each { |r| if r.is_due? then rems << r end }
     if
+      final_reminder != nil and final_reminder.is_due?
+=begin
       final_reminder != nil and ! final_reminder.triggered? and
         final_reminder.is_due?
+=end
     then
       rems << final_reminder
       final_reminder.addendum = "Final "

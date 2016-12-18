@@ -34,9 +34,9 @@ class ScheduledEvent < STodoTarget
     "Appointment"
   end
 
-  ###  Element change
+  protected
 
-  def modify_fields spec
+  def main_modify_fields spec
     super spec
     if spec.date_time != nil && ! spec.date_time.empty? then
       set_date_time spec
@@ -44,8 +44,6 @@ class ScheduledEvent < STodoTarget
     @duration = duration_from_spec spec if spec.duration
     @location = spec.location if spec.location
   end
-
-  protected
 
   def set_fields spec
     super spec

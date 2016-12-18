@@ -1,54 +1,11 @@
-class ExternalDateParser
+require 'externaldateparser'
 
-  public
-
-  attr_reader :error_msg, :result
-  # Did parsing of date strings (invoked by 'new') fail?
-  attr_reader :parse_failed
-
-  private
-
-  EXTERNAL_EXE_PATH = 'dates.pl'
-  DATE_SEPARATOR    = "\a"
-
-  def initialize(datestrings)
-    @result = []
-    @error_msg = ""
-    @parse_failed = false
-    @exe_path = Dir.pwd + File::SEPARATOR + EXTERNAL_EXE_PATH
-    if File.executable?(@exe_path) then
-      set_dates_from_external_command(datestrings)
-    else
-      @parse_failed = true
-      if File.exist?(@exe_path) then
-        @error_msg = "date parser #{@exe_path} is not executable."
-      else
-        @error_msg = "date parser #{@exe_path} not found."
-      end
-    end
-  end
-
-  # Append to @result by executing @exe_path with 'datestrs' as an argument.
-  def set_dates_from_external_command(datestrs)
-    begin
-      cmd = [@exe_path] + datestrs
-      pipe = IO.popen({}, cmd)
-      response = pipe.readlines
-      pipe.close
-      response.each do |datesline|
-        date_strs = datesline.chomp.split(DATE_SEPARATOR)
-        date_strs.each do |d|
-          @result << Time.parse(d)
-        end
-      end
-    rescue Exception => e
-      @error_msg = "external command #{@exe_path} failed (#{e})."
-      @parse_failed = true
-    end
-  end
-
-end
-
+# Parser that takes a set of date/time strings and produces a set, in
+# 'result', of resulting Time objects.  If 'suppress_exception' is true, no
+# exception is raised if parsing of one or more of the date/time strings
+# fails due to an invalid date/time string - instead, 'result' (an Array)
+# will contain a nil value for each element of the supplied date/time array
+# that fails to parse.
 class DateParser
   public
 
@@ -56,7 +13,7 @@ class DateParser
 
   private
 
-  def initialize(datetimes)
+  def initialize(datetimes, suppress_exception = false)
     @result = []
     datestring_array = []
     datetimes.each do |dt|
@@ -76,16 +33,18 @@ class DateParser
         end
       end
     end
-    @result.concat(dates_from_outside(datestring_array))
+    @result.concat(dates_from_outside(datestring_array, suppress_exception))
   end
 
-  def dates_from_outside(datetimes)
+  def dates_from_outside(datetimes, suppress_exception)
     xparser = ExternalDateParser.new(datetimes)
     result = xparser.result
     if ! result or xparser.parse_failed then
       error = (xparser.error_msg != nil) ? xparser.error_msg :
         "parse failed for date(s): #{datetimes}"
-      raise error
+      if not suppress_exception then
+        raise error
+      end
     end
     result
   end
