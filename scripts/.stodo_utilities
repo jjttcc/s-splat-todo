@@ -61,7 +61,7 @@ tempm() {
     fi
     hndl=$1; shift
     dt=$(stodo_date)
-    stodo temp memo -h $hndl $(emails) -pr 2 -t $hndl -ti $dt "$@"
+    stodo temp memo -h $hndl $(emails) -pr 2 -t $hndl $dt "$@"
 }
 
 # spec-file template for task:
@@ -72,7 +72,7 @@ tempt() {
     fi
     hndl=$1; shift
     dt=$(stodo_date)
-    stodo temp task -h $hndl $(emails) -pr 2 -t $hndl -ti $dt "$@"
+    stodo temp task -h $hndl $(emails) -pr 2 -t $hndl $dt "$@"
 }
 
 # spec-file template for project:
@@ -83,7 +83,7 @@ tempp() {
     fi
     hndl=$1; shift
     dt=$(stodo_date)
-    stodo temp project -h $hndl $(emails) -pr 2 -t $hndl -ti $dt "$@"
+    stodo temp project -h $hndl $(emails) -pr 2 -t $hndl $dt "$@"
 }
 
 # spec-file template for appointment/meeting:
@@ -94,7 +94,7 @@ tempa() {
     fi
     hndl=$1; shift
     dt=$(stodo_date)
-    stodo temp meeting -h $hndl $(emails) -pr 2 -t $hndl -ti $dt "$@"
+    stodo temp meeting -h $hndl $(emails) -pr 2 -t $hndl $dt "$@"
 }
 
 stodoals='due sh[o]rt summ comp rem rema chi hnd seth del shlp'

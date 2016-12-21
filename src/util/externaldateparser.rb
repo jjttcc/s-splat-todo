@@ -1,9 +1,12 @@
+require 'spectools'
+
 # Date parser that uses an external command to parse a set of date/times
 # ('datestrings'), producing a Time object, in 'result', for each parsed
 # date/time; any parse operation that fails results in a nil value in 'result'
 # (Array) in the position that corresponds (in the 'datestrings' argument
 # to "new") to the date-string that failed to parse.
 class ExternalDateParser
+  include SpecTools
 
   public
 
@@ -20,9 +23,8 @@ class ExternalDateParser
     @result = []
     @error_msg = ""
     @parse_failed = false
-spth = ENV['STODO_PATH']
+    spth = ENV[STODO_PATH]
     @exe_path = spth + File::SEPARATOR + EXTERNAL_EXE_PATH
-$log.warn "exepth: #{@exe_path}"
     if File.executable?(@exe_path) then
       set_dates_from_external_command(datestrings)
     else

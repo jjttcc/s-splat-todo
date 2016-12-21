@@ -12,6 +12,8 @@ class CalendarEntry
   # current settings (title, time, location, ...).
   # Note: The calendar-entry submission will be aborted if the 'time' field
   # has not been set.
+  # precondition: calendar_id != nil && duration != nil && title != nil &&
+  #   time != nil
   def submit
     if time != nil then
       cmd = entry_creation_command

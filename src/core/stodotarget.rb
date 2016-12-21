@@ -1,7 +1,7 @@
 require 'time'
 require 'set'
 require 'email'
-require 'reminder'
+require 'onetimereminder'
 require 'spectools'
 require 'timetools'
 require 'treenode'
@@ -72,7 +72,7 @@ class STodoTarget
     end
     result += "#{REMINDER_KEY}: "
     remlist = reminders.map do |r|
-      time_24hour(r.time)
+      r
     end
     result += remlist.join(', ') + "\n"
     result += email_info(template)
@@ -222,7 +222,9 @@ class STodoTarget
 
   # Perform post-"initiate" notifications.
   def perform_ongoing_actions(status_client = nil)
-    send_ongoing_notifications(status_client)
+    if state.value == IN_PROGRESS then
+      send_ongoing_notifications(status_client)
+    end
   end
 
   ###  Miscellaneous
@@ -244,6 +246,9 @@ class STodoTarget
     @full_notification_message = ""
     @notification_email_addrs = nil
     @short_notification_message = ""
+    @reminders.each do |r|
+      r.prepare_for_db_write
+    end
   end
 
   private
@@ -257,9 +262,13 @@ class STodoTarget
     set_email_addrs
     @notifiers = []
     @state = TargetState.new
-    # Build @reminders last because it depends on 'time' (which is an
-    # attribute in descendant classes) being set/non-nil.
-    @reminders = reminders_from_spec spec
+    if time != nil then
+      # Build @reminders last because it depends on 'time' (which is an
+      # attribute in descendant classes) being set/non-nil.
+      @reminders = reminders_from_spec spec
+    else
+      @reminders = []
+    end
   end
 
   def set_fields spec
@@ -315,7 +324,9 @@ class STodoTarget
 
   # precondition: time != nil
   def reminders_from_spec spec
-    assert_precondition('time != nil') { time != nil }
+    assert_precondition('not spec.is_template? implies time != nil') {
+      implies(! spec.is_template?, time != nil)
+    }
     reminders_string = spec.reminders
     result = []
     if reminders_string != nil then
@@ -323,25 +334,21 @@ class STodoTarget
         date_strings = reminders_string.split(REMINDER_DELIMITER)
         date_parser = DateParser.new(date_strings, true)
         dates = date_parser.result
-$log.debug "date_strings, dates: #{date_strings}, #{dates}"
         periodic_reminder_candidates = []
         for i in 0 .. dates.length - 1 do
           d = dates[i]
           if d != nil then
-            result << Reminder.new(d)
+            result << OneTimeReminder.new(d)
           else
             periodic_reminder_candidates << date_strings[i]
           end
-$log.debug "per-rem-cand: #{periodic_reminder_candidates}"
         end
         if periodic_reminder_candidates.length > 0 then
-$log.debug "calling PeriodicDateParser.new..."
           periodic_date_parser = PeriodicDateParser.new(
             periodic_reminder_candidates, time)
           periodic_reminders = periodic_date_parser.result
           result.concat(periodic_reminders)
         end
-$log.debug "periodic possibilities: #{periodic_reminder_candidates}"
       rescue Exception => e
         $log.warn "#{handle}: #{e.message}"
         @valid = spec.is_template?  # (> 0 bad reminders makes 'self' invalid.)
@@ -413,7 +420,22 @@ $log.debug "periodic possibilities: #{periodic_reminder_candidates}"
       set_cal_fields calentry
       calendar_ids.each do |id|
         calentry.calendar_id = id
-        calentry.submit
+        if
+          calentry.duration != nil && calentry.title != nil &&
+          calentry.time != nil
+        then
+          calentry.submit
+        else
+          msg = "Value(s) not set: "
+          nils = []
+          ['duration', 'title', 'time'].select do |method|
+            if calentry.send(method) == nil then
+              nils << method
+            end
+          end
+          msg += nils.join(', ') + " - skipping calendar submission"
+          $log.warn "#{msg}"
+        end
       end
     end
   end
@@ -425,10 +447,6 @@ $log.debug "periodic possibilities: #{periodic_reminder_candidates}"
     reminders.each { |r| if r.is_due? then rems << r end }
     if
       final_reminder != nil and final_reminder.is_due?
-=begin
-      final_reminder != nil and ! final_reminder.triggered? and
-        final_reminder.is_due?
-=end
     then
       rems << final_reminder
       final_reminder.addendum = "Final "

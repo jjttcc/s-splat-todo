@@ -1,10 +1,11 @@
 require 'errortools'
 require 'postconditionerror'
+require 'timetools'
 
 # Objects that represent a promise to remind, on a certain date and time,
 # a client/user of an event or occurrence scheduled for that date/time
 class Reminder
-  include ErrorTools
+  include ErrorTools, TimeTools
 
   public
 
@@ -15,36 +16,9 @@ class Reminder
 
   ###  Status report
 
-  # Has this reminder been triggered - i.e., is the current time later than
-  # 'date_time' and, as a result, has the target, the person to be reminded,
-  # been notified that the reminder has come due, chronologically?
-#!!!  def old__remove__triggered?
-#!!!!Remove this feature, if possible!!!!!!!
-  def triggered?
-    @triggered
-  end
-
-  # Has this reminder expired?
-  def expired?
-    current_unix_secs = Time.now.strftime('%s').to_i
-    reminder_unix_secs = date_time.strftime('%s').to_i
-    current_unix_secs - reminder_unix_secs > time_tolerance
-  end
-
-  # not triggered? and `date_time' equals or is earlier than the current
-  # date/time?
-  # postcondition: result implies not triggered?
+  # Is this Reminder due to be used for a notification?
   def is_due?
-    result = ! triggered?
-    if result then
-      current_unix_secs = Time.now.strftime('%s').to_i
-      reminder_unix_secs = date_time.strftime('%s').to_i
-      result = (current_unix_secs >= reminder_unix_secs)
-    end
-    if not implies(result, ! triggered?) then
-      raise PostconditionError, 'result implies not triggered?'
-    end
-    result
+    raise "code defect: abstract method called"
   end
 
   # Is the current date/time more than 'time_tolerance' seconds later than
@@ -63,7 +37,7 @@ class Reminder
   end
 
   def to_str
-    "#{self.class}: (#{date_time})"
+    "#{self.class}: (#{time_24hour(date_time)})"
   end
 
   ###  Comparison
@@ -74,14 +48,11 @@ class Reminder
 
   ###  Status setting
 
-  # Change status to triggered
-  # precondition: not triggered?
-  # postcondition: triggered? and not is_due?
+  # Mark the Reminder as triggered - i.e., that is_due? was true and the
+  # Reminder was used for a notification.
+  # postcondition: not is_due?
   def trigger
-    assert_precondition('not triggered?') {not triggered?}
-    @triggered = true
-    assert_postcondition('triggered? and not is_due?') {
-      triggered? and not is_due?}
+    assert_postcondition('not is_due?') { ! is_due?}
   end
 
   ###  Element change
@@ -90,16 +61,14 @@ class Reminder
     if arg != nil then @addendum = arg end
   end
 
+  ###  Persistence
+
+  def prepare_for_db_write
+    # null op - redefine in descendant, if needed
+  end
+
   private
 
   DEFAULT_TOLERANCE = 300
-
-  # precondition: datetime != nil
-  def initialize(datetime, time_tolerance = DEFAULT_TOLERANCE)
-    assert_precondition {datetime != nil}
-    @date_time = datetime
-    @time_tolerance = time_tolerance
-    @addendum = ""
-  end
 
 end

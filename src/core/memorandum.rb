@@ -23,7 +23,7 @@ class Memorandum < STodoTarget
 
   def final_reminder
     if @final_reminder == nil and expiration_date != nil then
-        @final_reminder = Reminder.new(expiration_date)
+        @final_reminder = OneTimeReminder.new(expiration_date)
     end
     @final_reminder
   end

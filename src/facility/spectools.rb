@@ -28,6 +28,7 @@ module SpecTools
   STLOG_LEVEL = 'STODO_LOG_LEVEL'
   ST_CONFIG_PATH = 'STODO_CONFIG_PATH'
   ST_LOG_PATH = 'STODO_LOG'
+  STODO_PATH = 'STODO_PATH'
 
   # tags/patterns from spec with special meaning
   INITIAL_EMAIL_PTRN = Regexp.new('\[initial\]')

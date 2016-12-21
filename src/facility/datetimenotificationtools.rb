@@ -8,11 +8,21 @@ module DateTimeNotificationTools
   MON, TUE, WED, THU, FRI, SAT, SUN=
     'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'
 
+  MINUTE, HOUR, DAY, WEEK, MONTH, YEAR =
+    'minute', 'hour', 'day', 'week', 'month', 'year'
+  PERIOD_NOUNS = [MINUTE, HOUR, DAY, WEEK, MONTH, YEAR]
+
   EVERY = 'every'
 
   PERIODS = {}
   [MINUTELY, HOURLY, DAILY, WEEKLY, MONTHLY, YEARLY].each do |p|
     PERIODS[p] = true
+  end
+  i = 0
+  PERIOD_NOUN_FOR = {}
+  [MINUTELY, HOURLY, DAILY, WEEKLY, MONTHLY, YEARLY].each do |p|
+    PERIOD_NOUN_FOR[p] = PERIOD_NOUNS[i]
+    i += 1
   end
 
   WEEKDAYS = {}
