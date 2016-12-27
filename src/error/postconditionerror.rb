@@ -6,7 +6,7 @@ class PostconditionError < AssertionError
   end
 
   def prefix
-    ""
+    "PostconditionError"
   end
 
 end

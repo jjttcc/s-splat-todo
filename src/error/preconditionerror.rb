@@ -6,7 +6,7 @@ class PreconditionError < AssertionError
   end
 
   def prefix
-    ""
+    "PreconditionError"
   end
 
 end

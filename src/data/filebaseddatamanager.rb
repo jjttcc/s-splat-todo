@@ -16,7 +16,7 @@ class FileBasedDataManager
       infile = File.new(@stored_fpath, 'r')
     rescue SystemCallError => e
       if e.class.name.start_with?('Errno::ENOENT') then
-        $log.debug e.message
+        $log.debug "#{e.message} (stack trace:\n"+e.backtrace.join("\n")+')'
       else
         raise e
       end

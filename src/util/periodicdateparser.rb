@@ -13,6 +13,10 @@ class PeriodicDateParser
 
   private
 
+  # constants used for parsing/keys
+  PERIOD_SPEC_KEY, DATE_TIME_KEY, PERIOD_COUNT_KEY =
+    'period_spec', 'date_time', 'period_count'
+
   def initialize(timespecs, expiration_date_time)
     @result = []
     datestring_array = []
@@ -27,31 +31,23 @@ class PeriodicDateParser
       timespec)
     result = PeriodicReminder.new(first_time, expiration_date_time,
                                   period_type, period_count)
+    result
   end
 
   # 'first_time', 'period_type', and 'period_count' from 'spec' - empty
   # array if 'spec' is not parse-able
   def first_time_period_type_count(spec)
     result = []
-    words = spec.split
-    case words.first
-    when EVERY
-      if words.length > 1 then
-        result = @time_parser_for[words[1]].call(words)
-      end
-    when *(PERIODS.keys)
-        result = @time_parser_for[words.first].call(words)
+    spec_for = period_spec_table(spec)
+    period_spec = spec_for[PERIOD_SPEC_KEY]
+    datetime_spec = spec_for[DATE_TIME_KEY]
+    period_count = spec_for[PERIOD_COUNT_KEY].to_i
+    parser = @time_parser_for[period_spec]
+    if parser == nil then
+      msg = "Could not parse date/time spec: #{spec}"
+      raise msg
     end
-    result
-  end
-
-  def datetime_from_phrase(words)
-    if WEEKDAYS[words[0]] then
-      datetime_phrase = weekday_time(words)
-    elsif PERIODS[words[0]] then
-      datetime_phrase = periodic_time(words[1..-1])
-    end
-    result = xparser_result(datetime_phrase)
+    result = parser.call(period_spec, datetime_spec, period_count)
     result
   end
 
@@ -62,8 +58,11 @@ class PeriodicDateParser
     xparser = ExternalDateParser.new([datetime_string])
     result = xparser.result[0]
     if xparser.parse_failed then
-      error = (xparser.error_msg != nil) ? xparser.error_msg :
-        "parse failed for date string: #{datetime_string}"
+      if xparser.error_msg != nil && ! xparser.error_msg.empty? then
+        error = xparser.error_msg
+      else
+        error = "parse failed for date string: '#{datetime_string}'"
+      end
       raise error
     end
     result
@@ -71,28 +70,26 @@ class PeriodicDateParser
 
   def init_time_parsers
     @time_parser_for = {}
-    weekday_parser = lambda do |words|
+    weekday_parser = lambda do |dayofweek, time, pcount = nil|
       result = []
-      period_type = WEEKLY; period_count = 1
-      first_time = datetime_from_phrase(words[1 .. -1])
-      if first_time && period_type && period_count then
-        result = [first_time, period_type, period_count]
-      end
+      dayofweek = normalized_weekday(dayofweek)
+      period_type = WEEKLY
+      period_count = 1
+      first_time = "#{dayofweek} #{time}"
+      datetime = xparser_result(first_time)
+      result = [datetime, period_type, period_count]
       result
     end
-    period_parser = lambda do |words|
+    period_parser = lambda do |period_type, date_phrase, period_count|
       result = []
-      period_type = words.first; period_count = 1
-      first_time = datetime_from_phrase(words)
-      if first_time && period_type && period_count then
-        result = [first_time, period_type, period_count]
-      end
+      datetime = xparser_result(date_phrase)
+      result = [datetime, period_type, period_count]
       result
     end
     WEEKDAYS.keys.each do |day|
       @time_parser_for[day] = weekday_parser
     end
-    PERIODS.keys.each do |p|
+    (PERIODS.keys + PERIOD_NOUNS + PLURAL_PERIOD_NOUNS).each do |p|
       @time_parser_for[p] = period_parser
     end
   end
@@ -110,9 +107,41 @@ class PeriodicDateParser
 
   def periodic_time(words)
     workwords = words.select do |w|
-      ! IGNORE_WORD[w]
+      # (w is not an ignorable word and is not a period-type word)
+      ! IGNORE_WORD[w] && normalized_period_type(w) == nil
     end
     result = workwords.join(' ')
+    result
+  end
+
+  def period_spec_table(spec)
+    result = {}
+    datetime = ""
+    words = spec.split.map { |w| w.downcase }
+    period_found = false
+    words.each do |word|
+      if not IGNORE_WORD[word] then
+        case word
+        when /^\d+$/
+          if period_found then
+            # The period-count will come before the period-type/weekday, so
+            # 'word' is not the period count; assume it's part of the date.
+            datetime += " #{word}"
+          else
+            result[PERIOD_COUNT_KEY] = word
+          end
+        when WEEKDAY_EXPR, PERIOD_EXPR
+          result[PERIOD_SPEC_KEY] = word
+          period_found = true
+        else
+          datetime += " #{word}"
+        end
+      end
+    end
+    result[DATE_TIME_KEY] = datetime
+    if ! result[PERIOD_COUNT_KEY] then
+      result[PERIOD_COUNT_KEY] = '1'
+    end
     result
   end
 

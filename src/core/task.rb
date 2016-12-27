@@ -50,7 +50,8 @@ class Task < STodoTarget
         @due_date = dates[0]
       end
     rescue Exception => e
-      $log.warn "#{handle}: due_date invalid (#{spec.due_date}): #{e}"
+      $log.warn "#{handle}: due_date invalid (#{spec.due_date}): #{e}" +
+        " (stack trace:\n" + e.backtrace.join("\n") + ')'
       @valid = spec.is_template?
     end
   end

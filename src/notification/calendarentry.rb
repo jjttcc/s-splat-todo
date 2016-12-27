@@ -83,6 +83,7 @@ class CalendarEntry
           exec(*cmd)
         rescue SystemCallError => e
           msg = "#{cmd} failed: #{e}"
+          msg += ". stack trace:\n" + e.backtrace.join("\n")
           $log.error msg
           raise msg
         end

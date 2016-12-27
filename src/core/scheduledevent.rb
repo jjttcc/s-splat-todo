@@ -68,7 +68,8 @@ class ScheduledEvent < STodoTarget
         @date_time = dates[0]
       end
     rescue Exception => e
-      $log.warn "#{handle}: date_time invalid (#{spec.date_time}): #{e}"
+      $log.warn "#{handle}: date_time invalid (#{spec.date_time}): #{e}" +
+        " (stack trace:\n" + e.backtrace.join("\n") + ')'
       @valid = spec.is_template?
     end
   end

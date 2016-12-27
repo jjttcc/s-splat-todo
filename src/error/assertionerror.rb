@@ -2,10 +2,14 @@ class AssertionError < RuntimeError
   private
 
   def initialize(msg="")
-    super(prefix + msg)
+    super(prefix + msg + suffix)
   end
 
   def prefix
     "assertion violation: "
+  end
+
+  def suffix
+    " [backtrace:\n" + caller.join("\n") + ']'
   end
 end

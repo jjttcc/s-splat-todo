@@ -59,6 +59,7 @@ class ExternalDateParser
       end
     rescue Exception => e
       @error_msg = "external command #{@exe_path} failed (#{e})."
+      @error_msg += " stack trace:\n" + e.backtrace.join("\n")
       @parse_failed = true
     end
   end

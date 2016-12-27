@@ -6,7 +6,7 @@ class InvariantError < AssertionError
   end
 
   def prefix
-    ""
+    "InvariantError"
   end
 
 end

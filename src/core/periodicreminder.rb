@@ -81,12 +81,12 @@ class PeriodicReminder < Reminder
       'first_date_time.is_a?(Time) && ending_date_time.is_a?(Time)') {
         first_date_time.is_a?(Time) && ending_date_time.is_a?(Time)
     }
-    assert_precondition('PERIODS[period_type]') {
-      PERIODS[period_type]
+    assert_precondition('normalized_period_type(period_type) != nil') {
+      normalized_period_type(period_type) != nil
     }
     @date_time = first_date_time
     @ending_date_time = ending_date_time
-    @period_type = period_type
+    @period_type = normalized_period_type(period_type)
     @period_count = period_count
     @time_tolerance = time_tolerance
     @addendum = ""

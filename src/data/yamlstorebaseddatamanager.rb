@@ -40,7 +40,7 @@ class YamlStoreBasedDataManager
         end
       end
     rescue Exception => e
-      $log.warn e
+      $log.warn "#{e} (stack trace:\n"+e.backtrace.join("\n")+')'
     end
   end
 
@@ -79,7 +79,7 @@ class YamlStoreBasedDataManager
             end
           end
         rescue Exception => e
-          $log.warn e
+          $log.warn "#{e} (stack trace:\n"+e.backtrace.join("\n")+')'
         end
       end
     end

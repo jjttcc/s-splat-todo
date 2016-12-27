@@ -350,7 +350,8 @@ class STodoTarget
           result.concat(periodic_reminders)
         end
       rescue Exception => e
-        $log.warn "#{handle}: #{e.message}"
+        $log.warn "#{handle}: #{e} [stack trace:\n" +
+          e.backtrace.join("\n") + ']'
         @valid = spec.is_template?  # (> 0 bad reminders makes 'self' invalid.)
       end
     end

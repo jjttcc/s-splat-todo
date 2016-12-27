@@ -63,7 +63,8 @@ class Memorandum < STodoTarget
       end
     rescue Exception => e
       $log.warn "#{handle}: expiration_date invalid " +
-        "(#{spec.expiration_date}): #{e}"
+        "(#{spec.expiration_date}): #{e}" + " (stack trace:\n" +
+        e.backtrace.join("\n") + ')'
       @valid = spec.is_template?
     end
   end
