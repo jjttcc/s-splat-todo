@@ -24,6 +24,11 @@ alias del='stodo del'
 alias temp='stodo temp'
 alias sinit='stodo init'
 alias sstat='stodo stat'
+alias sus='stodo stat suspend'
+alias can='stodo stat cancel'
+alias fin='stodo stat finish'
+alias res='stodo stat resume'
+
 # complete report:
 comp() {
     stodo rep comp $*|more
@@ -98,6 +103,6 @@ tempa() {
 }
 
 stodoals='due sh[o]rt summ comp rem rema chi hnd seth del shlp'
-stodoals="$stodoals temp sinit sstat"
+stodoals="$stodoals temp sinit sstat temp[mtpa]"
 
 alias stal="echo $stodoals"
