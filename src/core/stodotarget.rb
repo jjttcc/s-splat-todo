@@ -262,12 +262,14 @@ class STodoTarget
     set_email_addrs
     @notifiers = []
     @state = TargetState.new
+    @reminders = []
     if time != nil then
       # Build @reminders last because it depends on 'time' (which is an
       # attribute in descendant classes) being set/non-nil.
-      @reminders = reminders_from_spec spec
-    else
-      @reminders = []
+      rem = reminders_from_spec spec
+      if rem then
+        @reminders = rem
+      end
     end
   end
 
@@ -306,7 +308,6 @@ class STodoTarget
     @content = spec.description if spec.description
     @comment = spec.comment if spec.comment
     @priority = spec.priority if spec.priority
-    @reminders = reminders_from_spec spec if spec.reminders != nil
     if spec.parent != nil then
       @parent_handle = spec.parent
     end
@@ -319,10 +320,16 @@ class STodoTarget
   end
 
   def post_modify_fields spec
-    @reminders = reminders_from_spec spec
+    rem = reminders_from_spec spec
+    if rem then
+      @reminders = rem
+    end
   end
 
-  # precondition: time != nil
+  # "Reminder"s created based on spec.reminders - If spec.type == CORRECTION
+  # and spec.reminders is nil, nil is returned to indicate that no
+  # reminders were specified (i.e., the original reminders should be kept).
+  # precondition: not spec.is_template? implies time != nil
   def reminders_from_spec spec
     assert_precondition('not spec.is_template? implies time != nil') {
       implies(! spec.is_template?, time != nil)
@@ -340,7 +347,9 @@ class STodoTarget
           if d != nil then
             result << OneTimeReminder.new(d)
           else
-            periodic_reminder_candidates << date_strings[i]
+            if date_strings[i].downcase != NONE then
+              periodic_reminder_candidates << date_strings[i]
+            end
           end
         end
         if periodic_reminder_candidates.length > 0 then
@@ -354,8 +363,15 @@ class STodoTarget
           e.backtrace.join("\n") + ']'
         @valid = spec.is_template?  # (> 0 bad reminders makes 'self' invalid.)
       end
+    else
+      if spec.type == CORRECTION then
+        result = nil
+      end
     end
-    result.sort
+    if result then
+      result.sort
+    end
+    result
   end
 
   ### Implementation - utilities

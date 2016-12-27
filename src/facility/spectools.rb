@@ -37,5 +37,6 @@ module SpecTools
   ADDRS_TEMPLATE_PTRN = Regexp.new('<addrs>')
   INITIAL_EMAIL_TAG = '[initial]'
   ONGOING_EMAIL_TAG = '[ongoing]'
+  NONE = 'none'
 
 end
