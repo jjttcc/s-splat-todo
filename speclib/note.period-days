@@ -1,0 +1,9 @@
+type: note
+title: test note with periodic reminder
+handle: note-period2-days
+description: 
+priority: 
+# Note: tuesdays instead of "every tuesday"
+reminders: tuesdays at 09:00
+categories: test, periodic-reminders
+expiration_date: 2018-01-16 08:00

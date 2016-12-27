@@ -36,7 +36,7 @@ If you use this file as a template to create your own s*todo memo, don't
 forget to change the email addresses to something valid and useful for you
 (such as, of course, your own address and/or that of someone else you want
 to share this information with).
-reminders: 2021-12-15, 2023-12-15, 2025-12-15
+reminders: 2021-12-15; 2023-12-15; 2025-12-15
 email: family-auto-biographer@test.org
 expiration_date: 2026/12-15
 # (This is an external comment - IOW, it will be discarded.)

@@ -6,7 +6,7 @@ title: A project with an old "Russian" slogan as the handle
 handle: put-putin-in
 priority: 1
 due_date: 2018/01/31
-reminders: 2017/01/31, 2017/07/01, 2017/12/26
+reminders: 2017/01/31; 2017/07/01; 2017/12/26
 description: A test/example project that might contain a few subtasks.
 goal: Figure out who's on first.
 categories: examples, tests

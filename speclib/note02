@@ -6,7 +6,7 @@ handle: test-fake-memo2
 priority: 5
 comment: test/example note/memo
 description: Note, or memorandum, 2.  A simple, example, note/memo.
-reminders: 2018-02-25 13:00, 2018-03-22, 2018-04-28
+reminders: 2018-02-25 13:00; 2018-03-22; 2018-04-28
 email: testperson@test.org
 expiration_date: 2019-01-15
 calendar_ids: testperson@test.org

@@ -1,0 +1,13 @@
+type: project
+title: prj-per-rem-tst01
+handle: prj-per-rem-tst01
+description: test of periodic reminders, monthly
+priority: 2
+comment: 
+parent: 
+reminders: monthly starting 2017-03-12 at 10:30
+email: me-tester@test.org
+calendar_ids: bogus@test.org
+categories: test
+due_date: 2017-06-30
+goal: test periodic reminders

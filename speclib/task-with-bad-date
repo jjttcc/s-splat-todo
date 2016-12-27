@@ -1,0 +1,9 @@
+type: task
+title: reminders - free-form dates with a bad date
+handle: reminder-freeform-r
+description: Test with a bad due date
+priority: 1
+reminders: friday in 2 weeks; tue in 5 weeks at 9:00; sat in 8 weeks at 14:25
+email: tester10p@test.org
+categories: test, dates
+due_date: fooberry 2017-08-28 21:07

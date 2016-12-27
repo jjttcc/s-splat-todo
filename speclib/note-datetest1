@@ -1,0 +1,12 @@
+type: memo
+# Note: types 'memo', 'memorandum', and 'note' are the same.
+title: note/memo date test, 1
+categories: test
+handle: memo-datetest1
+priority: 5
+comment: test new date parser
+description: Note, or memorandum, 2.  A simple, example, note/memo.
+reminders: 2018-02-25 13:00; 2018-03-22; 2018-04-28;
+37 weeks from now at 5:30 pm
+email: testperson@test.org
+expiration_date: 2019-01-15

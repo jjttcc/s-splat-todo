@@ -1,0 +1,11 @@
+type: meeting
+title: Generic test meeting (dates test)
+description: unknown meeting with unknown entity
+date_time: 2017/07/24 17:30
+categories: test, dates
+duration: 60
+location: Kennedy Center
+email: nobody@nobody-but-us-iguanas.org[ongoing]
+reminders: thu in 9 weeks at 12:45; next tuesday at noon;
+july 4 of 2017 at midnight
+handle: meeting-date-test-001a

@@ -1,0 +1,10 @@
+type: note
+title: test note with hourly reminder
+handle: note-hourly1
+description: This note should generate a reminder email once an hour until
+it is either canceled-or-completed or until the expiration_date.
+priority: 3
+reminders: hourly starting now
+categories: test, periodic-reminders
+email: testfanatic@test.org
+expiration_date: 2017-12-18 04:00

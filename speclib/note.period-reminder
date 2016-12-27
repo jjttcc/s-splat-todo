@@ -1,0 +1,8 @@
+type: note
+title: test note with periodic reminder
+handle: note-period1
+description: 
+priority: 
+reminders: every tuesday at 09:00
+categories: test, periodic-reminders
+expiration_date: 2018-01-16 08:00
