@@ -65,7 +65,7 @@ Obviously, the "todo" part stands for "to do", as in "to do list" (or
   - job*s*
 
 In other words, s\*todo (or s-todo or \*s\*todo) can stand for whatever you
-feel needs to be done - i.e., "<my-important-items> to do".  These items
+feel needs to be done - i.e., "\<my-important-items\> to do".  These items
 can be tasks, projects, jobs, meetings, events scheduled for a particular
 time, as well as just pieces of information (in \*s\*todo called "memos" or
 "notes") that you don't want to forget and, optionally, want to be reminded
