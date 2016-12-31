@@ -257,6 +257,8 @@ class STodoTarget
 
   def initialize spec
     @valid = true
+    # Extra database field/object to allow future expansion
+    @additional_database_field = nil
     set_fields spec
     check_fields
     set_email_addrs

@@ -19,6 +19,7 @@ alias rema='stodo rep remall'
 alias remh='stodo rep remh'
 alias chi='stodo rep child'
 alias seth='set $(hnd)'
+alias setha='set $(hnd -a)'
 alias shlp='stodo help'
 alias del='stodo del'
 alias temp='stodo temp'
@@ -103,6 +104,6 @@ tempa() {
 }
 
 stodoals='due sh[o]rt summ comp rem rema chi hnd seth del shlp'
-stodoals="$stodoals temp sinit sstat temp[mtpa]"
+stodoals="$stodoals temp sinit sstat temp[mtpa] sus can fin res"
 
 alias stal="echo $stodoals"

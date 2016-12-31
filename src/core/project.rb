@@ -7,7 +7,8 @@ class Project < Task
   ###  Access
 
   def to_s_appendix
-    super + "#{GOAL_KEY}: #{goal}\n"
+    result = super + "#{GOAL_KEY}: #{goal}\n"
+    result
   end
 
   ###  Status report
