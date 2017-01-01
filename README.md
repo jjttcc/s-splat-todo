@@ -47,6 +47,16 @@ commands:
   backup             back up data files
 ```
 
+### Suggestion
+
+You might want to take a look at scripts/.stodo_utilities; the aliases and
+functions in that file are likely to give you some ideas as to how s\*todo
+can be used.  And I also suggest you install .stodo_utilities in your home
+directory and configure your login environment to source the file so that
+you can take advantage of the shortcuts (aliases and functions) that it
+creates - e.g., by inserting into your $HOME/.bashrc file:
+. ~/.stodo_utilities
+
 ## Name
 
 What does the name s\*todo (or, alternatively, s-todo or \*s\*todo) mean?

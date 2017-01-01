@@ -3,7 +3,6 @@ title: Mom's diary
 categories: family, personal
 handle: momdiary1
 priority: 4
-comment: test/example note
 description: This item is a note, or memorandum - that is, something you
 don't want to forget, but for which it is not appropriate to schedule a
 meeting/appointment or assign a task with a deadline.  The
@@ -31,14 +30,13 @@ now in the safe in the main bedroom in our old house in Houston, Texas.
 This note is to remind myself that this diary exists and to go get it and
 read it and/or put it in a safer place, such as a safety deposit box, at
 some appropriate time in the future.
-comment:
-If you use this file as a template to create your own s*todo memo, don't
-forget to change the email addresses to something valid and useful for you
-(such as, of course, your own address and/or that of someone else you want
-to share this information with).
+comment: If you use this file as a template to create your own s*todo memo,
+don't forget to change the email addresses to something valid and useful for
+you (such as, of course, your own address and/or that of someone else you
+want to share this information with).
 reminders: 2021-12-15; 2023-12-15; 2025-12-15
 email: family-auto-biographer@test.org
-expiration_date: 2026/12-15
+expiration_date: 2026/12/15
 # (This is an external comment - IOW, it will be discarded.)
 # google calendar id for event creation via gcalcli:
 calendar_ids: family-auto-biographer@gmail.com
