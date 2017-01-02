@@ -74,7 +74,7 @@ class STodoTarget
     remlist = reminders.map do |r|
       r
     end
-    result += remlist.join(', ') + "\n"
+    result += remlist.join('; ') + "\n"
     result += email_info(template)
     result += "#{CALENDAR_IDS_KEY}: #{calendar_ids.join(', ')}\n"
     result += "#{CATEGORIES_KEY}: #{categories.join(', ')}\n"
@@ -82,10 +82,14 @@ class STodoTarget
   end
 
   # All 'reminders' that are in the future
-  def upcoming_reminders
+  def upcoming_reminders(sorted = false)
+    assert_invariant {invariant}
     now = Time.now
     result = reminders.select do |r|
       r.time > now
+    end
+    if sorted then
+      result.sort!
     end
     result
   end
@@ -279,6 +283,7 @@ class STodoTarget
           "be ignored (#{rems})"
       end
     end
+    assert_invariant {invariant}
   end
 
   def set_fields spec
@@ -407,6 +412,10 @@ class STodoTarget
           "#{time_24hour(t.time)}  #{t.title} (#{t.formal_type}:#{t.handle})"
         end
       end
+    end
+    uprem = upcoming_reminders(true)
+    if ! uprem.empty? then
+      result += "upcoming reminders: " + uprem.join('; ') + "\n"
     end
     result
   end
@@ -567,7 +576,7 @@ class STodoTarget
   ###  class invariant
 
   def invariant
-    true
+    reminders != nil
   end
 
 end

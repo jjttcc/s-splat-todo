@@ -33,7 +33,7 @@ class PeriodicReminder < Reminder
   end
 
   def to_str
-    period_info = " every #{period_count} #{PERIOD_NOUN_FOR[period_type]}"
+    period_info = ", every #{period_count} #{PERIOD_NOUN_FOR[period_type]}"
     if period_count > 1 then
       period_info += "s"
     end

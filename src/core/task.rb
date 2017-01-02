@@ -74,10 +74,8 @@ class Task < STodoTarget
   end
 
   def current_message
-    result =
-    "title: #{title}\n" +
-    "due_date: #{time_24hour(due_date)}\n" +
-    "type: #{formal_type}\n"
+    result = "title: #{title}\n" + "due_date: #{time_24hour(due_date)}\n" +
+      "type: #{formal_type}\n"
     if priority then
       result += "priority: #{priority}\n"
     end

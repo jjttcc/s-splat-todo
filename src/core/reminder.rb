@@ -37,7 +37,7 @@ class Reminder
   end
 
   def to_str
-    "#{self.class}: (#{time_24hour(date_time)})"
+    "#{self.class}: #{time_24hour(date_time)}"
   end
 
   ###  Comparison

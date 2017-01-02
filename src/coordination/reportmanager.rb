@@ -175,7 +175,7 @@ class ReportManager
         times = target.reminders.map do |r|
           r.date_time.strftime("%Y-%m-%d %H:%M")
         end
-        result = "#{target.handle} - " + times.join(', ')
+        result = "#{target.handle} - " + times.join('; ')
       else
         name = @use_handle ? target.handle : target.title
         result = prefix + first_reminder.date_time.strftime("%Y-%m-%d %H:%M") +
