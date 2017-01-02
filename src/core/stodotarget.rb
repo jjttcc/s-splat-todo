@@ -265,12 +265,18 @@ class STodoTarget
     @notifiers = []
     @state = TargetState.new
     @reminders = []
-    if time != nil then
+    if spec.is_template? || time != nil then
       # Build @reminders last because it depends on 'time' (which is an
       # attribute in descendant classes) being set/non-nil.
       rem = reminders_from_spec spec
       if rem then
         @reminders = rem
+      end
+    else
+      rems = spec.reminders
+      if rems != nil && ! rems.empty? then
+        $log.warn "No date specified for #{spec.handle} - reminders will " +
+          "be ignored (#{rems})"
       end
     end
   end
@@ -291,6 +297,7 @@ class STodoTarget
     @calendar_ids = []
     if spec.calendar_ids != nil then
       @calendar_ids = spec.calendar_ids.split(SPEC_FIELD_DELIMITER)
+      $log.debug "calendar_ids set: #{calendar_ids}"
     end
     if spec.parent != nil then
       @parent_handle = spec.parent

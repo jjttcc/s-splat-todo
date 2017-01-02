@@ -80,6 +80,7 @@ class CalendarEntry
       pid = fork
       if pid == nil then  # child
         begin
+          $log.debug "#{self.class} attempting to execute '#{cmd}'"
           exec(*cmd)
         rescue SystemCallError => e
           msg = "#{cmd} failed: #{e}"
