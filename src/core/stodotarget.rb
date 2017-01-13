@@ -486,11 +486,13 @@ class STodoTarget
       rems << final_reminder
       final_reminder.addendum = "Final "
     end
+    old_date_for = {}
+    rems.each { |r| old_date_for[r] = r.date_time; r.trigger }
     rems.each do |r|
       if ! @ongoing_email_addrs.empty? then
         # Set notification components to be used by the 'notifiers'.
         @notification_subject = r.addendum + message_subject_label +
-          current_message_subject + subject_suffix + " #{r.date_time}"
+          current_message_subject + subject_suffix + " #{old_date_for[r]}"
         @full_notification_message = current_message + current_message_appendix
         @notification_email_addrs = @ongoing_email_addrs
         @short_notification_message = ""
@@ -498,7 +500,6 @@ class STodoTarget
           n.send_message self
         end
       end
-      r.trigger
     end
     if ! rems.empty? and status_client != nil then
       status_client.dirty = true
