@@ -456,14 +456,13 @@ class STodoTarget
       calendar_ids.each do |id|
         calentry.calendar_id = id
         if
-          calentry.duration != nil && calentry.title != nil &&
-          calentry.time != nil
+          calentry.title != nil && calentry.time != nil
         then
           calentry.submit
         else
           msg = "Value(s) not set: "
           nils = []
-          ['duration', 'title', 'time'].select do |method|
+          ['title', 'time'].select do |method|
             if calentry.send(method) == nil then
               nils << method
             end
