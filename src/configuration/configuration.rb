@@ -33,7 +33,7 @@ class Configuration
   end
 
   if ENV[ST_LOG_PATH] then
-    LOGPATH = ENV[ST_LOG_PATH]
+    LOGPATH = ENV[ST_LOG_PATH] + File::SEPARATOR + "stodo-log-#{$$}"
   else
     LOGPATH = DEFAULT_LOG_PATH
   end
@@ -57,8 +57,9 @@ class Configuration
     @templated_email_command = settings[EMAIL_TEMPLATE_TAG]
     @calendar_tool = settings[CALENDAR_COMMAND_TAG]
     @backup_paths = scanned_backup_paths(settings[BACKUP_PATH_TAG])
-    validate_paths(spec_path, data_path, post_init_spec_path)
-    validate_paths(*backup_paths)
+    validate_paths({:spec_path => spec_path, :data_path => data_path,
+      :post_init_spec_path => post_init_spec_path})
+    validate_paths(labeled_paths(backup_paths))
     validate_exefiles(@calendar_tool)
   end
 
@@ -103,14 +104,19 @@ class Configuration
 
   # Validate the specified paths - raise an exception if any are found not
   # to exist or are inaccessible.
-  def validate_paths *paths
+  def validate_paths paths
     errors = []
-    paths.each do |p|
-      if not File.readable?(p) then
-        if not File.exists?(p) then
-          errors << "File '#{p}' does not exist."
-        else
-          errors << "File '#{p}' does is not readable."
+    paths.keys.each do |pname|
+      p = paths[pname]
+      if p == nil then
+        errors << "Path not set for '#{pname}'"
+      else
+        if not File.readable?(p) then
+          if not File.exists?(p) then
+            errors << "File '#{p}' does not exist."
+          else
+            errors << "File '#{p}' does is not readable."
+          end
         end
       end
     end
@@ -159,7 +165,21 @@ class Configuration
     result
   end
 
-  $log = Logger.new(LOGPATH)
+  def labeled_paths(pths)
+    result = {}
+    i = 1
+    pths.each do |p|
+      result["path-#{i}"] = p
+      i += 1
+    end
+    result
+  end
+
+  begin
+    $log = Logger.new(LOGPATH)
+  rescue Exception => e
+    raise "Creation of log file (#{LOGPATH}} failed: #{e}"
+  end
   $debug = ENV[STDEBUG] != nil
   if ENV[STLOG_LEVEL] then
     $log.level = ENV[STLOG_LEVEL]
