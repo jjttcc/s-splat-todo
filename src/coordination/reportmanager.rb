@@ -172,7 +172,7 @@ class ReportManager
     def to_s
       result = ""
       if use_all_reminders then
-        times = target.reminders.map do |r|
+        times = target.reminders.sort.map do |r|
           r.date_time.strftime("%Y-%m-%d %H:%M")
         end
         result = "#{target.handle} - " + times.join('; ')
@@ -196,9 +196,9 @@ class ReportManager
       @use_handle = print_handle
     end
     def first_rem
-      result = @target.reminders.first
+      result = @target.reminders.sort.first
       if ! use_all_reminders then
-        result = @target.upcoming_reminders.first
+        result = @target.upcoming_reminders(true).first
         if result == nil then # The last reminder is in the past.
           result = @target.reminders.last
           @prefix = "("
