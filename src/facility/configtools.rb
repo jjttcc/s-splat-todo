@@ -41,6 +41,8 @@ module ConfigTools
   EMAIL_TEMPLATE_TAG   = 'emailtemplate'
   CALENDAR_COMMAND_TAG = 'calendarcmd'
   USER_TAG             = 'user'
+  CATEGORY_PREFIX_TAG  = 'categoryprefix'
+  DEFAULT_CAT_PREFIX   = 'cat:'
 
   # http://stackoverflow.com/questions/2108727/which-in-ruby-checking-if-program-exists-in-path-from-ruby)
   # The path of the executable `cmd', if it is in the user's path -

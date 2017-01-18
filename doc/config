@@ -1,6 +1,14 @@
 # Change these settings as needed/desired.
 specpath = /home/mylogin/.stodo/specs
 datapath = /home/mylogin/.stodo/data
+# comma-separated list of one or more backup paths:
+backuppath = /home4/backups/jtc/stodo,/home3/backups/misc/jtc/stodo/
 emailtemplate = mutt -s <subject> <addrs>
+# To use a user name other than your UNIX login name, edit/uncomment this:
+#user = mymyselfandi
 # The path of the gcalcli script:
 calendarcmd = /home/mylogin/lib/python2/bin/gcalcli
+# prefix to use for categories in some reports:
+categoryprefix = cat-
+# To specify no category prefix, uncomment this line:
+# categoryprefix =

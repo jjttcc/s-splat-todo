@@ -25,6 +25,8 @@ class Configuration
   attr_reader :templated_email_command
   # calendar application for submitting calendar entries
   attr_reader :calendar_tool
+  # prefix to use for categories in some reports
+  attr_reader :category_prefix
   attr_reader :data_manager
 
   # Is this a test run?
@@ -50,6 +52,7 @@ class Configuration
 
   def set_config_vars settings
     @user = user_name settings
+    @category_prefix = cat_prefix settings
     @spec_path = settings[SPEC_PATH_TAG]
     @data_path = settings[DATA_PATH_TAG]
     @post_init_spec_path =
@@ -161,6 +164,14 @@ class Configuration
         $log.fatal "#{msg}"
         raise msg
       end
+    end
+    result
+  end
+
+  def cat_prefix(settings)
+    result = settings[CATEGORY_PREFIX_TAG]
+    if result == nil then
+      result = DEFAULT_CAT_PREFIX
     end
     result
   end

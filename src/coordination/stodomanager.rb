@@ -10,7 +10,7 @@ class STodoManager
 
   public
 
-  attr_reader :existing_targets, :mailer, :calendar
+  attr_reader :existing_targets, :mailer, :calendar, :configuration
   attr_accessor :dirty
 
   # Call `initiate' on all new or edited targets.
@@ -19,11 +19,11 @@ class STodoManager
       email = Email.new(mailer)
       @new_targets.values.each do |t|
         t.add_notifier(email)
-        t.initiate(calendar)
+        t.initiate(calendar, self)
       end
       @edited_targets.values.each do |t|
         if @target_builder.time_changed_for[t] then
-          t.initiate(calendar)
+          t.initiate(calendar, self)
         end
       end
       @target_builder.spec_collector.initial_cleanup @new_targets
@@ -64,7 +64,7 @@ class STodoManager
           puts (cand_parents.map {|t| t.handle }).join(', ')
         end
       end
-      puts "#spec-path: #{@config.spec_path}"
+      puts "#spec-path: #{@configuration.spec_path}"
     end
   end
 
@@ -93,7 +93,7 @@ class STodoManager
       @existing_targets = @data_manager.restored_targets
       @mailer = Mailer.new config
       @calendar = CalendarEntry.new config
-      @config = config
+      @configuration = config
     end
     if tgt_builder != nil then
       init_new_targets tgt_builder

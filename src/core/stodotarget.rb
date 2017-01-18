@@ -219,15 +219,15 @@ class STodoTarget
   ###  Basic operations
 
   # Perform required initial notifications and related actions.
-  def initiate calendar
-    send_initial_notifications
+  def initiate calendar, client
+    send_initial_notifications(client)
     set_initial_calendar_entry calendar
   end
 
   # Perform post-"initiate" notifications.
-  def perform_ongoing_actions(status_client = nil)
+  def perform_ongoing_actions(client = nil)
     if state.value == IN_PROGRESS then
-      send_ongoing_notifications(status_client)
+      send_ongoing_notifications(client)
     end
   end
 
@@ -391,10 +391,14 @@ class STodoTarget
   ### Implementation - utilities
 
   # Constructed suffix for the subject/title/...
-  def subject_suffix
+  def subject_suffix(client)
     result = ""
+    cat_prefix = ""
+    if client != nil then
+      cat_prefix = client.configuration.category_prefix
+    end
     if ! categories.empty? then
-      result = ", cat: " + categories.join(', cat: ')
+      result = ", #{cat_prefix}" + categories.join(", #{cat_prefix}")
     end
     result
   end
@@ -434,12 +438,12 @@ class STodoTarget
   end
 
   # Send an notification to all recipients designated as initial recipients.
-  def send_initial_notifications
+  def send_initial_notifications(client)
     assert('initial_email_addrs != nil') { @initial_email_addrs != nil }
     if ! @initial_email_addrs.empty? then
       # Set notification components to be used by the 'notifiers'.
       @notification_subject = 'initial ' + current_message_subject +
-        subject_suffix
+        subject_suffix(client)
       @full_notification_message = current_message + current_message_appendix
       @notification_email_addrs = @initial_email_addrs
       @short_notification_message = ""
@@ -474,7 +478,7 @@ class STodoTarget
   end
 
   # Send a notification email to all recipients.
-  def send_ongoing_notifications(status_client = nil)
+  def send_ongoing_notifications(client = nil)
     assert('ongoing_email_addrs != nil') { @ongoing_email_addrs != nil }
     rems = []
     reminders.each { |r| if r.is_due? then rems << r end }
@@ -490,7 +494,8 @@ class STodoTarget
       if ! @ongoing_email_addrs.empty? then
         # Set notification components to be used by the 'notifiers'.
         @notification_subject = r.addendum + message_subject_label +
-          current_message_subject + subject_suffix + " #{old_date_for[r]}"
+          current_message_subject + subject_suffix(client) +
+          " #{old_date_for[r]}"
         @full_notification_message = current_message + current_message_appendix
         @notification_email_addrs = @ongoing_email_addrs
         @short_notification_message = ""
@@ -499,8 +504,8 @@ class STodoTarget
         end
       end
     end
-    if ! rems.empty? and status_client != nil then
-      status_client.dirty = true
+    if ! rems.empty? and client != nil then
+      client.dirty = true
     end
   end
 
