@@ -8,7 +8,8 @@ default_date='date --date="-1 days ago" +%Y-%m-%d'
 default_time='12:00'
 
 ## s*todo convenience aliases
-alias hnd='stodo rep'
+alias hnd='stodo rep'               # list handles
+alias hndn='stodo rep|pr -n -t'     # list handles, numbered
 alias rep='stodo rep'
 alias due='stodo rep due'
 alias short='stodo rep short'
@@ -107,3 +108,12 @@ stodoals='due sh[o]rt summ comp rem rema chi hnd seth del shlp'
 stodoals="$stodoals temp sinit sstat temp[mtpa] sus can fin res"
 
 alias stal="echo $stodoals"
+
+#### Utilities
+
+# Run the specified command, output with line numbers.
+numbered_command() {
+    eval "$@"|pr -t -n
+}
+
+alias cmdn=numbered_command
