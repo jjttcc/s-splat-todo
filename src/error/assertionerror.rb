@@ -10,6 +10,6 @@ class AssertionError < RuntimeError
   end
 
   def suffix
-    " [backtrace:\n" + caller.join("\n") + ']'
+    "\n[backtrace:\n" + caller.join("\n") + ']'
   end
 end

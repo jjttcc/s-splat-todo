@@ -12,28 +12,28 @@ module ErrorTools
   def assert(msg = "", &block)
     if ! yield then
       trace = caller.join("\n")
-      raise AssertionError, msg, [block.source_location.to_s, trace]
+      raise AssertionError, ": #{msg}", [block.source_location.to_s, trace]
     end
   end
 
   def assert_invariant(msg = "", &block)
     if ! yield then
       trace = caller.join("\n")
-      raise InvariantError, msg, [block.source_location.to_s, trace]
+      raise InvariantError, ": #{msg}", [block.source_location.to_s, trace]
     end
   end
 
   def assert_precondition(msg = "", &block)
     if ! yield then
       trace = caller.join("\n")
-      raise PreconditionError, msg, [block.source_location.to_s, trace]
+      raise PreconditionError, ": #{msg}", [block.source_location.to_s, trace]
     end
   end
 
   def assert_postcondition(msg = "", &block)
     if ! yield then
       trace = caller.join("\n")
-      raise PostconditionError, msg, [block.source_location.to_s, trace]
+      raise PostconditionError, ": #{msg}", [block.source_location.to_s, trace]
     end
   end
 
