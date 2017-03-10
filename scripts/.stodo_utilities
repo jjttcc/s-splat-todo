@@ -36,6 +36,21 @@ comp() {
     stodo rep comp $*|more
 }
 
+# complete report for item <n>:
+compn() {
+    if expr "$1" : '^[0-9][0-9]*$' >/dev/null; then
+        n=$1
+        seth
+        if [ $n -le "$#" ]; then
+            eval comp "\${$n}"
+        else
+            echo "compn: $n is too large (highest # is $#)" >&2
+        fi
+    else
+        echo "compn requires a numeric argument." >&2
+    fi
+}
+
 emails() {
     result=""
     if [ "$s_init_addr" ]; then
