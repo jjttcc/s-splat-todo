@@ -51,6 +51,23 @@ compn() {
     fi
 }
 
+# Complete report for $1 and all of its descendants
+comptree() {
+    if [ $# -eq 0 ]; then return; fi
+    sepline='========================================================='
+    sepline="$sepline======================"
+    handles=$(chi $1|sed 's@,.*@@');
+    hcount=$(echo $handles|wc -w)
+    i=1
+    for h in $handles; do
+        comp $h
+        if [ $i -lt $hcount ]; then
+            echo "$sepline"
+        fi
+        ((++i))
+    done|more
+}
+
 emails() {
     result=""
     if [ "$s_init_addr" ]; then
@@ -132,3 +149,4 @@ numbered_command() {
 }
 
 alias cmdn=numbered_command
+alias ctree=comptree
