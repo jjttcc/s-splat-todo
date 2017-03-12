@@ -106,7 +106,7 @@ tempm() {
 # spec-file template for task:
 tempt() {
     if [ $# = 0 ]; then
-        echo "Usage: tempm <handle> [...]"
+        echo "Usage: tempt <handle> [...]"
         return 2
     fi
     hndl=$1; shift
@@ -117,7 +117,7 @@ tempt() {
 # spec-file template for project:
 tempp() {
     if [ $# = 0 ]; then
-        echo "Usage: tempm <handle> [...]"
+        echo "Usage: tempp <handle> [...]"
         return 2
     fi
     hndl=$1; shift
@@ -128,7 +128,7 @@ tempp() {
 # spec-file template for appointment/meeting:
 tempa() {
     if [ $# = 0 ]; then
-        echo "Usage: tempm <handle> [...]"
+        echo "Usage: tempa <handle> [...]"
         return 2
     fi
     hndl=$1; shift
