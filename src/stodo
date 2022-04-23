@@ -75,7 +75,7 @@ checkpath() {
 
 run() {
   cmd=$1; shift
-  $STEXEC_PATH/$cmd "$@"
+  $RUBY_EXEC $STEXEC_PATH/$cmd "$@"
 }
 
 process_new_items() {
@@ -132,6 +132,10 @@ install_specfile() {
   return $status
 }
 
+# Create the template contents.  If env. var. EDITOR is not empty, invoke
+# it to allow the user to edit the contents in a temporary file and
+# "install" it by calling install_specfile on the file.  Otherwise (EDITOR
+# is empty or not set), simply output the template contents to stdout.
 make_template() {
   checkpath $mktmpl
   type=$1
@@ -145,9 +149,12 @@ make_template() {
     outfile=$(mktemp $type.XXXX)
     run $mktmpl $type "$@" >$outfile
     if [ "$EDITOR" ]; then
-      $EDITOR $outfile
+      if $EDITOR $outfile; then
+        install_specfile $outfile
+      fi
+    else
+      cat $outfile
     fi
-    install_specfile $outfile
     exit $?
   else
     run $mktmpl "$@"
