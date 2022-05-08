@@ -45,6 +45,13 @@ class TargetStateSet
     result
   end
 
+  #####  Measurement
+
+  # Number of "TargetState"s in the set
+  def count
+    states.count
+  end
+
   ###  Element change
 
   # Remove the "final" states - i.e., CANCELED and COMPLETED
@@ -61,7 +68,7 @@ class TargetStateSet
 
   private
 
-  def initialize(match_filters = ["c", "u", "i"])
+  def old___initialize(match_filters = ["c", "u", "i"])
     @states = Set.new(all_state_values)
     @cleaned_states = cleaned_states
     if match_filters != nil && match_filters.length > 0 then
@@ -75,8 +82,37 @@ class TargetStateSet
     end
   end
 
+  # results for parameter 'match_filters':
+  #    nil           ->  Initialize as an empty set.
+  #    <default>     ->  ["c", "u", "i"] - Results in a set of all states.
+  #    [f1, f2, ...] ->  ["c", "u", "i"] - Results in a set of states that
+  #                                        match the specified filter values.
+  def initialize(match_filters = ["c", "u", "i"])
+    if match_filters.nil? then
+        @states = Set.new
+    else
+      all_sv = all_state_values
+      #    if match_filters != nil && match_filters.length > 0 then
+      if match_filters.length > 0 then
+        @states = Set.new
+        match_filters.each do |f|
+          all_sv.grep(/#{f}/).each do |s|
+            @states << s
+          end
+        end
+      else
+        @states = Set.new(all_sv)
+      end
+      @cleaned_states = cleaned_states
+    end
+  end
+
+  ###!!!!!This function appears to be useless - or, maybe not!!!
+  # The contents of @states, but with non-word characters (such as '-')
+  # removed
   def cleaned_states
-    @states.map {|s| s.gsub(/[\W_]/, "")}
+#(!!!!!The line below does nothing - remove it:)
+@states.map {|s| s.gsub(/[\W_]/, "")}
     result = {}
     @states.each do |s|
       result[s.gsub(/[\W_]/, "")] = s

@@ -6,3 +6,11 @@ td
 datatest
 obsolete
 hide*
+/work
+*tmpbck
+/src/remove
+/old-remove
+/src/vimtips
+/doc/tips
+/alt-tmp
+/oldspeclib

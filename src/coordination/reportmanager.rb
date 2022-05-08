@@ -10,46 +10,127 @@ class ReportManager
   attr_accessor :manager
 
   # List info about the targets with the specified handles.
-  def list_targets(short = true, handles, states)
-    targets = targets_for(handles)
+  def list_targets(short = true, criteria)
+    targets = targets_for_criteria(criteria)
     targets.each do |t|
-      if t.state == nil or states.include?(t) then
+      if short then
+        puts "#{t.handle}: #{t.title}"
+      else
+        puts target_info(t,
+                         criteria.handles && !criteria.handles.empty?)
+      end
+    end
+  end
+
+  # List info about the targets with the specified handles.
+  def old___list_targets(short = true, criteria)
+    targets = targets_for(criteria.handles)
+    targets.each do |t|
+      if t.state == nil or criteria.states.include?(t) then
         if short then
           puts "#{t.handle}: #{t.title}"
         else
-          puts target_info(t, handles && !handles.empty?)
+          puts target_info(t,
+                           criteria.handles && !criteria.handles.empty?)
         end
       end
     end
   end
 
   # List the handle for all targets.
-  def list_handles(states)
+  # (!!!!re-spec this method, perhaps!!!!)
+  def list_handles(criteria)
+#!!!rm: targets = manager.existing_targets.values.sort
+    if criteria.null_criteria? then
+#!!!!!!^^^^^^^^^^^^^ - document this logic!!!!!
+#!!!$stderr.puts "nulcrit"
+      targets = targets_for(nil)
+    elsif criteria.handles_only? then
+#!!!$stderr.puts "honly"
+      targets = targets_for(criteria.handles)
+    else
+#!!!$stderr.puts "NOT honly"
+      targets = targets_for_criteria(criteria)
+    end
+    targets.each do |t|
+      puts "#{t.handle}"
+    end
+  end
+
+  # List the handle for all targets.
+  # (!!!!re-spec this method, perhaps!!!!)
+  def old___list_handles(criteria)
     targets = manager.existing_targets.values.sort
     targets.each do |t|
-      if t.state == nil or states.include?(t) then
+      if t.state == nil or criteria.states.include?(t) then
         puts "#{t.handle}"
       end
     end
   end
 
   # Report all descendants (child targets, their children, ...) for each
-  # target whose handle is in `handles'.
-  def report_targets_descendants handles
-    targets = targets_for(handles)
+  # target whose handle is in `criteria.handles'.
+  def report_targets_descendants criteria
+    targets = targets_for_criteria(criteria)
     targets.each do |t|
       if t.can_have_children? then
-        report_descendants(t, ! handles.empty?)
+        report_descendants(t, ! criteria.handles.empty?)
       else
         puts "#{t.handle} (cannot have children), due: #{time_24hour(t.time)}"
       end
     end
   end
 
-  # List info about the targets with the specified handles.
-  def report_complete handles, states
-    targets = targets_for(handles).select do |t|
-      t.state == nil or states.include?(t)
+  # Report all descendants (child targets, their children, ...) for each
+  # target whose handle is in `criteria.handles'.
+  def old___report_targets_descendants criteria
+    targets = targets_for(criteria.handles)
+    targets.each do |t|
+      if t.can_have_children? then
+        report_descendants(t, ! criteria.handles.empty?)
+      else
+        puts "#{t.handle} (cannot have children), due: #{time_24hour(t.time)}"
+      end
+    end
+  end
+
+  # List info about the targets with the specified handles and criteria.
+  def report_complete criteria
+#!!!$stderr.puts "#{__method__}: criteria: #{criteria.inspect}"
+    if criteria.null_criteria? then
+      # No criteria specified implies retrieval of all items (targets).
+      targets = targets_for(nil)
+    else
+      targets = targets_for_criteria(criteria)
+    end
+#!!!$stderr.puts "targets.count: #{targets.count}"
+#!!!$stderr.puts "criteria.handles_only?: #{criteria.handles_only?}"
+    report_array = targets.map do |t|
+      result = t.to_s
+      if t.can_have_children? then
+        result += "children: "
+        children = t.children.map do |child|
+          child.handle
+        end
+        result += children.join(', ') + "\n"
+      end
+      result
+    end
+    puts report_array.join("\n")
+  end
+
+  # List info about the targets with the specified handles and states.
+  def old___report_complete criteria
+#!!!$stderr.puts "#{__method__}: criteria: #{criteria.inspect}"
+    # (Note: targets_for returns all targets if 'handles' is nil.)
+    targets = targets_for(criteria.handles)
+#!!!$stderr.puts "targets.count: #{targets.count}"
+#!!!$stderr.puts "criteria.handles_only?: #{criteria.handles_only?}"
+    if ! criteria.handles_only? then
+      targets = targets.select do |t|
+        criteria.priorities.include?(t.priority) &&
+          (t.state == nil || criteria.states.include?(t))
+      end
     end
     report_array = targets.map do |t|
       result = t.to_s
@@ -83,9 +164,9 @@ class ReportManager
   end
 
   # List uncompleted/not-cancelled targets with their due dates.
-  def report_due(handles, states)
-    targets_due = (targets_for(handles).select do |t|
-      t.state == nil or states.include?(t)
+  def report_due(criteria)
+    targets_due = (targets_for(criteria.handles).select do |t|
+      t.state == nil or criteria.states.include?(t)
     end).sort.map do |t|
       TargetDue.new(t)
     end
@@ -131,6 +212,7 @@ class ReportManager
     result
   end
 
+  # (Note: Returns all targets if 'handles' is nil.)
   def targets_for handles, sorted = true
     result = manager.existing_targets.values
     if handles != nil && handles.length > 0 then
@@ -144,6 +226,17 @@ class ReportManager
     if sorted then
       result.sort! do |a, b|
         time_comparison(a, b)
+      end
+    end
+    result
+  end
+
+  def targets_for_criteria criteria, sorted = true
+    result = targets_for(criteria.handles, sorted)
+    if ! criteria.handles_only? then
+      result = result.select do |t|
+        criteria.priorities.include?(t.priority) &&
+          (t.state == nil || criteria.states.include?(t))
       end
     end
     result
