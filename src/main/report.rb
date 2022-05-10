@@ -35,18 +35,16 @@ class ReportUtil
         case ARGV[0]
         when /rem.*all/ # all reminders
           result = Proc.new {
-            reporter.report_reminders(all: true, handles: criteria.handles,
-                                     states: criteria.states)
+            reporter.report_reminders(all: true, criteria: criteria)
           }
         when /rem.*h/   # only the 1st reminder, print handle instead of title
           result = Proc.new {
-            reporter.report_reminders(all: false, handles: criteria.handles,
-                                     short: true, states: criteria.states)
+            reporter.report_reminders(all: false, criteria: criteria,
+                                      short: true)
           }
         else            # only the 1st reminder (with title)
           result = Proc.new {
-            reporter.report_reminders(all: false, handles: criteria.handles,
-                                     states: criteria.states)
+            reporter.report_reminders(all: false, criteria: criteria)
           }
         end
       when /^chi/
@@ -77,7 +75,6 @@ class ReportUtil
   # Parse the specs implied by ARGV, create a resulting instance of
   # SearchCriteria, and initialize attribute 'criteria' to that instance.
   def self.create_search_criteria
-#byebug
     self.handles = []
     if ARGV.length > 1 then
       parts = ARGV[1].split(TYPE_SPEC_SEP)
@@ -109,12 +106,13 @@ class ReportUtil
     build_criteria
   end
 
+  # Set self.handles to the list 's'.
   def self.set_handles(hlist)
     self.handles = hlist
   end
 
-  #!!!!to-do: document this method
-  #!!!!to-do: document that 'stat:all' or 'stat:*' means all states.
+  # Set self.states according to the specifications implied by 's'.
+  # Note: 'stat:all' or 'stat:*' implies all states.
   def self.set_states(s)
     if s != nil then
       if s == "all" || s == "*" then
@@ -131,7 +129,7 @@ class ReportUtil
     end
   end
 
-  #!!!!to-do: document this method
+  # Set self.priorities according to the specifications implied by 's'.
   def self.set_priorities(s)
     if s != nil then
       if s == "all" || s == "*" then
@@ -151,6 +149,7 @@ class ReportUtil
     end
   end
 
+  # Set self.title_exprs according to the specifications implied by 's'.
   def self.set_title_exprs(s)
     self.title_exprs = []
     if s != nil then
@@ -161,6 +160,7 @@ class ReportUtil
     end
   end
 
+  # Set self.handle_exprs according to the specifications implied by 's'.
   def self.set_handle_exprs(s)
     self.handle_exprs = []
     if s != nil then
@@ -171,6 +171,7 @@ class ReportUtil
     end
   end
 
+  # Set self.description_exprs according to the specifications implied by 's'.
   def self.set_description_exprs(s)
     self.description_exprs = []
     if s != nil then
@@ -181,6 +182,8 @@ class ReportUtil
     end
   end
 
+  # Build self.criteria according to the current attribute values (states,
+  # priorities, etc.)
   def self.build_criteria
     if self.states.nil? then
         self.states = TargetStateSet.new(nil)    # i.e., empty state set

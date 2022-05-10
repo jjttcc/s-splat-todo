@@ -68,20 +68,6 @@ class TargetStateSet
 
   private
 
-  def old___initialize(match_filters = ["c", "u", "i"])
-    @states = Set.new(all_state_values)
-    @cleaned_states = cleaned_states
-    if match_filters != nil && match_filters.length > 0 then
-      @states.clear
-      match_filters.each do |f|
-        @cleaned_states.keys.grep(/#{f}/).each do |s|
-          @states << @cleaned_states[s]
-        end
-      end
-      @cleaned_states = cleaned_states
-    end
-  end
-
   # results for parameter 'match_filters':
   #    nil           ->  Initialize as an empty set.
   #    <default>     ->  ["c", "u", "i"] - Results in a set of all states.
@@ -107,12 +93,12 @@ class TargetStateSet
     end
   end
 
-  ###!!!!!This function appears to be useless - or, maybe not!!!
   # The contents of @states, but with non-word characters (such as '-')
   # removed
   def cleaned_states
-#(!!!!!The line below does nothing - remove it:)
-@states.map {|s| s.gsub(/[\W_]/, "")}
+#!!!!!after ensuring that this line does not change the output - remove it:
+#!!!!!or, if it does change the output to an incorrect result, put it back in:
+#@states.map {|s| s.gsub(/[\W_]/, "")}
     result = {}
     @states.each do |s|
       result[s.gsub(/[\W_]/, "")] = s

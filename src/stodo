@@ -6,8 +6,6 @@ initproc=main/initial-processing.rb
 notifyproc=main/ongoing-processing.rb
 mktmpl=main/stodo-template.rb
 report=main/report.rb
-#!!!! - in progress, or, probably, will be abandoned:
-search=main/search.rb
 edit=main/stodo-mgmt.rb
 admin=main/stodo-admin.rb
 stodo_envpath="$STODO_PATH"
@@ -23,9 +21,6 @@ mainhelp() {
     echo -e "  combined${gap}       combine notifications with processing of \c"
     echo -e "new items"
     echo -e "  report ${gap}        display a report of existing to-do items"
-#!!!! - in progress, or, probably, will be abandoned.
-#    echo -e "  search ${gap}        handles of items matching specified \c"
-#    echo -e "criteria"
     echo -e "  del <h>...${gap}     delete targets with handles <h>, ..."
     echo -e "  stat <x> <h>...${gap}change status of handles <h>, ... to \c"
     echo -e "state-change <x>"
@@ -39,8 +34,6 @@ indepth_help() {
     rep*) report_help ;;
     temp*) template_help ;;
     sta*) state_help ;;
-#!!!! - in progress, or, probably, will be abandoned:
-    sea*) search_help ;;
   esac
 }
 
@@ -121,21 +114,6 @@ do_report() {
   run $report $modded_args $*
 }
 
-do_search() {
-#!!!! - in progress, or, probably!!!, will be abandoned.
-  checkpath $search
-  modded_args=
-  case $1 in
-    -a*) shift; modded_args=$1:ignore; shift
-      ;;
-    -p*) shift; modded_args=$1:inprog; shift
-      ;;
-    -*) shift
-      ;;
-  esac
-  run $search $modded_args $*
-}
-
 do_edit() {
   checkpath $edit
   run $edit $*
@@ -212,19 +190,8 @@ report_help() {
   echo -e "  handle:<regex>         - only items whose handle matches <regex>"
   echo -e "  descr:<regex>          - only items whose description matches "\
     "<regex>"
-  echo -e "\nNotes (!!!!this might need changing:):"
+  echo -e "\nNotes:"
   echo -e " - If <report-type> is not specified, list all target handles."
-  echo -e "   (REVISE OR REMOVE:)"
-  echo -e " - Add :ignore to ignore state (i.e., include canceled and \c"
-  echo -e "completed items) -\n   For example, 'stodo rep rem:ignore'"
-}
-
-search_help() {
-#!!!! - in progress - actually, will probably be abandoned.
-  local s='   '
-  echo -e "Usage: $progname sea[rch] <search-type> <expr>"
-  echo -e "\nWhere <search-type> is one of:"
-  echo -e "  priority $s   search for items whose priority matches <expr>"
 }
 
 template_help() {
@@ -271,9 +238,6 @@ case $1 in
   comb*) do_combined_processing
     ;;
   rep*) shift; do_report $*
-    ;;
-  sea*) shift; do_search $*
-#!!!!          ^^^^^^^^^ in progress, or, probably, will be abandoned.
     ;;
   del*)
     shift;

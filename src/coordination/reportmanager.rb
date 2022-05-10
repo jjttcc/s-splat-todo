@@ -1,5 +1,6 @@
 require 'preconditionerror'
 require 'timetools'
+require 'byebug'
 
 # Manager of reporting-related actions
 class ReportManager
@@ -22,8 +23,7 @@ class ReportManager
     end
   end
 
-  # List the handle for all targets.
-  # (!!!!re-spec this method, perhaps!!!!)
+  # List the handle for all targets that match 'criteria'.
   def list_handles(criteria)
     if criteria.null_criteria? then
       # (No criteria implies reporting on all targets.)
@@ -51,10 +51,8 @@ class ReportManager
     end
   end
 
-require 'byebug'
   # List info about the targets with the specified handles and criteria.
   def report_complete criteria
-#byebug
     if criteria.null_criteria? then
       # No criteria specified implies retrieval of all items (targets).
       targets = targets_for(nil)
@@ -76,17 +74,16 @@ require 'byebug'
   end
 
   # List the first upcoming reminder - or if 'all', all reminders - for the
-  # targets with the specified handles, or if 'handles' is nil, for all
-  # targets.  If 'short', the handle, instead of the title, will be
-  # included in the report for the selected targets.
-  def report_reminders(all: false, handles: [], short: false, states: stts)
-    targets = targets_for(handles)
+  # targets with the specified criteria, or if: 'criteria.null_criteria?' or
+  # 'criteria' == nil, for all targets with reminders.  If 'short', the
+  # handle, instead of the title, will be included in the report for the
+  # selected targets.
+  def report_reminders(all: false, criteria: nil, short: false)
+    targets = targets_for_criteria(criteria)
     tgt_w_rem = targets.select do |t|
       ! t.reminders.empty?
     end
-    report_items = (tgt_w_rem.select do |t|
-      t.state == nil or states.include?(t)
-    end).map do |t|
+    report_items = tgt_w_rem.map do |t|
       ReminderReportItem.new(t, all, short)
     end
     puts report_items.sort.join("\n")
@@ -105,17 +102,6 @@ require 'byebug'
     targets_due = targets.sort.map do |t|
       TargetDue.new(t)
     end
-=begin
-    targets_due = targets_for_criteria(criteria).sort.map do |t|
-      TargetDue.new(t)
-    end
-
-    targets_due = (targets_for(criteria.handles).select do |t|
-      t.state == nil or criteria.states.include?(t)
-    end).sort.map do |t|
-      TargetDue.new(t)
-    end
-=end
     puts targets_due.join("\n")
   end
 
@@ -126,7 +112,6 @@ require 'byebug'
     create_compare_methods
   end
 
-  # precondition: target.can_have_children?
   def report_descendants target, ignore_parent = false
     assert_precondition('target.can_have_children?') {
       target.can_have_children? }
@@ -180,546 +165,13 @@ require 'byebug'
 
   def targets_for_criteria criteria, sorted = true
     result = targets_for(criteria.handles, sorted)
-#!!!!!Need to analyze 'criteria' and based on its state, create a pointer
-#!!!!!to a method that uses only the priority, only the status, or etc.
-    if ! criteria.handles_only? then
+    if ! criteria.null_criteria? && ! criteria.handles_only? then
       apply_criteria = comparison_method(criteria)
       result = result.select do |t|
         apply_criteria.call(t, criteria)
-=begin
-        criteria.priorities.include?(t.priority) &&
-          (t.state == nil || criteria.states.include?(t))
-=end
       end
     end
     result
-  end
-
-  def old___targets_for_criteria criteria, sorted = true
-    result = targets_for(criteria.handles, sorted)
-    if ! criteria.handles_only? then
-      result = result.select do |t|
-        criteria.priorities.include?(t.priority) &&
-          (t.state == nil || criteria.states.include?(t))
-      end
-    end
-    result
-  end
-
-  # Create the table of lambdas (comparison_method_table) to use for
-  # criteria comparison.
-#!!!!!remove:
-  def try0_create_compare_methods
-    self.comparison_method_table = {}
-    self.comparison_method_table[PRI] = lambda { |tgt, crit|
-      crit.priorities.include?(tgt.priority)
-    }
-    self.comparison_method_table[STATE] = lambda { |tgt, crit|
-      crit.priorities.include?(tgt.priority)
-    }
-    self.comparison_method_table[PRI] = lambda { |tgt, crit|
-      crit.priorities.include?(tgt.priority)
-    }
-    self.comparison_method_table[PRI] = lambda { |tgt, crit|
-      crit.priorities.include?(tgt.priority)
-    }
-    self.comparison_method_table[PRI] = lambda { |tgt, crit|
-      crit.priorities.include?(tgt.priority)
-    }
-  end
-
-  # Create the table of lambdas (comparison_method_table) to use for
-  # criteria comparison.
-  def try1__create_compare_methods
-    @comparison_method_table = {}
-    pri_cmp = lambda {|t, cr| cr.priorities.include?(t.priority) }
-    sta_cmp = lambda {|t, cr| t.state == nil || cr.states.include?(t) }
-    ttl_cmp = lambda {|t, cr| cr.title_exprs.any? { |e|
-      Regexp.new(e, Regexp::IGNORECASE).match(t.title) }}
-    hnd_cmp = lambda {|t, cr| cr.handle_exprs.any? { |e|
-      Regexp.new(e, Regexp::IGNORECASE).match(t.handle) }}
-    @comparison_method_table[PRI] = pri_cmp
-    @comparison_method_table[STATE] = sta_cmp
-    @comparison_method_table[TITLE] = ttl_cmp
-    @comparison_method_table[HANDLE] = hnd_cmp
-    @comparison_method_table[PRI+STATE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && sta_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[PRI+TITLE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && ttl_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[PRI+HANDLE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && hnd_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[STATE+TITLE] = lambda do |tgt, crit|
-      sta_cmp.call(tgt, crit) && ttl_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[STATE+HANDLE] = lambda do |tgt, crit|
-      sta_cmp.call(tgt, crit) && hnd_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[TITLE+HANDLE] = lambda do |tgt, crit|
-      ttl_cmp.call(tgt, crit) && hnd_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[PRI+STATE+TITLE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && sta_cmp.call(tgt, crit) &&
-        ttl_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[PRI+STATE+HANDLE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && sta_cmp.call(tgt, crit) &&
-        hnd_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[PRI+TITLE+HANDLE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && ttl_cmp.call(tgt, crit) &&
-        hnd_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[STATE+TITLE+HANDLE] = lambda do |tgt, crit|
-      sta_cmp.call(tgt, crit) && ttl_cmp.call(tgt, crit) &&
-        hnd_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[PRI+STATE+TITLE+HANDLE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && sta_cmp.call(tgt, crit) &&
-        ttl_cmp.call(tgt, crit) && hnd_cmp.call(tgt, crit)
-    end
-  end
-
-  # Create the table of lambdas (comparison_method_table) to use for
-  # criteria comparison.
-  def try2_create_compare_methods
-    @comparison_method_table = {}
-=begin
-    pri_cmp = lambda {|t, cr| cr.priorities.include?(t.priority) }
-    sta_cmp = lambda {|t, cr| t.state == nil || cr.states.include?(t) }
-    ttl_cmp = lambda {|t, cr| cr.title_exprs.any? { |e|
-      Regexp.new(e, Regexp::IGNORECASE).match(t.title) }}
-    hnd_cmp = lambda {|t, cr| cr.handle_exprs.any? { |e|
-      Regexp.new(e, Regexp::IGNORECASE).match(t.handle) }}
-=end
-    @comparison_method_table[PRI] = lambda {|t, cr|
-      cr.priorities.include?(t.priority) }
-    @comparison_method_table[STATE] = lambda {|t, cr|
-      t.state == nil || cr.states.include?(t) }
-    @comparison_method_table[TITLE] = lambda {|t, cr| cr.title_exprs.any? {|e|
-      Regexp.new(e, Regexp::IGNORECASE).match(t.title) }}
-    @comparison_method_table[HANDLE] = lambda {|t, cr| cr.handle_exprs.any? {|e|
-      Regexp.new(e, Regexp::IGNORECASE).match(t.handle) }}
-    @comparison_method_table[DESCRIPTION]
-    # 2-element combinations of PRI + <remaining-keys>:
-    [STATE, TITLE, HANDLE, DESCRIPTION].each do |key|
-$stderr.puts "adding cmethod for #{PRI}+#{key}"
-      @comparison_method_table[PRI+key] = lambda do |tgt, crit|
-        @comparison_method_table[PRI].call(tgt, crit) &&
-          @comparison_method_table[key].call(tgt, crit)
-      end
-    end
-    # 2-element combinations of STATE + <remaining-keys>:
-    [TITLE, HANDLE, DESCRIPTION].each do |key|
-$stderr.puts "adding cmethod for #{STATE}+#{key}"
-      @comparison_method_table[STATE+key] = lambda do |tgt, crit|
-        @comparison_method_table[STATE].call(tgt, crit) &&
-          @comparison_method_table[key].call(tgt, crit)
-      end
-    end
-    # 2-element combinations of TITLE + <remaining-keys>:
-    [HANDLE, DESCRIPTION].each do |key|
-$stderr.puts "adding cmethod for #{TITLE}+#{key}"
-      @comparison_method_table[TITLE+key] = lambda do |tgt, crit|
-        @comparison_method_table[TITLE].call(tgt, crit) &&
-          @comparison_method_table[key].call(tgt, crit)
-      end
-    end
-    # 2-element combinations of HANDLE + <remaining-keys>:
-    [DESCRIPTION].each do |key|
-$stderr.puts "adding cmethod for #{HANDLE}+#{key}"
-      @comparison_method_table[HANDLE+key] = lambda do |tgt, crit|
-        @comparison_method_table[HANDLE].call(tgt, crit) &&
-          @comparison_method_table[key].call(tgt, crit)
-      end
-    end
-    # 3-element combinations of PRI + <remaining-keys1> + <remaining-keys2>:
-    [STATE, TITLE, HANDLE, DESCRIPTION].each do |key1|
-      [TITLE, HANDLE, DESCRIPTION].each do |key2|
-$stderr.puts "adding cmethod for #{PRI}+#{key1}+#{key2}"
-        @comparison_method_table[HANDLE+key] = lambda do |tgt, crit|
-          @comparison_method_table[HANDLE].call(tgt, crit) &&
-            @comparison_method_table[key].call(tgt, crit)
-        end
-      end
-    end
-=begin
-    @comparison_method_table[PRI+STATE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && sta_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[PRI+TITLE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && ttl_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[PRI+HANDLE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && hnd_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[STATE+TITLE] = lambda do |tgt, crit|
-      sta_cmp.call(tgt, crit) && ttl_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[STATE+HANDLE] = lambda do |tgt, crit|
-      sta_cmp.call(tgt, crit) && hnd_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[TITLE+HANDLE] = lambda do |tgt, crit|
-      ttl_cmp.call(tgt, crit) && hnd_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[PRI+STATE+TITLE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && sta_cmp.call(tgt, crit) &&
-        ttl_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[PRI+STATE+HANDLE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && sta_cmp.call(tgt, crit) &&
-        hnd_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[PRI+TITLE+HANDLE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && ttl_cmp.call(tgt, crit) &&
-        hnd_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[STATE+TITLE+HANDLE] = lambda do |tgt, crit|
-      sta_cmp.call(tgt, crit) && ttl_cmp.call(tgt, crit) &&
-        hnd_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[PRI+STATE+TITLE+HANDLE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && sta_cmp.call(tgt, crit) &&
-        ttl_cmp.call(tgt, crit) && hnd_cmp.call(tgt, crit)
-    end
-=end
-  end
-
-  # Create the table of lambdas (comparison_method_table) to use for
-  # criteria comparison.
-  def try3__create_compare_methods
-    @comparison_method_table = {}
-    pri_cmp = lambda {|tgt, crit|
-      crit.priorities.include?(tgt.priority)
-    }
-    sta_cmp = lambda {|tgt, crit|
-      tgt.state == nil || crit.states.include?(tgt)
-    }
-    ttl_cmp = lambda {|tgt, crit|
-      crit.title_exprs.any? { |e|
-      Regexp.new(e, Regexp::IGNORECASE).match(tgt.title) }
-    }
-    hnd_cmp = lambda {|tgt, crit|
-      crit.handle_exprs.any? { |e|
-      Regexp.new(e, Regexp::IGNORECASE).match(tgt.handle) }
-    }
-
-    @comparison_method_table[PRI] = pri_cmp
-    @comparison_method_table[STATE] = sta_cmp
-    @comparison_method_table[TITLE] = ttl_cmp
-    @comparison_method_table[HANDLE] = hnd_cmp
-
-    [PRI, STATE, TITLE, HANDLE].each do |k|
-      [STATE, TITLE, HANDLE].each do |l|
-        if l == k then
-          # Prevent key duplications.
-          break
-        end
-        # 2-element combinations of k + <remaining-keys>:
-        @comparison_method_table[k+l] = lambda {|tgt, crit|
-$stderr.puts "adding cmethod for #{k}+#{l}"
-          @comparison_method_table[k].call(tgt, crit) &&
-            @comparison_method_table[l].call(tgt, crit)
-        }
-        [TITLE, HANDLE].each do |m|
-          if m == l || m == k then
-            # Prevent key duplications.
-            break
-          end
-          # 3-element combinations of k + <remaining-keys>:
-          @comparison_method_table[k+l+m] = lambda {|tgt, crit|
-$stderr.puts "adding cmethod for #{k}+#{l}+#{m}"
-            @comparison_method_table[k].call(tgt, crit) &&
-              @comparison_method_table[l].call(tgt, crit) &&
-              @comparison_method_table[m].call(tgt, crit)
-          }
-          [HANDLE].each do |n|
-            if n == m || n == l || n == k then
-              # Prevent key duplications.
-              break
-            end
-            # 3-element combinations of k + <remaining-keys>:
-            @comparison_method_table[k+l+m+n] = lambda {|tgt, crit|
-$stderr.puts "adding cmethod for #{k}+#{l}+#{m}+#{n}"
-              @comparison_method_table[k].call(tgt, crit) &&
-                @comparison_method_table[l].call(tgt, crit) &&
-                @comparison_method_table[m].call(tgt, crit) &&
-                @comparison_method_table[n].call(tgt, crit)
-            }
-          end
-        end
-      end
-    end
-$stderr.puts "cmtbl.count: #{@comparison_method_table.count}"
-@comparison_method_table.each_key do |k|
-  $stderr.puts "cmtbl[#{k}]: #{@comparison_method_table[k]}"
-end
-exit(0)
-
-=begin
-    @comparison_method_table[PRI] = lambda {|t, cr|
-      cr.priorities.include?(t.priority) }
-    @comparison_method_table[STATE] = lambda {|t, cr|
-      t.state == nil || cr.states.include?(t) }
-    @comparison_method_table[TITLE] = lambda {|t, cr| cr.title_exprs.any? {|e|
-      Regexp.new(e, Regexp::IGNORECASE).match(t.title) }}
-    @comparison_method_table[HANDLE] = lambda {|t, cr| cr.handle_exprs.any? {|e|
-      Regexp.new(e, Regexp::IGNORECASE).match(t.handle) }}
-    @comparison_method_table[DESCRIPTION]
-    # 2-element combinations of PRI + <remaining-keys>:
-    [STATE, TITLE, HANDLE, DESCRIPTION].each do |key|
-$stderr.puts "adding cmethod for #{PRI}+#{key}"
-      @comparison_method_table[PRI+key] = lambda do |tgt, crit|
-        @comparison_method_table[PRI].call(tgt, crit) &&
-          @comparison_method_table[key].call(tgt, crit)
-      end
-    end
-    # 2-element combinations of STATE + <remaining-keys>:
-    [TITLE, HANDLE, DESCRIPTION].each do |key|
-$stderr.puts "adding cmethod for #{STATE}+#{key}"
-      @comparison_method_table[STATE+key] = lambda do |tgt, crit|
-        @comparison_method_table[STATE].call(tgt, crit) &&
-          @comparison_method_table[key].call(tgt, crit)
-      end
-    end
-    # 2-element combinations of TITLE + <remaining-keys>:
-    [HANDLE, DESCRIPTION].each do |key|
-$stderr.puts "adding cmethod for #{TITLE}+#{key}"
-      @comparison_method_table[TITLE+key] = lambda do |tgt, crit|
-        @comparison_method_table[TITLE].call(tgt, crit) &&
-          @comparison_method_table[key].call(tgt, crit)
-      end
-    end
-    # 2-element combinations of HANDLE + <remaining-keys>:
-    [DESCRIPTION].each do |key|
-$stderr.puts "adding cmethod for #{HANDLE}+#{key}"
-      @comparison_method_table[HANDLE+key] = lambda do |tgt, crit|
-        @comparison_method_table[HANDLE].call(tgt, crit) &&
-          @comparison_method_table[key].call(tgt, crit)
-      end
-    end
-    # 3-element combinations of PRI + <remaining-keys1> + <remaining-keys2>:
-    [STATE, TITLE, HANDLE, DESCRIPTION].each do |key1|
-      [TITLE, HANDLE, DESCRIPTION].each do |key2|
-$stderr.puts "adding cmethod for #{PRI}+#{key1}+#{key2}"
-        @comparison_method_table[HANDLE+key] = lambda do |tgt, crit|
-          @comparison_method_table[HANDLE].call(tgt, crit) &&
-            @comparison_method_table[key].call(tgt, crit)
-        end
-      end
-    end
-=end
-=begin
-    @comparison_method_table[PRI+STATE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && sta_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[PRI+TITLE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && ttl_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[PRI+HANDLE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && hnd_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[STATE+TITLE] = lambda do |tgt, crit|
-      sta_cmp.call(tgt, crit) && ttl_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[STATE+HANDLE] = lambda do |tgt, crit|
-      sta_cmp.call(tgt, crit) && hnd_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[TITLE+HANDLE] = lambda do |tgt, crit|
-      ttl_cmp.call(tgt, crit) && hnd_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[PRI+STATE+TITLE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && sta_cmp.call(tgt, crit) &&
-        ttl_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[PRI+STATE+HANDLE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && sta_cmp.call(tgt, crit) &&
-        hnd_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[PRI+TITLE+HANDLE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && ttl_cmp.call(tgt, crit) &&
-        hnd_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[STATE+TITLE+HANDLE] = lambda do |tgt, crit|
-      sta_cmp.call(tgt, crit) && ttl_cmp.call(tgt, crit) &&
-        hnd_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[PRI+STATE+TITLE+HANDLE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && sta_cmp.call(tgt, crit) &&
-        ttl_cmp.call(tgt, crit) && hnd_cmp.call(tgt, crit)
-    end
-=end
-  end
-
-  # Create the table of lambdas (comparison_method_table) to use for
-  # criteria comparison.
-  def try4__create_compare_methods
-    @comparison_method_table = {}
-    pri_cmp = lambda {|tgt, crit|
-      crit.priorities.include?(tgt.priority)
-    }
-    sta_cmp = lambda {|tgt, crit|
-      tgt.state == nil || crit.states.include?(tgt)
-    }
-    ttl_cmp = lambda {|tgt, crit|
-      crit.title_exprs.any? { |e|
-      Regexp.new(e, Regexp::IGNORECASE).match(tgt.title) }
-    }
-    hnd_cmp = lambda {|tgt, crit|
-      crit.handle_exprs.any? { |e|
-      Regexp.new(e, Regexp::IGNORECASE).match(tgt.handle) }
-    }
-
-    @comparison_method_table[PRI] = pri_cmp
-    @comparison_method_table[STATE] = sta_cmp
-    @comparison_method_table[TITLE] = ttl_cmp
-    @comparison_method_table[HANDLE] = hnd_cmp
-
-    [PRI, STATE, TITLE, HANDLE].each do |k|
-      [STATE, TITLE, HANDLE].each do |l|
-        if l == k then
-          # Prevent key duplications.
-          break
-        end
-        [TITLE, HANDLE].each do |m|
-          if m == l || m == k then
-            # Prevent key duplications.
-            break
-          end
-          [HANDLE].each do |n|
-            if n == m || n == l || n == k then
-              # Prevent key duplications.
-              break
-            end
-            # 4-element combinations of k + <remaining-keys>:
-            mtbl_key = standardized_key_combo([k, l, m, n])
-$stderr.puts "adding cmethod for #{mtbl_key}"
-            @comparison_method_table[mtbl_key] = lambda {|tgt, crit|
-              @comparison_method_table[k].call(tgt, crit) &&
-                @comparison_method_table[l].call(tgt, crit) &&
-                @comparison_method_table[m].call(tgt, crit) &&
-                @comparison_method_table[n].call(tgt, crit)
-            }
-          end
-          # 3-element combinations of k + <remaining-keys>:
-          mtbl_key = standardized_key_combo([k, l, m])
-$stderr.puts "adding cmethod for #{mtbl_key}"
-          @comparison_method_table[mtbl_key] = lambda {|tgt, crit|
-            @comparison_method_table[k].call(tgt, crit) &&
-              @comparison_method_table[l].call(tgt, crit) &&
-              @comparison_method_table[m].call(tgt, crit)
-          }
-        end
-        # 2-element combinations of k + <remaining-keys>:
-        mtbl_key = standardized_key_combo([k, l])
-$stderr.puts "adding cmethod for #{mtbl_key}"
-        @comparison_method_table[mtbl_key] = lambda {|tgt, crit|
-          @comparison_method_table[k].call(tgt, crit) &&
-            @comparison_method_table[l].call(tgt, crit)
-        }
-      end
-    end
-$stderr.puts "[old-not-current]cmtbl.count: #{@comparison_method_table.count}"
-@comparison_method_table.each_key do |k|
-  $stderr.puts "cmtbl[#{k}]: #{@comparison_method_table[k]}"
-end
-#!!!!exit(0)
-
-=begin
-    @comparison_method_table[PRI] = lambda {|t, cr|
-      cr.priorities.include?(t.priority) }
-    @comparison_method_table[STATE] = lambda {|t, cr|
-      t.state == nil || cr.states.include?(t) }
-    @comparison_method_table[TITLE] = lambda {|t, cr| cr.title_exprs.any? {|e|
-      Regexp.new(e, Regexp::IGNORECASE).match(t.title) }}
-    @comparison_method_table[HANDLE] = lambda {|t, cr| cr.handle_exprs.any? {|e|
-      Regexp.new(e, Regexp::IGNORECASE).match(t.handle) }}
-    @comparison_method_table[DESCRIPTION]
-    # 2-element combinations of PRI + <remaining-keys>:
-    [STATE, TITLE, HANDLE, DESCRIPTION].each do |key|
-$stderr.puts "adding cmethod for #{PRI}+#{key}"
-      @comparison_method_table[PRI+key] = lambda do |tgt, crit|
-        @comparison_method_table[PRI].call(tgt, crit) &&
-          @comparison_method_table[key].call(tgt, crit)
-      end
-    end
-    # 2-element combinations of STATE + <remaining-keys>:
-    [TITLE, HANDLE, DESCRIPTION].each do |key|
-$stderr.puts "adding cmethod for #{STATE}+#{key}"
-      @comparison_method_table[STATE+key] = lambda do |tgt, crit|
-        @comparison_method_table[STATE].call(tgt, crit) &&
-          @comparison_method_table[key].call(tgt, crit)
-      end
-    end
-    # 2-element combinations of TITLE + <remaining-keys>:
-    [HANDLE, DESCRIPTION].each do |key|
-$stderr.puts "adding cmethod for #{TITLE}+#{key}"
-      @comparison_method_table[TITLE+key] = lambda do |tgt, crit|
-        @comparison_method_table[TITLE].call(tgt, crit) &&
-          @comparison_method_table[key].call(tgt, crit)
-      end
-    end
-    # 2-element combinations of HANDLE + <remaining-keys>:
-    [DESCRIPTION].each do |key|
-$stderr.puts "adding cmethod for #{HANDLE}+#{key}"
-      @comparison_method_table[HANDLE+key] = lambda do |tgt, crit|
-        @comparison_method_table[HANDLE].call(tgt, crit) &&
-          @comparison_method_table[key].call(tgt, crit)
-      end
-    end
-    # 3-element combinations of PRI + <remaining-keys1> + <remaining-keys2>:
-    [STATE, TITLE, HANDLE, DESCRIPTION].each do |key1|
-      [TITLE, HANDLE, DESCRIPTION].each do |key2|
-$stderr.puts "adding cmethod for #{PRI}+#{key1}+#{key2}"
-        @comparison_method_table[HANDLE+key] = lambda do |tgt, crit|
-          @comparison_method_table[HANDLE].call(tgt, crit) &&
-            @comparison_method_table[key].call(tgt, crit)
-        end
-      end
-    end
-=end
-=begin
-    @comparison_method_table[PRI+STATE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && sta_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[PRI+TITLE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && ttl_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[PRI+HANDLE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && hnd_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[STATE+TITLE] = lambda do |tgt, crit|
-      sta_cmp.call(tgt, crit) && ttl_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[STATE+HANDLE] = lambda do |tgt, crit|
-      sta_cmp.call(tgt, crit) && hnd_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[TITLE+HANDLE] = lambda do |tgt, crit|
-      ttl_cmp.call(tgt, crit) && hnd_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[PRI+STATE+TITLE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && sta_cmp.call(tgt, crit) &&
-        ttl_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[PRI+STATE+HANDLE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && sta_cmp.call(tgt, crit) &&
-        hnd_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[PRI+TITLE+HANDLE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && ttl_cmp.call(tgt, crit) &&
-        hnd_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[STATE+TITLE+HANDLE] = lambda do |tgt, crit|
-      sta_cmp.call(tgt, crit) && ttl_cmp.call(tgt, crit) &&
-        hnd_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[PRI+STATE+TITLE+HANDLE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && sta_cmp.call(tgt, crit) &&
-        ttl_cmp.call(tgt, crit) && hnd_cmp.call(tgt, crit)
-    end
-=end
   end
 
   # Create the table of lambdas (comparison_method_table) to use for
@@ -751,7 +203,6 @@ $stderr.puts "adding cmethod for #{PRI}+#{key1}+#{key2}"
     @comparison_method_table[HANDLE] = hnd_cmp
     @comparison_method_table[DESCRIPTION] = des_cmp
 
-#!!!!rm: [STATE, TITLE, HANDLE, DESCRIPTION].each do |key|
     [PRI, STATE, TITLE, HANDLE, DESCRIPTION].each do |k|
       [STATE, TITLE, HANDLE, DESCRIPTION].each do |l|
         if l == k then
@@ -770,7 +221,6 @@ $stderr.puts "adding cmethod for #{PRI}+#{key1}+#{key2}"
             end
             # 4-element combinations of k + <remaining-keys>:
             mtbl_key = standardized_key_combo([k, l, m, n])
-$stderr.puts "adding cmethod for #{mtbl_key}"
             @comparison_method_table[mtbl_key] = lambda {|tgt, crit|
               @comparison_method_table[k].call(tgt, crit) &&
                 @comparison_method_table[l].call(tgt, crit) &&
@@ -784,7 +234,6 @@ $stderr.puts "adding cmethod for #{mtbl_key}"
               end
               # 5-element combinations of k + <remaining-keys>:
               mtbl_key = standardized_key_combo([k, l, m, n, o])
-$stderr.puts "adding cmethod for #{mtbl_key}"
               @comparison_method_table[mtbl_key] = lambda {|tgt, crit|
                 @comparison_method_table[k].call(tgt, crit) &&
                   @comparison_method_table[l].call(tgt, crit) &&
@@ -796,7 +245,6 @@ $stderr.puts "adding cmethod for #{mtbl_key}"
           end
           # 3-element combinations of k + <remaining-keys>:
           mtbl_key = standardized_key_combo([k, l, m])
-$stderr.puts "adding cmethod for #{mtbl_key}"
           @comparison_method_table[mtbl_key] = lambda {|tgt, crit|
             @comparison_method_table[k].call(tgt, crit) &&
               @comparison_method_table[l].call(tgt, crit) &&
@@ -805,112 +253,12 @@ $stderr.puts "adding cmethod for #{mtbl_key}"
         end
         # 2-element combinations of k + <remaining-keys>:
         mtbl_key = standardized_key_combo([k, l])
-$stderr.puts "adding cmethod for #{mtbl_key}"
         @comparison_method_table[mtbl_key] = lambda {|tgt, crit|
           @comparison_method_table[k].call(tgt, crit) &&
             @comparison_method_table[l].call(tgt, crit)
         }
       end
     end
-$stderr.puts "[current]cmtbl.count: #{@comparison_method_table.count}"
-@comparison_method_table.each_key do |k|
-  $stderr.puts "cmtbl[#{k}]: #{@comparison_method_table[k]}"
-end
-#!!!!exit(0)
-
-=begin
-    @comparison_method_table[PRI] = lambda {|t, cr|
-      cr.priorities.include?(t.priority) }
-    @comparison_method_table[STATE] = lambda {|t, cr|
-      t.state == nil || cr.states.include?(t) }
-    @comparison_method_table[TITLE] = lambda {|t, cr| cr.title_exprs.any? {|e|
-      Regexp.new(e, Regexp::IGNORECASE).match(t.title) }}
-    @comparison_method_table[HANDLE] = lambda {|t, cr| cr.handle_exprs.any? {|e|
-      Regexp.new(e, Regexp::IGNORECASE).match(t.handle) }}
-    @comparison_method_table[DESCRIPTION]
-    # 2-element combinations of PRI + <remaining-keys>:
-    [STATE, TITLE, HANDLE, DESCRIPTION].each do |key|
-$stderr.puts "adding cmethod for #{PRI}+#{key}"
-      @comparison_method_table[PRI+key] = lambda do |tgt, crit|
-        @comparison_method_table[PRI].call(tgt, crit) &&
-          @comparison_method_table[key].call(tgt, crit)
-      end
-    end
-    # 2-element combinations of STATE + <remaining-keys>:
-    [TITLE, HANDLE, DESCRIPTION].each do |key|
-$stderr.puts "adding cmethod for #{STATE}+#{key}"
-      @comparison_method_table[STATE+key] = lambda do |tgt, crit|
-        @comparison_method_table[STATE].call(tgt, crit) &&
-          @comparison_method_table[key].call(tgt, crit)
-      end
-    end
-    # 2-element combinations of TITLE + <remaining-keys>:
-    [HANDLE, DESCRIPTION].each do |key|
-$stderr.puts "adding cmethod for #{TITLE}+#{key}"
-      @comparison_method_table[TITLE+key] = lambda do |tgt, crit|
-        @comparison_method_table[TITLE].call(tgt, crit) &&
-          @comparison_method_table[key].call(tgt, crit)
-      end
-    end
-    # 2-element combinations of HANDLE + <remaining-keys>:
-    [DESCRIPTION].each do |key|
-$stderr.puts "adding cmethod for #{HANDLE}+#{key}"
-      @comparison_method_table[HANDLE+key] = lambda do |tgt, crit|
-        @comparison_method_table[HANDLE].call(tgt, crit) &&
-          @comparison_method_table[key].call(tgt, crit)
-      end
-    end
-    # 3-element combinations of PRI + <remaining-keys1> + <remaining-keys2>:
-    [STATE, TITLE, HANDLE, DESCRIPTION].each do |key1|
-      [TITLE, HANDLE, DESCRIPTION].each do |key2|
-$stderr.puts "adding cmethod for #{PRI}+#{key1}+#{key2}"
-        @comparison_method_table[HANDLE+key] = lambda do |tgt, crit|
-          @comparison_method_table[HANDLE].call(tgt, crit) &&
-            @comparison_method_table[key].call(tgt, crit)
-        end
-      end
-    end
-=end
-=begin
-    @comparison_method_table[PRI+STATE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && sta_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[PRI+TITLE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && ttl_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[PRI+HANDLE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && hnd_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[STATE+TITLE] = lambda do |tgt, crit|
-      sta_cmp.call(tgt, crit) && ttl_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[STATE+HANDLE] = lambda do |tgt, crit|
-      sta_cmp.call(tgt, crit) && hnd_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[TITLE+HANDLE] = lambda do |tgt, crit|
-      ttl_cmp.call(tgt, crit) && hnd_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[PRI+STATE+TITLE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && sta_cmp.call(tgt, crit) &&
-        ttl_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[PRI+STATE+HANDLE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && sta_cmp.call(tgt, crit) &&
-        hnd_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[PRI+TITLE+HANDLE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && ttl_cmp.call(tgt, crit) &&
-        hnd_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[STATE+TITLE+HANDLE] = lambda do |tgt, crit|
-      sta_cmp.call(tgt, crit) && ttl_cmp.call(tgt, crit) &&
-        hnd_cmp.call(tgt, crit)
-    end
-    @comparison_method_table[PRI+STATE+TITLE+HANDLE] = lambda do |tgt, crit|
-      pri_cmp.call(tgt, crit) && sta_cmp.call(tgt, crit) &&
-        ttl_cmp.call(tgt, crit) && hnd_cmp.call(tgt, crit)
-    end
-=end
   end
 
   # "type-spec" keys
@@ -938,7 +286,6 @@ $stderr.puts "adding cmethod for #{PRI}+#{key1}+#{key2}"
     end
     key = standardized_key_combo(
       [pri_key, stat_key, ttl_key, hndl_key, des_key])
-$stderr.puts "cm - std key combo: #{key}"
     comparison_method_table[key]
   end
 
