@@ -73,6 +73,27 @@ checkpath() {
   fi
 }
 
+# If env. var. ST_RM_EXTRN (i.e., "stodo remove extraneous [files]") is
+# not empty, remove (unconditionally - 'rm -f ...') the specified file ($1).
+# If env. var. ST_VERBOSE is not empty, do not suppress any stderr output
+# from the removal attempt and return the exit value of the 'rm' command;
+# otherwise, suppress all output and return the default value (0).
+# If env. var. ST_RM_EXTRN is empty or nonexistent, perform a null op -
+# i.e., simply return with success status (0).
+conditionally_remove_file() {
+  local target=$1
+  local result=0
+  if [ "$ST_RM_EXTRN" ]; then
+    if [ "$ST_VERBOSE" ]; then
+      rm -f $target
+      result=$?
+    else
+      rm -f $target 2>/dev/null
+    fi
+  fi
+  return $result
+}
+
 run() {
   cmd=$1; shift
   $RUBY_EXEC $STEXEC_PATH/$cmd "$@"
@@ -138,9 +159,12 @@ install_specfile() {
 }
 
 # Create the template contents.  If env. var. EDITOR is not empty, invoke
-# it to allow the user to edit the contents in a temporary file and
-# "install" it by calling install_specfile on the file.  Otherwise (EDITOR
-# is empty or not set), simply output the template contents to stdout.
+# $EDITOR to allow the user to edit the contents in a temporary file and
+# "install" it by calling install_specfile on the file.  Otherwise, simply
+# output the template contents to stdout.
+# If env. var. ST_RM_EXTRN (standing for "stodo remove extraneous [files]")
+# is not empty, ensure that any temporary files created by this procedure
+# are removed.
 make_template() {
   checkpath $mktmpl
   type=$1
@@ -160,6 +184,7 @@ make_template() {
     else
       cat $outfile
     fi
+    conditionally_remove_file $outfile
     exit $?
   else
     run $mktmpl "$@"
