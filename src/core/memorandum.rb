@@ -47,8 +47,8 @@ class Memorandum < STodoTarget
 
   private
 
-  def main_modify_fields spec
-    super spec
+  def main_modify_fields spec, orig_parent
+    super spec, orig_parent
     if spec.expiration_date != nil && ! spec.expiration_date.empty? then
       set_expiration_date spec
     end

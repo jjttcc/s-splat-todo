@@ -82,7 +82,7 @@ class TargetBuilder
       t = @existing_targets[tgt_handle]
       if t then
         old_time = t.time.clone
-        t.modify_fields(specs)
+        t.modify_fields(specs, @existing_targets[t.parent_handle])
         if old_time != t.time then
           @time_changed_for[t] = true
         end

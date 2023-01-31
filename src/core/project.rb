@@ -21,8 +21,8 @@ class Project < Task
 
   private
 
-  def main_modify_fields spec
-    super spec
+  def main_modify_fields spec, orig_parent
+    super spec, orig_parent
     @goal = spec.goal if spec.goal
   end
 

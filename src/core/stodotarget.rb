@@ -188,8 +188,8 @@ class STodoTarget
 
   # Set self's fields from the non-nil fields in spec.
   # precondition: spec != nil && handle == spec.handle
-  def modify_fields spec
-    main_modify_fields spec
+  def modify_fields spec, orig_parent
+    main_modify_fields spec, orig_parent
     post_modify_fields spec
   end
 
@@ -314,7 +314,7 @@ class STodoTarget
     if not self.handle then $log.warn "No handle for #{self.title}" end
   end
 
-  def main_modify_fields spec
+  def main_modify_fields spec, orig_parent
     assert_precondition('spec != nil && handle == spec.handle') {
       spec != nil && handle == spec.handle }
     @title = spec.title if spec.title
@@ -323,6 +323,10 @@ class STodoTarget
     @comment = spec.comment if spec.comment
     @priority = spec.priority if spec.priority
     if spec.parent != nil then
+      if orig_parent != nil && orig_parent.handle != spec.parent then
+        # The parent has been changed, so unadopt the original parent.
+        orig_parent.remove_child(self)
+      end
       @parent_handle = spec.parent
     end
     if spec.categories then

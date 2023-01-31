@@ -36,8 +36,8 @@ class ScheduledEvent < STodoTarget
 
   protected
 
-  def main_modify_fields spec
-    super spec
+  def main_modify_fields spec, orig_parent
+    super spec, orig_parent
     if spec.date_time != nil && ! spec.date_time.empty? then
       set_date_time spec
     end
