@@ -200,6 +200,11 @@ class STodoTarget
     @children.delete(t)
   end
 
+  # Remove all of self's 'children'.
+  def remove_children
+    @children.clear
+  end
+
   ###  Hash-related queries
 
   # hash to allow use in a hashtable (Hash)

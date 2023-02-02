@@ -34,6 +34,7 @@ class STodoTargetEditor
     @method_for = {
       'delete' => :delete_target,
       'state' => :modify_state,
+      'clear_descendants' => :clear_descendants,
     }
   end
 
@@ -63,7 +64,28 @@ class STodoTargetEditor
         parent.remove_child(t)
       end
     end
-    @target_for.delete(handle)
+  end
+
+  # Clear (delete) all of the specified target's (via 'handle')
+  # descendants.
+  def clear_descendants handle
+####!!!!Are 'args' needed? Probably not.
+    t = @target_for[handle]
+    if t != nil then
+      t.remove_children
+    end
+  end
+
+  # "Clean" (remove "false" children) the target IDd by 'handle'.
+  def wk_clear_descendants handle, args
+    t = @target_for[handle]
+    if t.parent_handle != nil then
+      parent = @target_for[t.parent_handle]
+      if parent and parent.can_have_children? then
+#!!!        parent.remove_child(t)
+      end
+    end
+####!!!!rm:    @target_for.delete(handle)
   end
 
   # state change commands
