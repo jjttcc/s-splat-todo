@@ -80,7 +80,7 @@ class STodoTargetEditor
     exceptions = hspec_components[1 .. -1]
     t = @target_for[handle]
     if t != nil then
-      t.remove_children(exceptions)
+      t.remove_descendants(exceptions)
     end
   end
 

@@ -202,11 +202,11 @@ class STodoTarget
 
   # Remove all of self's 'descendants' except for those indicated by
   # 'exceptions'.
-  def remove_children(exceptions)
+  def remove_descendants(exceptions)
     new_childlist = []  # List of children to restore after clear
     # Recursively remove descendants first.
     @children.each do |c|
-      c.remove_children(exceptions)
+      c.remove_descendants(exceptions)
     end
     if exceptions != nil && ! exceptions.empty? then
       new_childlist = @children.select do |c|
