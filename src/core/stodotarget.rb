@@ -200,9 +200,26 @@ class STodoTarget
     @children.delete(t)
   end
 
-  # Remove all of self's 'children'.
-  def remove_children
+  # Remove all of self's 'descendants' except for those indicated by
+  # 'exceptions'.
+  def remove_children(exceptions)
+    new_childlist = []  # List of children to restore after clear
+    # Recursively remove descendants first.
+    @children.each do |c|
+      c.remove_children(exceptions)
+    end
+    if exceptions != nil && ! exceptions.empty? then
+      new_childlist = @children.select do |c|
+        # Mark 'c' for restoration if it is in the exceptions list or
+        # if its children have not all been cleared (which means that at
+        # least one of c's descendants is in the exceptions list):
+        exceptions.include?(c.handle) || c.children.count > 0
+      end
+    end
     @children.clear
+    if ! new_childlist.empty? then
+      @children = new_childlist
+    end
   end
 
   ###  Hash-related queries

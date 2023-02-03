@@ -22,6 +22,8 @@ mainhelp() {
     echo -e "new items"
     echo -e "  report ${gap}        display a report of existing to-do items"
     echo -e "  del <h>...${gap}     delete targets with handles <h>, ..."
+    echo -e "  clear_d <h>...${gap} clear descendants of targets with \c"
+    echo -e "handle specs <h>, ..."
     echo -e "  stat <x> <h>...${gap}change status of handles <h>, ... to \c"
     echo -e "state-change <x>"
     echo -e "  temp [<type>]${gap}  output a to-do item template \c"
@@ -32,6 +34,7 @@ mainhelp() {
 indepth_help() {
   case "$1" in
     rep*) report_help ;;
+    clear*) clear_d_help ;;
     temp*) template_help ;;
     sta*) state_help ;;
   esac
@@ -219,6 +222,17 @@ report_help() {
   echo -e " - If <report-type> is not specified, list all target handles."
 }
 
+clear_d_help() {
+  local s='   '
+  echo -e "Usage: $progname clear_d[escendants] <hndlspec>..."
+  echo -e "\nWhere <hndlspec> is:"
+  echo -e "  <hnd1>[:<hnd2>[:...]] remove all descendants for <hnd1> except for"
+  echo -e "                        those whose handles match <hnd2>, etc. -"
+  echo -e "                        i.e., treat the specified handles \c"
+  echo -e "(<hnd2>...)"
+  echo -e "                        as exceptions that should not be removed."
+}
+
 template_help() {
   local s='     '
   echo -e "Usage: $progname temp [<type>] [options]"
@@ -268,7 +282,7 @@ case $1 in
     shift;
     do_edit delete $*
     ;;
-  clear*)
+  clear_d*)
     shift;
     do_edit clear_descendants $*
     ;;

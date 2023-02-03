@@ -7,7 +7,8 @@ class STodoTargetEditor
 
   def apply_command(handle, raw_command)
     @last_command_failed = false
-    if @target_for[handle] == nil then
+    clean_handle = handle.split(/#{DEFAULT_COMPONENT_SEPARATOR}/)[0]
+    if @target_for[clean_handle] == nil then
       @last_command_failed = true
       @last_failure_message = "No target found with handle #{handle}."
     else
@@ -25,6 +26,9 @@ class STodoTargetEditor
 
   private
 
+  DEFAULT_COMPONENT_SEPARATOR = ":"
+  private_constant :DEFAULT_COMPONENT_SEPARATOR
+
   def initialize(target_map)
     @target_for = target_map
     initialize_method_map
@@ -39,12 +43,14 @@ class STodoTargetEditor
   end
 
   # array constructed from 'handle' and 'rawcmd' with the following structure:
-  # result[0] is the first component from rawcmd.split(/:/)
+  # result[0] is the first component from
+  #    rawcmd.split(/#{DEFAULT_COMPONENT_SEPARATOR}/)
   # result[1] is 'handle'
-  # result[2...] are the remaining components (if any) from rawcmd.split(/:/)
+  # result[2...] are the remaining components (if any) from
+  #   rawcmd.split(/#{DEFAULT_COMPONENT_SEPARATOR}/)
   def cmd_and_args_for(handle, rawcmd)
     result = []
-    command_parts = rawcmd.split(/:/)
+    command_parts = rawcmd.split(/#{DEFAULT_COMPONENT_SEPARATOR}/)
     result << command_parts[0]    # The command
     result << handle
     if command_parts.length > 1 then
@@ -68,24 +74,14 @@ class STodoTargetEditor
 
   # Clear (delete) all of the specified target's (via 'handle')
   # descendants.
-  def clear_descendants handle
-####!!!!Are 'args' needed? Probably not.
+  def clear_descendants handle_spec
+    hspec_components = handle_spec.split(/#{DEFAULT_COMPONENT_SEPARATOR}/)
+    handle = hspec_components[0]
+    exceptions = hspec_components[1 .. -1]
     t = @target_for[handle]
     if t != nil then
-      t.remove_children
+      t.remove_children(exceptions)
     end
-  end
-
-  # "Clean" (remove "false" children) the target IDd by 'handle'.
-  def wk_clear_descendants handle, args
-    t = @target_for[handle]
-    if t.parent_handle != nil then
-      parent = @target_for[t.parent_handle]
-      if parent and parent.can_have_children? then
-#!!!        parent.remove_child(t)
-      end
-    end
-####!!!!rm:    @target_for.delete(handle)
   end
 
   # state change commands
