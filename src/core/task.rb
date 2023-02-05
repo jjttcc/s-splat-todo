@@ -58,8 +58,8 @@ class Task < STodoTarget
 
   ### Hook routine implementations
 
-  def main_modify_fields spec, orig_parent
-    super spec, orig_parent
+  def main_modify_fields spec, target_list
+    super spec, target_list
     if spec.due_date != nil && ! spec.due_date.empty? then
       set_due_date spec
     end

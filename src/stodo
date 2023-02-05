@@ -14,6 +14,7 @@ specpath_expr='^# *spec-path:'
 
 mainhelp() {
     gap="    "
+    longgap="                     "
     echo -e "Usage: $progname <command>\n\ncommands:"
     echo -e "  help [<x>]${gap}     show help (on topic <x>, if provided)"
     echo -e "  new|init ${gap}      look for and process new to-do items"
@@ -21,6 +22,8 @@ mainhelp() {
     echo -e "  combined${gap}       combine notifications with processing of \c"
     echo -e "new items"
     echo -e "  report ${gap}        display a report of existing to-do items"
+    echo -e "  chparent <h> <ph>  change parent of item with handle <h> \c"
+    echo -e "to be item with\n${longgap}handle <ph>"
     echo -e "  del <h>...${gap}     delete targets with handles <h>, ..."
     echo -e "  clear_d <h>...${gap} clear descendants of targets with \c"
     echo -e "handle specs <h>, ..."

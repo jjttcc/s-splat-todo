@@ -187,9 +187,10 @@ class STodoTarget
   end
 
   # Set self's fields from the non-nil fields in spec.
-  # precondition: spec != nil && handle == spec.handle
-  def modify_fields spec, orig_parent
-    main_modify_fields spec, orig_parent
+  # precondition: ! spec.nil? && self.handle == spec.handle
+  # precondition: ! target_list.nil? && target_list.is_a?(Hash)
+  def modify_fields spec, target_list
+    main_modify_fields spec, target_list
     post_modify_fields spec
   end
 
@@ -327,7 +328,7 @@ class STodoTarget
       $log.debug "calendar_ids set: #{calendar_ids}"
     end
     if spec.parent != nil then
-      @parent_handle = spec.parent
+      self.parent_handle = spec.parent
     end
   end
 
@@ -336,9 +337,141 @@ class STodoTarget
     if not self.handle then $log.warn "No handle for #{self.title}" end
   end
 
-  def main_modify_fields spec, orig_parent
-    assert_precondition('spec != nil && handle == spec.handle') {
-      spec != nil && handle == spec.handle }
+  # Update any of self's fields according to 'spec'. Any fields in 'spec'
+  # that are nil will be ignored - that is, a nil field is taken to imply
+  # that that particular field is not to be changed.
+  # If spec.parent == "" (i.e., an empty string), self is changed to become
+  # a parent-less top-level ancestor.
+  # If self.parent_handle is changed as a result of 'spec', self's old
+  # parent (target_list[self.parent_handle]) is updated to not contain self
+  # as one of its children; and self's new parent (target_list[spec.parent])
+  # is updated to be self's parent - i.e., one of its children.
+  # NOTE: If self.parent_handle is changed to a non-empty string, but
+  # target_list[spec.parent] does not exist (i.e., spec.parent is bogus),
+  # an exception will be thrown and the caller should abort the operation.
+  def main_modify_fields spec, target_list
+    assert_precondition('"spec" is valid') {
+      ! spec.nil? && self.handle == spec.handle
+    }
+    assert_precondition('target_list is valid') {
+      ! target_list.nil? && target_list.is_a?(Hash)
+    }
+    @title = spec.title if spec.title
+    @email_spec = spec.email if spec.email
+    @content = spec.description if spec.description
+    @comment = spec.comment if spec.comment
+    @priority = spec.priority if spec.priority
+    if spec.parent != nil then
+      orig_parent = target_list[self.parent_handle]
+      if spec.parent == "" then
+        @parent_handle = nil  # self becomes a top-level ancestor.
+      else
+        assert('spec.parent not empty') { spec.parent.length > 0 }
+        self.parent_handle = spec.parent
+        new_parent = target_list[self.parent_handle]
+        if new_parent.nil? then
+          raise "new parent, with handle \"#{self.parent_handle}\", is not valid."
+        end
+        if orig_parent == nil || orig_parent.handle != spec.parent then
+          # self's parent has changed - add self to new parent:
+          new_parent.add_child(self)
+        end
+      end
+      if orig_parent != nil && orig_parent.handle != spec.parent then
+        # The parent has been changed, so "un-adopt" the original parent.
+        orig_parent.remove_child(self)
+      end
+    end
+    if spec.categories then
+      @categories = spec.categories.split(SPEC_FIELD_DELIMITER)
+    end
+    if spec.calendar_ids != nil then
+      @calendar_ids = spec.calendar_ids.split(SPEC_FIELD_DELIMITER)
+    end
+    assert_postcondition('parent set as specified') {
+      implies(spec.parent == "", self.parent_handle.nil?) &&
+      implies(! spec.parent.nil? && spec.parent.length > 0,
+              self.parent_handle == spec.parent &&
+              self.parent_handle == target_list[self.parent_handle].handle)
+    }
+  end
+
+  # Update any of self's fields according to 'spec'. Any fields in 'spec'
+  # that are nil will be ignored - that is, a nil field is taken to imply
+  # that that particular field is not to be changed. Note that spec.parent
+  # is a special case in that although no change is made if spec.parent.nil?,
+  # if spec.parent == "" (i.e., is set to an empty string), self is changed
+  # to become a parent-less top-level ancestor.
+  # If self.parent_handle is changed as a result of 'spec' (either to a parent
+  # other than 'orig_parent' or to having no parent), self's old parent -
+  # 'orig_parent' - is updated to not contain self as one of its children.
+  def old2__main_modify_fields spec, orig_parent
+=begin
+    assert_precondition(
+      '"spec" is valid && "consistent parentage"') {
+      spec != nil && self.handle == spec.handle &&
+      implies(! self.parent_handle.nil?, ! orig_parent.nil?) &&
+      (orig_parent.nil? || (orig_parent.handle == self.parent_handle &&
+             orig_parent.children.include?(self))) &&
+      implies(! spec.parent.nil?, ! orig_parent.nil?)
+    }
+=end
+    assert_precondition('precond 1') {
+      spec != nil && self.handle == spec.handle
+    }
+    assert_precondition('precond 2') {
+      implies(! self.parent_handle.nil?, ! orig_parent.nil?)
+    }
+    assert_precondition('precond 3') {
+      (orig_parent.nil? || (orig_parent.handle == self.parent_handle &&
+             orig_parent.children.include?(self)))
+    }
+    assert_precondition('precond 4') {
+      implies(! self.parent_handle.nil?, ! orig_parent.nil?)
+    }
+    @title = spec.title if spec.title
+    @email_spec = spec.email if spec.email
+    @content = spec.description if spec.description
+    @comment = spec.comment if spec.comment
+    @priority = spec.priority if spec.priority
+    if spec.parent != nil then
+      if spec.parent == "" then
+        @parent_handle = nil  # self becomes a top-level ancestor.
+      else
+        @parent_handle = spec.parent
+      end
+      if orig_parent != nil && orig_parent.handle != spec.parent then
+        # The parent has been changed, so "un-adopt" the original parent.
+        orig_parent.remove_child(self)
+      end
+    end
+    if spec.categories then
+      @categories = spec.categories.split(SPEC_FIELD_DELIMITER)
+    end
+    if spec.calendar_ids != nil then
+      @calendar_ids = spec.calendar_ids.split(SPEC_FIELD_DELIMITER)
+    end
+    assert_postcondition('parent set as specified') {
+      implies(spec.parent == "", self.parent_handle.nil?) &&
+      implies(! spec.parent.nil? && spec.parent.length > 0,
+              self.parent_handle == spec.parent)
+    }
+  end
+
+  # Update any fields specified in 'spec', treating self's parent as a
+  # special case:
+  #   o If spec.parent.nil?, set self.parent to nil - i.e., interpret
+  #     spec.parent.nil? as specification that self will have no parent.
+  #   o If spec.parent.nil?, set self.parent to nil - i.e., interpret
+  def old__main_modify_fields spec, orig_parent
+    assert_precondition(
+      'spec != nil && handle == spec.handle && "consistent parentage"') {
+      spec != nil && handle == spec.handle &&
+      # (i.e., parent/child consistency with respect to self and orig_parent:)
+      implies(orig_parent != nil, self.parent_handle == orig_parent.handle &&
+             orig_parent.children.include?(self)) &&
+        implies(orig_parent.nil?, self.parent_handle.nil?)
+    }
     @title = spec.title if spec.title
     @email_spec = spec.email if spec.email
     @content = spec.description if spec.description
@@ -357,6 +490,9 @@ class STodoTarget
     if spec.calendar_ids != nil then
       @calendar_ids = spec.calendar_ids.split(SPEC_FIELD_DELIMITER)
     end
+    assert_postcondition('parent set as specified') {
+      self.parent_handle == spec.parent
+    }
   end
 
   def post_modify_fields spec

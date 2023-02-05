@@ -26,18 +26,24 @@ class TargetBuilder
     @existing_targets = existing_targets
     @targets = []
     for s in self.specs do
-      t = target_for(s)
-      if t != nil then
-        @targets << t
-      else
-        msg = "nil target for spec: #{s.handle} (type #{s.type})"
-        if s.type == CORRECTION || s.type == TEMPLATE_TYPE then
-          msg += " (expected)"
+      begin
+        t = target_for(s)
+        if t != nil then
+          @targets << t
+        else
+          msg = "nil target for spec: #{s.handle} (type #{s.type})"
+          if s.type == CORRECTION || s.type == TEMPLATE_TYPE then
+            msg += " (expected)"
+          end
+          $log.debug msg
         end
-        $log.debug msg
+      rescue Exception => e
+        # Processing of 't' caused an exception, so it will not be added to
+        # @targets and we'll continue to the next iteration.
+        $log.warn e
       end
     end
-    assert_postcondition('targets != nil') { targets != nil }
+    assert_postcondition('targets != nil') {! targets.nil? }
   end
 
   private
@@ -49,6 +55,13 @@ class TargetBuilder
     init_target_factory
   end
 
+  # Use spec.type to obtain the appropriate type of builder method (element
+  # of @target_factory_for) and call that method to "build" (create or
+  # edit, as appropriate) the appropriate target (STodoTarget descendant)
+  # based on spec.handle. Return the resulting "built" object.
+  # If spec.parent != nil and spec.parent is invalid (
+  # @existing_targets[spec.parent].nil?), an exception is thrown after
+  # logging an appropriate warning message.
   def target_for spec
     result = nil
     builder = @target_factory_for[spec.type]
@@ -68,21 +81,24 @@ class TargetBuilder
         $log.warn "#{t.handle} is not valid [#{t}]"
       end
     end
+    assert_postcondition('handle set') {
+      result.nil? || result.handle == spec.handle
+    }
     result
   end
 
   # Edit the target from @existing_targets, if one exists, whose handle
-  # matches 'specs.handle', such that its fields are changed according to
-  # fields that are set (not nil) in 'specs'.  Add the edited target to
+  # matches 'spec.handle', such that its fields are changed according to
+  # fields that are set (not nil) in 'spec'.  Add the edited target to
   # @edited_targets.  Return nil to indicate that now new STodoTarget has
   # been created.
-  def edit_target(specs)
-    if @existing_targets != nil && specs.handle then
-      tgt_handle = specs.handle
+  def edit_target(spec)
+    if @existing_targets != nil && spec.handle then
+      tgt_handle = spec.handle
       t = @existing_targets[tgt_handle]
       if t then
         old_time = t.time.clone
-        t.modify_fields(specs, @existing_targets[t.parent_handle])
+        t.modify_fields(spec, @existing_targets)
         if old_time != t.time then
           @time_changed_for[t] = true
         end
