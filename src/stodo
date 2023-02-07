@@ -22,8 +22,9 @@ mainhelp() {
     echo -e "  combined${gap}       combine notifications with processing of \c"
     echo -e "new items"
     echo -e "  report ${gap}        display a report of existing to-do items"
-    echo -e "  chparent <h> <ph>  change parent of item with handle <h> \c"
-    echo -e "to be item with\n${longgap}handle <ph>"
+    echo -e "  chparent <h> <ph>  change parent of the item with handle <h> \c"
+    echo -e "to be the\n${longgap}item with handle <ph>. If <ph> is '{none}',"
+    echo -e "${longgap}the item is set as parentless."
     echo -e "  del <h>...${gap}     delete targets with handles <h>, ..."
     echo -e "  clear_d <h>...${gap} clear descendants of targets with \c"
     echo -e "handle specs <h>, ..."
@@ -284,6 +285,10 @@ case $1 in
   del*)
     shift;
     do_edit delete $*
+    ;;
+  ch*par*)
+    shift;
+    do_edit change_parent $*
     ;;
   clear_d*)
     shift;

@@ -39,4 +39,17 @@ module SpecTools
   ONGOING_EMAIL_TAG = '[ongoing]'
   NONE = 'none'
 
+  # application-level error messages
+  HANDLE_TAG = '<handle>'
+  P_HANDLE_TAG = '<parent_handle>'
+  INVALID_PARENT_HANDLE_TEMPLATE =
+    "Error in spec for item with handle \"<handle>\": "\
+    "new parent handle \"<parent_handle>\", is not valid."
+
+  def invalid_parent_handle_msg(handle, parent_handle)
+    result = INVALID_PARENT_HANDLE_TEMPLATE.sub(HANDLE_TAG, handle)
+    result = result.sub(P_HANDLE_TAG, parent_handle)
+    result
+  end
+
 end
