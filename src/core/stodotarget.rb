@@ -166,9 +166,14 @@ class STodoTarget
     result = state.value == COMPLETED
   end
 
-  # Is 'target' a child of self?
-  def is_child? target
+  # Is self a parent of 'target'?
+  def is_parent? target
     self.children.include?(target)
+  end
+
+  # Is self a child of 'target'?
+  def is_child? target
+    ! target.nil? && target.children.include?(self)
   end
 
   ###  Element change

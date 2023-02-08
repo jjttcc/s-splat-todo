@@ -74,7 +74,9 @@ class STodoManager
     if editor.last_command_failed then
       $log.error editor.last_failure_message
     else
-      @data_manager.store_targets(existing_targets)
+      if editor.change_occurred then
+        @data_manager.store_targets(existing_targets)
+      end
     end
   end
 

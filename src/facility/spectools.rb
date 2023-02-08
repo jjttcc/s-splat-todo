@@ -45,11 +45,28 @@ module SpecTools
   INVALID_PARENT_HANDLE_TEMPLATE =
     "Error in spec for item with handle \"<handle>\": "\
     "new parent handle \"<parent_handle>\", is not valid."
+  RECURSIVE_PARENT_HANDLE_TEMPLATE =
+    "Error in spec for item with handle \"<handle>\": "\
+    "new parent \"<parent_handle>\", is the item's child."
+  MAKE_SELF_PARENT_TEMPLATE =
+    "Error in spec for item with handle \"<handle>\": "\
+    "item cannot be its own parent (\"<parent_handle>\")."
 
   def invalid_parent_handle_msg(handle, parent_handle)
     result = INVALID_PARENT_HANDLE_TEMPLATE.sub(HANDLE_TAG, handle)
     result = result.sub(P_HANDLE_TAG, parent_handle)
     result
+  end
+
+  def recursive_child_parent_msg(handle, parent_handle)
+    result = RECURSIVE_PARENT_HANDLE_TEMPLATE.sub(HANDLE_TAG, handle)
+    result = result.sub(P_HANDLE_TAG, parent_handle)
+    result
+  end
+
+  def request_to_make_self_parent_msg(handle, parent_handle)
+    result = MAKE_SELF_PARENT_TEMPLATE.sub(HANDLE_TAG, handle)
+    result = result.sub(P_HANDLE_TAG, parent_handle)
   end
 
 end
