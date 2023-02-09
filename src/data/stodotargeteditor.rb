@@ -126,66 +126,26 @@ class STodoTargetEditor
       $log.warn(request_to_make_self_parent_msg(handle, phandle))
     elsif ! make_orphan && new_parent.nil? then
       $log.warn(invalid_parent_handle_msg(handle, phandle))
+    elsif ! make_orphan && t.is_parent?(new_parent) then
+      $log.warn(recursive_child_parent_msg(handle, phandle))
     else
-      if ! make_orphan && t.is_parent?(new_parent) then
-        $log.warn(recursive_child_parent_msg(handle, phandle))
-      else
-        if t.parent_handle != nil then
-          # "Discard" the old parent.
-          old_parent = @target_for[t.parent_handle]
-          if old_parent and old_parent.can_have_children? then
-            old_parent.remove_child(t)
-          end
-        end
-        if make_orphan then
-          t.parent_handle = nil
-        else
-          assert('new parent exists') { ! new_parent.nil? }
-          assert('consistent handle values') { phandle == new_parent.handle }
-          t.parent_handle = new_parent.handle
-          new_parent.add_child(t)
-        end
-        self.change_occurred = true
-      end
-    end
-  end
-
-  def change_parent_work1 handle, phandle
-    assert_precondition("target for #{handle} exists") {
-      ! self.target_for[handle].nil?
-    }
-    assert_precondition("phandle exists") { ! phandle.nil?  }
-    t = self.target_for[handle]
-    make_orphan = ! phandle.nil? && phandle.downcase == NO_PARENT
-    recursive_request = false
-    new_parent = self.target_for[phandle]
-    if ! make_orphan && new_parent.nil? then
-      $log.warn(invalid_parent_handle_msg(handle, phandle))
-    else
+      # The request is valid - go ahead with the change.
       if t.parent_handle != nil then
         # "Discard" the old parent.
         old_parent = @target_for[t.parent_handle]
-        if old_parent then
-          if t.is_parent?(old_parent) then
-            $log.warn(recursive_child_parent_msg(handle, phandle))
-            recursive_request = true
-          else
-            if old_parent.can_have_children? then
-              old_parent.remove_child(t)
-            end
-          end
+        if old_parent and old_parent.can_have_children? then
+          old_parent.remove_child(t)
         end
       end
-      if ! recursive_request then
-        if make_orphan then
-          t.parent_handle = nil
-        else
-          assert('new parent exists') { ! new_parent.nil? }
-          assert('consistent handle values') { phandle == new_parent.handle }
-          t.parent_handle = new_parent.handle
-          new_parent.add_child(t)
-        end
+      if make_orphan then
+        t.parent_handle = nil
+      else
+        assert('new parent exists') { ! new_parent.nil? }
+        assert('consistent handle values') { phandle == new_parent.handle }
+        t.parent_handle = new_parent.handle
+        new_parent.add_child(t)
       end
+      self.change_occurred = true
     end
   end
 
@@ -200,8 +160,15 @@ class STodoTargetEditor
     exceptions = hspec_components[1 .. -1]
     t = @target_for[handle]
     if t != nil then
+      orig_descs = t.descendants
+      orig_desc_count = orig_descs.count
       t.remove_descendants(exceptions)
-      self.change_occurred = true
+      orig_descs = orig_descs - t.descendants
+      orig_descs.each do |d|
+        self.target_for.delete(d.handle)
+      end
+      # (If t's descendant count didn't change, assume no data change.)
+      self.change_occurred = orig_desc_count != t.descendants.count
     end
   end
 
