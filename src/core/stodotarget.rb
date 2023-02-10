@@ -26,6 +26,7 @@ class STodoTarget
     :notification_email_addrs, :short_notification_message
 
   attr_writer :parent_handle
+  attr_writer :handle         # Needed for cloning
 
   public
 
@@ -233,6 +234,44 @@ class STodoTarget
     end
   end
 
+  ###  Duplication
+
+  # Called by 'dup':
+  # Ensure no 'children' and that 'children' and the other complex object
+  # attributes ('reminders', 'categories', etc.) do not have the same
+  # object_id as the equivalent attribute in orig.
+  def initialize_copy(orig)
+    super(orig)
+    ieas = @initial_email_addrs
+    oeas = @ongoing_email_addrs
+    @children = Set.new
+    @calendar_ids = []
+    @initial_email_addrs = []
+    @ongoing_email_addrs = []
+    @reminders = []
+    @categories = []
+    @notifiers = []
+    # Copy the objects contained in these enumerables - not the references.
+    orig.calendar_ids.each do |o|
+      @calendar_ids << o.dup
+    end
+    ieas.each do |o|
+      @initial_email_addrs << o.dup
+    end
+    oeas.each do |o|
+      @ongoing_email_addrs << o.dup
+    end
+    orig.reminders.each do |o|
+      @reminders << o.dup
+    end
+    orig.categories.each do |o|
+      @categories << o.dup
+    end
+    orig.notifiers.each do |o|
+      @notifiers << o.dup
+    end
+  end
+
   ###  Hash-related queries
 
   # hash to allow use in a hashtable (Hash)
@@ -400,9 +439,9 @@ class STodoTarget
     end
     assert_postcondition('parent set as specified') {
       implies(spec.parent == "", self.parent_handle.nil?) &&
-      implies(! spec.parent.nil? && spec.parent.length > 0,
-              self.parent_handle == spec.parent &&
-              self.parent_handle == target_list[self.parent_handle].handle)
+      (! (! spec.parent.nil? && spec.parent.length > 0) ||
+              (self.parent_handle == spec.parent && self.parent_handle ==
+              target_list[self.parent_handle].handle))
     }
   end
 

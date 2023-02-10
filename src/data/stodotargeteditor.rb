@@ -55,6 +55,7 @@ class STodoTargetEditor
       'change_parent' => :change_parent,
       'state' => :modify_state,
       'clear_descendants' => :clear_descendants,
+      'clone' => :make_clone,
     }
   end
 
@@ -169,6 +170,31 @@ class STodoTargetEditor
       end
       # (If t's descendant count didn't change, assume no data change.)
       self.change_occurred = orig_desc_count != t.descendants.count
+    end
+  end
+
+  # Create a new STodoTarget descendant that is a clone (minus any children
+  # or parent) of the item with handle 'orig_handle' and give the new item
+  # the handle 'new_handle'.
+  def make_clone orig_handle, new_handle
+    assert_precondition("No data change yet") {
+      self.change_occurred == false
+    }
+    assert_precondition("target for #{orig_handle} exists") {
+      ! self.target_for[orig_handle].nil?
+    }
+    assert_precondition("new_handle exists") {
+      ! new_handle.nil? && ! new_handle.empty?
+    }
+    if target_for[new_handle].nil? then
+      t = self.target_for[orig_handle]
+      clone = t.clone
+      clone.handle = new_handle
+      clone.parent_handle = nil
+      target_for[clone.handle] = clone
+      self.change_occurred = true
+    else
+      $log.warn "cloning error: handle #{new_handle} is already in use."
     end
   end
 

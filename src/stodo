@@ -14,6 +14,7 @@ specpath_expr='^# *spec-path:'
 
 mainhelp() {
     gap="    "
+    smgap="   "
     longgap="                     "
     echo -e "Usage: $progname <command>\n\ncommands:"
     echo -e "  help [<x>]${gap}     show help (on topic <x>, if provided)"
@@ -28,6 +29,8 @@ mainhelp() {
     echo -e "  del <h>...${gap}     delete targets with handles <h>, ..."
     echo -e "  clear_d <h>...${gap} clear descendants of targets with \c"
     echo -e "handle specs <h>, ..."
+    echo -e "  clone <h> <nh> ${gap}clone item with handle <h> \c"
+    echo -e "as a new item with handle <nh>"
     echo -e "  stat <x> <h>...${gap}change status of handles <h>, ... to \c"
     echo -e "state-change <x>"
     echo -e "  temp [<type>]${gap}  output a to-do item template \c"
@@ -293,6 +296,10 @@ case $1 in
   clear_d*)
     shift;
     do_edit clear_descendants $*
+    ;;
+  clon*)
+    shift;
+    do_edit clone $*
     ;;
   sta*)
     shift;
