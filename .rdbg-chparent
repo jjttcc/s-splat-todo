@@ -1,0 +1,26 @@
+## To be run from /home/development/jtc/s-todo
+# (Using the class name in a break command doesn't seem to work.)
+config set no_color true
+# some "tools":
+eval def ccount(o=self) ; puts o.children.count end
+eval def ccnt(o=self) ; ccount(o) end
+eval def sh; puts self.handle end
+# tip: to display method parameters and their values, simply: bt
+
+b src/main/stodo-mgmt.rb 9
+b src/main/stodo-mgmt.rb 14
+b src/main/stodo-mgmt.rb 17
+# apply_command, line 1:
+b src/data/stodotargeteditor.rb 10
+# change_parent, line 1 (will change!!!):
+b src/data/stodotargeteditor.rb 110
+b src/data/stodotargeteditor.rb 114
+b src/data/stodotargeteditor.rb 117
+b src/data/stodotargeteditor.rb 131
+# delete_target, line 1 (temporary!!!):
+b src/data/stodotargeteditor.rb 79
+b src/core/stodotarget.rb 171
+b src/core/stodotarget.rb 176
+b src/core/stodotarget.rb 212
+# in edit_target:
+b src/coordination/stodomanager.rb 77

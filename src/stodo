@@ -26,9 +26,11 @@ mainhelp() {
     echo -e "  chparent <h> <ph>  change parent of the item with handle <h> \c"
     echo -e "to be the\n${longgap}item with handle <ph>. If <ph> is '{none}',"
     echo -e "${longgap}the item is set as parentless."
-    echo -e "  del <h>...${gap}     delete targets with handles <h>, ..."
-    echo -e "  clear_d <h>...${gap} clear descendants of targets with \c"
+    echo -e "  del <h>...${gap}     delete items with handles <h>, ..."
+    echo -e "  clear_d <h>...${gap} clear descendants of items with \c"
     echo -e "handle specs <h>, ..."
+    echo -e "  remove_d <h> <dh>  find descendant (handle <dh>) \c"
+    echo -e "of ancestor (handle <h>)\n${longgap}and delete it"
     echo -e "  clone <h> <nh> ${gap}clone item with handle <h> \c"
     echo -e "as a new item with handle <nh>"
     echo -e "  stat <x> <h>...${gap}change status of handles <h>, ... to \c"
@@ -296,6 +298,10 @@ case $1 in
   clear_d*)
     shift;
     do_edit clear_descendants $*
+    ;;
+  remove_d*)
+    shift;
+    do_edit remove_descendant $*
     ;;
   clon*)
     shift;

@@ -12,7 +12,7 @@ if ARGV.length > 1 then
   manager = STodoManager.new Configuration.new
   command = ARGV[0]; arguments = ARGV[1..-1]
   case command
-  when /ch.*par/, /clone/  # 'change-parent' or 'clone'
+  when /ch.*par/, /clone/, /remove_d/  # two+-arg commands
     handle = arguments[0]
     command_and_args = [command, arguments[1..-1]].flatten
     if command_and_args.count < 2 then

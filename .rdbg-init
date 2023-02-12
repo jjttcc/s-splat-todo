@@ -1,0 +1,21 @@
+## To be run from /home/development/jtc/s-todo
+# (Using the class name in a break command doesn't seem to work.)
+config set no_color true
+# some "tools":
+eval def ccount(o=self) ; puts o.children.count end
+eval def ccnt(o=self) ; ccount(o) end
+eval def sh; puts self.handle end
+
+# edit_target:
+b src/coordination/stodomanager.rb 73
+# apply_command(handle, raw_command):
+b src/data/stodotargeteditor.rb 13
+# clear_descendants:
+b src/data/stodotargeteditor.rb 158
+b src/data/stodotargeteditor.rb 164
+# remove_children:
+b src/core/stodotarget.rb 205
+b src/main/stodo-mgmt.rb 11
+
+eval def ccount(o=self) ; puts o.children.count end
+eval def sh; puts self.handle end

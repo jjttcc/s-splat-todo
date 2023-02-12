@@ -18,7 +18,8 @@ class STodoTarget
   public
 
   attr_reader :title, :content, :handle, :calendar_ids, :priority, :comment,
-    :reminders, :categories, :parent_handle, :notifiers, :children, :state
+    :reminders, :categories, :parent_handle, :notifiers, :children, :state,
+    :last_removed_descendant
   alias :description :content
   alias :name :handle
   alias :detail :comment
@@ -122,6 +123,22 @@ class STodoTarget
     result
   end
 
+  # The descendant with handle 'handle' - nil if no such descendant
+  def descendant handle
+    assert_precondition('! handle.nil?') { ! handle.nil?  }
+    result = children.find do |o| o.handle == handle end
+    if result.nil? then
+      children.each do |c|
+        result = c.descendant handle
+        if ! result.nil? then
+          # (found it.)
+          break
+        end
+      end
+    end
+    result
+  end
+
   ###  Comparison
 
   VERY_LATE = Time.parse('10000-01-01 00:00')
@@ -205,6 +222,11 @@ class STodoTarget
     post_modify_fields spec
   end
 
+  # Ensure that 'last_removed_descendant' is not set - i.e., is nil
+  def clear_last_removed_descendant
+    self.last_removed_descendant = nil
+  end
+
   ###  Removal
 
   # Remove child `t' from 'children'.
@@ -231,6 +253,30 @@ class STodoTarget
     @children.clear
     if ! new_childlist.empty? then
       @children = new_childlist
+    end
+  end
+
+  # Search among 'descendants' to find the descendant with 'handle'. If it
+  # is found, remove it as a descendant (which includes adjustments to
+  # 'parent' and 'child' relationships to reflect this removal).
+  # The query 'last_removed_descendant' will reference the newly found and
+  # removed descendant; if the descendant is not found, the result of this
+  # query will be nil.
+  def remove_descendant handle
+    assert_precondition('! handle.nil?') { ! handle.nil?  }
+    child = children.find do |o| o.handle == handle end
+    if child.nil? then
+      children.each do |c|
+        c.remove_descendant handle
+        if ! c.last_removed_descendant.nil? then
+          # (found it.)
+          self.last_removed_descendant = c.last_removed_descendant
+          break
+        end
+      end
+    else
+      detach child
+      self.last_removed_descendant = child
     end
   end
 
@@ -328,6 +374,8 @@ class STodoTarget
   end
 
   private
+
+  attr_writer :last_removed_descendant
 
   ###  Initialization
 
@@ -498,6 +546,25 @@ class STodoTarget
       result.sort
     end
     result
+  end
+
+  ### Implementation
+
+  # Remove 'child' from 'children', set its parent_handle to nil, and
+  # "adopt" its children as our (self's) own.
+  def detach child
+    assert_precondition('! child.nil?') { ! child.nil? }
+    remove_child child
+    its_children = child.children
+    its_children.each do |c|
+      c.parent_handle = self.handle
+      self.add_child c
+      child.remove_child c
+    end
+    child.parent_handle = nil
+    assert_postcondition('no longer a child') { ! children.include?(child) }
+    assert_postcondition('no children') { child.children.count == 0 }
+    assert_postcondition('no parent') { child.parent_handle.nil? }
   end
 
   ### Implementation - utilities

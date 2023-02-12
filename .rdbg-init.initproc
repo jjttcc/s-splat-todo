@@ -1,0 +1,32 @@
+## To be run from /home/development/jtc/s-todo
+# (Using the class name in a (set) break(point) command doesn't seem to work.)
+config set no_color true
+# some "tools":
+eval def ccount(o=self) ; puts o.children.count end
+eval def ccnt(o=self) ; ccount(o) end
+eval def sh; puts self.handle end
+
+b src/main/initial-processing.rb 15
+b src/main/initial-processing.rb 17
+b src/configuration/configuration.rb 50
+# build_targets, first line:
+b src/coordination/targetbuilder.rb 26
+b src/coordination/targetbuilder.rb 28
+b src/coordination/targetbuilder.rb 30
+b src/coordination/targetbuilder.rb 31
+b src/coordination/targetbuilder.rb 34
+b src/coordination/targetbuilder.rb 43
+# edit_target, first line:
+b src/coordination/targetbuilder.rb 89
+# edit_target, first line:
+b src/coordination/stodomanager.rb 73
+# STodoManager initialize, first line:
+b src/coordination/stodomanager.rb 91
+# STodoManager, in init_new_targets - @target_builder.edited_targets.each do |tgt|:
+b src/coordination/stodomanager.rb 130
+# beginning of 'main_modify_fields':
+b src/core/stodotarget.rb 353
+b src/core/stodotarget.rb 364
+b src/core/stodotarget.rb 372
+b src/core/stodotarget.rb 373
+b src/core/stodotarget.rb 375

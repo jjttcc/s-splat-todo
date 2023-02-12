@@ -53,6 +53,7 @@ class STodoTargetEditor
     @method_for = {
       'delete' => :delete_target,
       'change_parent' => :change_parent,
+      'remove_descendant' => :remove_descendant,
       'state' => :modify_state,
       'clear_descendants' => :clear_descendants,
       'clone' => :make_clone,
@@ -147,6 +148,28 @@ class STodoTargetEditor
         new_parent.add_child(t)
       end
       self.change_occurred = true
+    end
+  end
+
+  # Remove item with handle 'dhandle' as descendant of item with handle
+  # 'handle' - so that it is no longer a descendant - and delete it - that
+  # is, remove it from the database of stored items.
+  def remove_descendant handle, dhandle
+    assert_precondition("No data change yet") {
+      self.change_occurred == false
+    }
+    assert_precondition("target for #{handle} exists") {
+      ! self.target_for[handle].nil?
+    }
+    assert_precondition("dhandle exists") { ! dhandle.nil?  }
+    t = target_for[handle]
+    t.remove_descendant dhandle
+    if ! t.last_removed_descendant.nil? then
+      self.target_for.delete(t.last_removed_descendant.handle)
+      $log.warn "removed #{t.last_removed_descendant.handle}, "\
+        "descendant of #{handle}"
+      self.change_occurred = true
+      t.clear_last_removed_descendant
     end
   end
 
