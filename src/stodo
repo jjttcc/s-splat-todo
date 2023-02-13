@@ -204,10 +204,13 @@ make_template() {
 }
 
 report_help() {
-  local s='   '
+  local s='        '
+  local long_s="$s$s      "
   echo -e "Usage: $progname rep[ort] [<report-type> [<criteria>]]"
   echo -e "\nWhere <report-type> is one of:"
   echo -e "  handle $s     list only matching handles"
+  echo -e "  desc   $s     display only the description"
+  echo -e "  tdesc  $s     display only title and description"
   echo -e "  short $s      short report - list only handles and titles"
   echo -e "  summary $s    summary report for the specified handles"
   echo -e "  complete $s   complete report for the specified handles"
@@ -217,6 +220,11 @@ report_help() {
     "(with handle instead of title)"
   echo -e "  remindall $s  all upcoming reminders"
   echo -e "  children $s   report of all child relationships"
+  echo -e "  parent   $s   report the parent handle"
+  echo -e "  emanc-chld $s \"emancipated\" children - i.e., that don't" \
+    "\"acknowledge\"\n${long_s}the designated item as their parent"
+  echo -e "  emanc-desc $s all descendants of the designated item that are" \
+    "\n$s$s      emancipated children"
   echo -e "Where <criteria> is either:"
   echo -e "  <type-spec>"
   echo -e "  <space-separated list of handles> - e.g., handle1 handle2 ..."

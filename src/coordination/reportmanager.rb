@@ -38,6 +38,43 @@ class ReportManager
     end
   end
 
+  def show_description(criteria)
+    if criteria.null_criteria? then
+      # (No criteria implies reporting on all targets.)
+      targets = targets_for(nil)
+    elsif criteria.handles_only? then
+      targets = targets_for(criteria.handles)
+    else
+      targets = targets_for_criteria(criteria)
+    end
+    verbose = targets.count > 1
+    targets.each do |t|
+      if verbose then puts "\n[#{t.handle}]:" end
+      puts t.description
+    end
+  end
+
+  def show_t_description(criteria)
+    if criteria.null_criteria? then
+      # (No criteria implies reporting on all targets.)
+      targets = targets_for(nil)
+    elsif criteria.handles_only? then
+      targets = targets_for(criteria.handles)
+    else
+      targets = targets_for_criteria(criteria)
+    end
+    verbose = targets.count > 1
+    targets.each do |t|
+      if verbose then
+        puts "\n[#{t.handle}]:"
+        puts "title: #{t.title}"
+      else
+        puts "#{t.title}:"
+      end
+      puts t.description
+    end
+  end
+
   # Report all descendants (child targets, their children, ...) for each
   # target whose handle is in `criteria.handles'.
   def report_targets_descendants criteria
@@ -45,6 +82,56 @@ class ReportManager
     targets.each do |t|
       if t.can_have_children? then
         report_descendants(t, ! criteria.handles.empty?)
+      else
+        puts "#{t.handle} (cannot have children), due: #{time_24hour(t.time)}"
+      end
+    end
+  end
+
+  # Report the handle of the parent of each target that matches 'criteria'.
+  def report_parent(criteria)
+    targets = targets_for_criteria(criteria)
+    verbose = targets.count > 1
+    targets.each do |t|
+      if verbose then
+        print "#{t.handle}: "
+      end
+      if t.parent_handle.nil? then
+        puts "{no-parent}"
+      else
+        puts t.parent_handle
+      end
+    end
+  end
+
+  # Report all descendants (child targets, their children, ...) for each
+  # target whose handle is in `criteria.handles'.
+  def report_emancipated_children criteria
+    targets = targets_for_criteria(criteria)
+    verbose = targets.count > 1
+    indent = verbose ? '   ': ''
+    targets.each do |t|
+      if verbose then
+        print "#{t.handle}:"
+      end
+      if t.can_have_children? then
+        if verbose then print "\n#{indent}" end
+        tlist = t.emancipated_children
+        puts tlist.map { |t| t.handle }.join("\n#{indent}")
+      else
+        puts "(#{t.handle} cannot have children), due: #{time_24hour(t.time)}"
+      end
+    end
+  end
+
+  # Report all descendants (child targets, their children, ...) for each
+  # target whose handle is in `criteria.handles'.
+  def report_emancipated_descendants criteria
+    targets = targets_for_criteria(criteria)
+    targets.each do |t|
+      if t.can_have_children? then
+        tlist = t.emancipated_descendants
+        puts tlist.map { |t| t.handle }.join("\n")
       else
         puts "#{t.handle} (cannot have children), due: #{time_24hour(t.time)}"
       end

@@ -19,6 +19,10 @@ class ReportUtil
       case ARGV[0]
       when /^hand/
           result = Proc.new { reporter.list_handles(self.criteria) }
+      when /^desc/
+          result = Proc.new { reporter.show_description(self.criteria) }
+      when /^tdesc/
+          result = Proc.new { reporter.show_t_description(self.criteria) }
       when /^short/
         result = Proc.new {
           reporter.list_targets(true, self.criteria)
@@ -50,6 +54,18 @@ class ReportUtil
       when /^chi/
         result = Proc.new {
           reporter.report_targets_descendants(criteria)
+        }
+      when /^par/
+        result = Proc.new {
+          reporter.report_parent(criteria)
+        }
+      when /^eman.*ch/
+        result = Proc.new {
+          reporter.report_emancipated_children(criteria)
+        }
+      when /^eman.*des/
+        result = Proc.new {
+          reporter.report_emancipated_descendants(criteria)
         }
       when /^due/
         result = Proc.new {

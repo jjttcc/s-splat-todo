@@ -139,6 +139,25 @@ class STodoTarget
     result
   end
 
+  # All 'children', c, for which c.parent_handle != self.handle
+  def emancipated_children
+    result = self.children.select do |c|
+      c.parent_handle != self.handle
+    end
+    assert_postcondition('result is an Array') { result.is_a?(Array) }
+    result
+  end
+
+  # All "emancipated" 'descendants'
+  def emancipated_descendants
+    result = self.emancipated_children
+    self.children.each do |c|
+      result.concat(c.emancipated_children)
+    end
+    assert_postcondition('result is an Array') { result.is_a?(Array) }
+    result
+  end
+
   ###  Comparison
 
   VERY_LATE = Time.parse('10000-01-01 00:00')
