@@ -246,6 +246,19 @@ class STodoTarget
     self.last_removed_descendant = nil
   end
 
+  # Change self's handle to 'h'.
+  # If self.children.count > 0, set each child's parent_handle to 'h', the
+  # new handle.
+  def change_handle h
+    assert_precondition('h exists') { ! h.nil? && h.length > 0 }
+    assert_precondition('h != old h') { h != self.handle }
+    self.handle = h
+    self.children.each do |c|
+      c.parent_handle = self.handle
+    end
+    assert_postcondition('handle == h') { self.handle == h }
+  end
+
   ###  Removal
 
   # Remove child `t' from 'children'.

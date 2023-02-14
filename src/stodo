@@ -26,6 +26,8 @@ mainhelp() {
     echo -e "  chparent <h> <ph>  change parent of the item with handle <h> \c"
     echo -e "to be the\n${longgap}item with handle <ph>. If <ph> is '{none}',"
     echo -e "${longgap}the item is set as parentless."
+    echo -e "  chhandle <h> <nh>  change handle of the item with handle <h> \c"
+    echo -e "to <nh>"
     echo -e "  del <h>...${gap}     delete items with handles <h>, ..."
     echo -e "  clear_d <h>...${gap} clear descendants of items with \c"
     echo -e "handle specs <h>, ..."
@@ -302,6 +304,10 @@ case $1 in
   ch*par*)
     shift;
     do_edit change_parent $*
+    ;;
+  ch*han*)
+    shift;
+    do_edit change_handle $*
     ;;
   clear_d*)
     shift;

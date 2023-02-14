@@ -53,6 +53,7 @@ class STodoTargetEditor
     @method_for = {
       'delete' => :delete_target,
       'change_parent' => :change_parent,
+      'change_handle' => :change_handle,
       'remove_descendant' => :remove_descendant,
       'state' => :modify_state,
       'clear_descendants' => :clear_descendants,
@@ -147,6 +148,26 @@ class STodoTargetEditor
         t.parent_handle = new_parent.handle
         new_parent.add_child(t)
       end
+      self.change_occurred = true
+    end
+  end
+
+  def change_handle handle, new_handle
+    assert_precondition("No data change yet") {
+      self.change_occurred == false
+    }
+    assert_precondition("target for #{handle} exists") {
+      ! self.target_for[handle].nil?
+    }
+    assert_precondition("new_handle exists") { ! new_handle.nil?  }
+    if target_for[new_handle] then
+      $log.warn(new_handle_in_use_msg(handle, new_handle))
+    else
+      t = self.target_for[handle]
+      # Remove the old hash entry, associated with the old 'handle' key:
+      self.target_for.delete(t.handle)
+      t.change_handle(new_handle)
+      self.target_for[new_handle] = t
       self.change_occurred = true
     end
   end

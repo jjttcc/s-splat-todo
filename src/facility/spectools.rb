@@ -42,6 +42,7 @@ module SpecTools
   # application-level error messages
   HANDLE_TAG = '<handle>'
   P_HANDLE_TAG = '<parent_handle>'
+  N_HANDLE_TAG = '<new_handle>'
   INVALID_PARENT_HANDLE_TEMPLATE =
     "Error in spec for item with handle \"<handle>\": "\
     "new parent handle \"<parent_handle>\", is not valid."
@@ -51,6 +52,9 @@ module SpecTools
   MAKE_SELF_PARENT_TEMPLATE =
     "Error in spec for item with handle \"<handle>\": "\
     "item cannot be its own parent (\"<parent_handle>\")."
+  HANDLE_IN_USE_TEMPLATE =
+    "Error re handle-change operation for \"<handle>\": "\
+    "new handle \"<new_handle>\" is already in use."
 
   def invalid_parent_handle_msg(handle, parent_handle)
     result = INVALID_PARENT_HANDLE_TEMPLATE.sub(HANDLE_TAG, handle)
@@ -67,6 +71,13 @@ module SpecTools
   def request_to_make_self_parent_msg(handle, parent_handle)
     result = MAKE_SELF_PARENT_TEMPLATE.sub(HANDLE_TAG, handle)
     result = result.sub(P_HANDLE_TAG, parent_handle)
+    result
+  end
+
+  def new_handle_in_use_msg(handle, new_handle)
+    result = HANDLE_IN_USE_TEMPLATE.sub(HANDLE_TAG, handle)
+    result = result.sub(N_HANDLE_TAG, new_handle)
+    result
   end
 
 end
