@@ -1,21 +1,27 @@
 class TemplateOptions
-  include SpecTools
+  include SpecTools, ErrorTools
 
   public
 
   attr_reader :type, :categories, :description, :email, :handle, :location,
     :time, :parent, :title, :calendar_ids, :duration, :priority
 
+  # query: Is a parse error to be treated as fatal - i.e., causes an
+  # exception to be raised?
+  attr_reader :parse_error_is_fatal
+
   protected
 
   attr_accessor :argument_array
+  attr_writer :parse_error_is_fatal
 
   private
 
   DEFAULT_TYPE=APPOINTMENT
 
-  def initialize arg_array = ARGV
+  def initialize arg_array = ARGV, parse_error_fatal = false
     self.argument_array = arg_array
+    self.parse_error_is_fatal = parse_error_fatal
     init_attributes
     if self.argument_array.length == 0 then
       @type = DEFAULT_TYPE
@@ -23,6 +29,9 @@ class TemplateOptions
       process_options
       set_email
     end
+    assert_postcondition('self.parse_error_is_fatal is set') {
+      self.parse_error_is_fatal == parse_error_fatal
+    }
   end
 
   def process_options
@@ -68,7 +77,11 @@ class TemplateOptions
         if @type == nil then
           @type = self.argument_array[i]
         else
-          $log.warn "Invalid argument: #{self.argument_array[i]}"
+          emsg = "Invalid argument: #{self.argument_array[i]}"
+          $log.warn emsg
+          if self.parse_error_is_fatal then
+            raise emsg
+          end
         end
       end
       i += 1

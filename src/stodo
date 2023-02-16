@@ -270,28 +270,6 @@ add_help() {
   echo -e "  -pr <priority> $s Use <priority> as the priority"
 }
 
-obsolete___add_help() {
-  local s='        '
-  local long_s="$s$s      "
-  local pri_default=1
-  local stat_default='in-progress'
-  echo -e "Usage: $progname add <item-type> <handle> [<components>]"
-  echo -e "\nWhere <item-type> is one of:"
-  echo -e "  t[ask] $s     add a new task"
-  echo -e "  p[roject] $s  add a new project"
-  echo -e "  m[emo] $s     add a new memo"
-  echo -e "  n[ote] $s     add a new note (alias for memo)"
-  echo -e "  a[pmt]$s      add a new appointment"
-  echo -e "Where <components> is 0 or more of the following options:"
-  echo -e "  pri:<n>   $s  give item priority <n> (1 - 5) (default: "\
-  "$pri_default)"
-  echo -e "  stat:<state>${s}give item state <state> (default: "\
-  "$stat_default)"
-  echo -e "  title:<str> ${s}use <str> as item's title"
-  echo -e "  descr:<str> ${s}use <str> as item's description"
-  echo -e "  par:<handle>${s}use <handle> as item's handle"
-}
-
 clear_d_help() {
   local s='   '
   echo -e "Usage: $progname clear_d[escendants] <hndlspec>..."

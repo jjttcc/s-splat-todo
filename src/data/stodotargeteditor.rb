@@ -9,25 +9,14 @@ class STodoTargetEditor
     # requires a database update?:
     :change_occurred
 
-  def apply_command(handle, parameters, existing_handle = true)
+  def apply_command(handle, parameters)
     @last_command_failed = false
     self.change_occurred = false
-    valid_handle = true
     clean_handle = handle.split(/#{DEFAULT_COMPONENT_SEPARATOR}/)[0]
-    if existing_handle then
-      if @target_for[clean_handle] == nil then
-        @last_command_failed = true
-        @last_failure_message = "No target found with handle #{handle}."
-        valid_handle = false
-      end
+    if @target_for[clean_handle] == nil then
+      @last_command_failed = true
+      @last_failure_message = "No target found with handle #{handle}."
     else
-      if @target_for[clean_handle] != nil then
-        @last_command_failed = true
-        @last_failure_message = "handle: #{handle} is already in use."
-        valid_handle = false
-      end
-    end
-    if valid_handle then
       if parameters.is_a?(Enumerable) then
         command, args = parameters[0], [handle, parameters[1..-1]].flatten
       else
@@ -66,7 +55,6 @@ class STodoTargetEditor
       'change_parent'      =>  :change_parent,
       'change_handle'      =>  :change_handle,
       'remove_descendant'  =>  :remove_descendant,
-      'add'                =>  :add_item,
       'state'              =>  :modify_state,
       'clear_descendants'  =>  :clear_descendants,
       'clone'              =>  :make_clone,
@@ -182,23 +170,6 @@ class STodoTargetEditor
       self.target_for[new_handle] = t
       self.change_occurred = true
     end
-  end
-
-  # Add a new item with 'handle' of the specified type.
-  def add_item handle, type, *args
-    assert_precondition("No data change yet") {
-      self.change_occurred == false
-    }
-    assert_precondition("target for #{handle} does NOT exist") {
-      self.target_for[handle].nil?
-    }
-    assert_precondition("handle exists") { ! handle.nil?  }
-$log.warn "'add_item' called with handle #{handle}, type #{type}..."
-$log.warn "args: #{args}, args class: #{args.class}"
-=begin
-to-do: search for code to steal - that creates new Tasks, etc.,
-and use (copy/modify) it here.
-=end
   end
 
   # Remove item with handle 'dhandle' as descendant of item with handle
