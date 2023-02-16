@@ -1,0 +1,25 @@
+## To be run from /home/development/jtc/s-todo
+# "stodo temp ..." debugging
+# (Using the class name in a break command doesn't seem to work.)
+config set no_color true
+# some "tools":
+eval def ccount(o=self) ; puts o.children.count end
+eval def ccnt(o=self) ; ccount(o) end
+eval def sh; puts self.handle end
+# tip: to display method parameters and their values, simply: bt
+
+b src/main/stodo-mgmt.rb 15
+b src/main/stodo-mgmt.rb 17
+b src/main/stodo-mgmt.rb 30
+b src/main/stodo-mgmt.rb 32
+b src/main/stodo-mgmt.rb 36
+b src/main/stodo-mgmt.rb 37
+# initialize:
+b src/coordination/templatetargetbuilder.rb 10
+b src/coordination/templatetargetbuilder.rb 14
+# initialize:
+b src/coordination/templateoptions.rb 16
+# process_options:
+b src/coordination/templateoptions.rb 27
+b src/coordination/templateoptions.rb 67
+b src/coordination/templateoptions.rb 73

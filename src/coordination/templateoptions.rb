@@ -6,13 +6,18 @@ class TemplateOptions
   attr_reader :type, :categories, :description, :email, :handle, :location,
     :time, :parent, :title, :calendar_ids, :duration, :priority
 
+  protected
+
+  attr_accessor :argument_array
+
   private
 
   DEFAULT_TYPE=APPOINTMENT
 
-  def initialize
+  def initialize arg_array = ARGV
+    self.argument_array = arg_array
     init_attributes
-    if ARGV.length == 0 then
+    if self.argument_array.length == 0 then
       @type = DEFAULT_TYPE
     else
       process_options
@@ -25,8 +30,8 @@ class TemplateOptions
     catf, descf, emf, hndf, locf, parf, titf, cif, durf, ief, oef,
       timf, prif = 'c', 'd', 'e', 'h', 'l', 'p', 't', 'ci', 'du', 'ie',
       'oe', 'ti', 'pr'
-    while i < ARGV.length do
-      case ARGV[i]
+    while i < self.argument_array.length do
+      case self.argument_array[i]
       when /^-#{catf}\b/
         cats = next_arg(i + 1, catf, true); i += cats.length
         @categories = cats.join(SPEC_FIELD_JOINER)
@@ -61,9 +66,9 @@ class TemplateOptions
         @ongoing_email = emails.join(SPEC_FIELD_JOINER)
       else
         if @type == nil then
-          @type = ARGV[i]
+          @type = self.argument_array[i]
         else
-          $log.warn "Invalid argument: #{ARGV[i]}"
+          $log.warn "Invalid argument: #{self.argument_array[i]}"
         end
       end
       i += 1
@@ -90,13 +95,13 @@ class TemplateOptions
 
   def next_arg(i, flag, multiple_args = false)
     result = [""]
-    if i >= ARGV.length then
+    if i >= self.argument_array.length then
       raise "Missing argument for flag #{flag}"
     else
-      result = [ARGV[i]]
+      result = [self.argument_array[i]]
       j = i + 1
-      while j < ARGV.length && ARGV[j] !~ /^-/ do
-        result << ARGV[j]
+      while j < self.argument_array.length && self.argument_array[j] !~ /^-/ do
+        result << self.argument_array[j]
         j += 1
       end
     end

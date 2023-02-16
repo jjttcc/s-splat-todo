@@ -28,6 +28,7 @@ mainhelp() {
     echo -e "${longgap}the item is set as parentless."
     echo -e "  chhandle <h> <nh>  change handle of the item with handle <h> \c"
     echo -e "to <nh>"
+    echo -e "  add       ${gap}     add a new item"
     echo -e "  del <h>...${gap}     delete items with handles <h>, ..."
     echo -e "  clear_d <h>...${gap} clear descendants of items with \c"
     echo -e "handle specs <h>, ..."
@@ -45,6 +46,7 @@ mainhelp() {
 indepth_help() {
   case "$1" in
     rep*) report_help ;;
+    add*) add_help ;;
     clear*) clear_d_help ;;
     temp*) template_help ;;
     sta*) state_help ;;
@@ -154,6 +156,11 @@ do_edit() {
   run $edit $*
 }
 
+do_quoted_edit() {
+  checkpath $edit
+  run $edit "$@"
+}
+
 do_backup() {
   checkpath $admin
   run $admin backup $*
@@ -241,6 +248,50 @@ report_help() {
   echo -e " - If <report-type> is not specified, list all target handles."
 }
 
+add_help() {
+  local s='     '
+  echo -e "Usage: $progname add [<type>] [options]"
+  echo -e "Where <type> is one of:\c"
+  echo -e " task, memo, appointment (or event), project"
+  echo -e "(If <type> is not specified, assume 'task'.)"
+  echo -e "\nOptions:"
+  echo -e "  -t <title> $s     Use <title> as the Title"
+  echo -e "  -h <handle> $s    Use <handle> as the Handle"
+  echo -e "  -d <desc> $s      Use <desc> as the Description"
+  echo -e "  -c <cat>... $s    Use <cat>... as the Category/Categories"
+  echo -e "  -e <email> $s     Use <email> as the Email address"
+  echo -e "  -ti <datetime>$s  Use <datetime> as the date&time"
+  echo -e "  -ie <email> $s    Use <email> as the Initial Email address"
+  echo -e "  -oe <email> $s    Use <email> as the Ongoing Email address"
+  echo -e "  -p <handle> $s    Use <handle> to specify the Parent"
+  echo -e "  -ci <id>... $s    Use <id>... as the Calendar Ids"
+  echo -e "  -l <loc> $s       Use <loc> as the location (appointment only)"
+  echo -e "  -du <dur> $s      Use <dur> as the duration (appointment only)"
+  echo -e "  -pr <priority> $s Use <priority> as the priority"
+}
+
+obsolete___add_help() {
+  local s='        '
+  local long_s="$s$s      "
+  local pri_default=1
+  local stat_default='in-progress'
+  echo -e "Usage: $progname add <item-type> <handle> [<components>]"
+  echo -e "\nWhere <item-type> is one of:"
+  echo -e "  t[ask] $s     add a new task"
+  echo -e "  p[roject] $s  add a new project"
+  echo -e "  m[emo] $s     add a new memo"
+  echo -e "  n[ote] $s     add a new note (alias for memo)"
+  echo -e "  a[pmt]$s      add a new appointment"
+  echo -e "Where <components> is 0 or more of the following options:"
+  echo -e "  pri:<n>   $s  give item priority <n> (1 - 5) (default: "\
+  "$pri_default)"
+  echo -e "  stat:<state>${s}give item state <state> (default: "\
+  "$stat_default)"
+  echo -e "  title:<str> ${s}use <str> as item's title"
+  echo -e "  descr:<str> ${s}use <str> as item's description"
+  echo -e "  par:<handle>${s}use <handle> as item's handle"
+}
+
 clear_d_help() {
   local s='   '
   echo -e "Usage: $progname clear_d[escendants] <hndlspec>..."
@@ -300,6 +351,10 @@ case $1 in
   del*)
     shift;
     do_edit delete $*
+    ;;
+  add*)
+    shift;
+    do_quoted_edit add "$@"
     ;;
   ch*par*)
     shift;

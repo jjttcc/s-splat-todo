@@ -80,6 +80,24 @@ class STodoManager
     end
   end
 
+  # Add the newly-created targets to persistent store.
+  def add_new_targets(targets)
+    targets.each do |t|
+      self.existing_targets[t.handle] = t
+      if ! t.parent_handle.nil? then
+        p = self.existing_targets[t.parent_handle]
+        if p then
+          p.add_child t
+        else
+          $log.warn "invalid parent handle (#{t.parent_handle}) for" \
+            "item #{t.handle} - changing to 'no-parent'"
+          t.parent_handle = nil
+        end
+      end
+    end
+    @data_manager.store_targets(self.existing_targets)
+  end
+
   private
 
   def editor
