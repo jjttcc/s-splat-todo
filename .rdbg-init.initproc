@@ -5,6 +5,10 @@ config set no_color true
 eval def ccount(o=self) ; puts o.children.count end
 eval def ccnt(o=self) ; ccount(o) end
 eval def sh; puts self.handle end
+eval def iv(o=self) ; puts o.instance_variables end
+eval def pmeth(o=self) ; puts o.public_methods end
+# like pmeth, but don'w show inherited methods:
+eval def pmetho(o=self) ; puts o.public_methods(false) end
 
 b src/main/initial-processing.rb 15
 b src/main/initial-processing.rb 17
@@ -18,6 +22,8 @@ b src/coordination/targetbuilder.rb 34
 b src/coordination/targetbuilder.rb 43
 # edit_target, first line:
 b src/coordination/targetbuilder.rb 89
+# perform_initial_processing, first line:
+b src/coordination/stodomanager.rb 18
 # edit_target, first line:
 b src/coordination/stodomanager.rb 73
 # STodoManager initialize, first line:
@@ -25,8 +31,6 @@ b src/coordination/stodomanager.rb 91
 # STodoManager, in init_new_targets - @target_builder.edited_targets.each do |tgt|:
 b src/coordination/stodomanager.rb 130
 # beginning of 'main_modify_fields':
-b src/core/stodotarget.rb 353
-b src/core/stodotarget.rb 364
-b src/core/stodotarget.rb 372
-b src/core/stodotarget.rb 373
-b src/core/stodotarget.rb 375
+b src/core/stodotarget.rb 482
+# beginning of 'modify_fields':
+b src/core/stodotarget.rb 240

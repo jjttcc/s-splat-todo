@@ -486,10 +486,13 @@ class STodoTarget
       ! target_list.nil? && target_list.is_a?(Hash)
     }
     @title = spec.title if spec.title
-    @email_spec = spec.email if spec.email
     @content = spec.description if spec.description
     @comment = spec.comment if spec.comment
     @priority = spec.priority if spec.priority
+    if spec.email then
+      @email_spec = spec.email
+      set_email_addrs
+    end
     if spec.parent != nil then
       orig_parent = target_list[self.parent_handle]
       if spec.parent == "" then
