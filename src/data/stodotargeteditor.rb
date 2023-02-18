@@ -54,6 +54,8 @@ class STodoTargetEditor
       'delete'             =>  :delete_target,
       'change_parent'      =>  :change_parent,
       'change_handle'      =>  :change_handle,
+###!!!!!remove:(?)
+      'change_item'        =>  :change_item,
       'remove_descendant'  =>  :remove_descendant,
       'state'              =>  :modify_state,
       'clear_descendants'  =>  :clear_descendants,
@@ -170,6 +172,23 @@ class STodoTargetEditor
       self.target_for[new_handle] = t
       self.change_occurred = true
     end
+  end
+
+  # Change 0 (1?) or more attributes of the item, according to 'options',
+  # with the specified 'handle'.
+###!!!!!remove:(?)
+  def change_item handle, *options
+    assert_precondition("No data change yet") {
+      self.change_occurred == false
+    }
+    assert_precondition("target for #{handle} exists") {
+      ! self.target_for[handle].nil?
+    }
+    assert_precondition("'options' exists") { ! options.nil?  }
+    t = self.target_for[handle]
+$log.warn "change_item: handle, t.handle: #{handle}, #{t.handle}"
+$log.warn "change_item: options: #{options.inspect}"
+exit 42
   end
 
   # Remove item with handle 'dhandle' as descendant of item with handle

@@ -13,6 +13,10 @@ class Memorandum < STodoTarget
 
   ###  Access
 
+  def type
+    self.spec_type
+  end
+
   def time
     result = nil
     if expiration_date != nil

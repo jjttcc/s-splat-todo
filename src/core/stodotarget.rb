@@ -33,6 +33,10 @@ class STodoTarget
 
   ###  Access
 
+  def type
+    self.class.to_s.downcase
+  end
+
   def time
     raise "<time>: descendant class-method implementation required"
   end

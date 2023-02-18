@@ -98,6 +98,16 @@ class STodoManager
     @data_manager.store_targets(self.existing_targets)
   end
 
+  # Ensure that the specified targets are updated in persistent store.
+  # (Make no modifications to any member of 'targets'.)
+  def update_targets(targets)
+    assert_precondition('"targets" not nil') { ! targets.nil?  }
+    assert_precondition('targets exist') {
+      targets.all? { |t| ! self.existing_targets[t.handle].nil? }
+    }
+    @data_manager.store_targets(self.existing_targets)
+  end
+
   private
 
   def editor

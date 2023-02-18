@@ -17,6 +17,8 @@ module SpecTools
   # constants - s*todo-target-types and aliases:
   TASK, APPOINTMENT, NOTE, PROJECT, CORRECTION = 'task', 'appointment',
     'note', 'project', 'correction'
+#!!!!:
+EDIT = 'edit'
   TEMPLATE_TYPE = 'template'
   TASK_ALIAS1, APPOINTMENT_ALIAS1, APPOINTMENT_ALIAS2, NOTE_ALIAS1,
     NOTE_ALIAS2 = 'action', 'meeting', 'event', 'memorandum', 'memo'

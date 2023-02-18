@@ -8,6 +8,10 @@ class ScheduledEvent < STodoTarget
 
   ###  Access
 
+  def type
+    self.spec_type
+  end
+
   def time
     date_time
   end

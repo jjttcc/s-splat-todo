@@ -15,6 +15,7 @@ class TargetBuilder
   # Hash - 'edited_targets' with time change: STodoTarget => <boolean>
   attr_reader :time_changed_for
   attr_reader :spec_collector
+  attr_accessor :existing_targets
 
   def specs
     @spec_collector.specs
@@ -23,7 +24,8 @@ class TargetBuilder
   # Build 'targets'.
   # postcondition: targets != nil
   def build_targets existing_targets
-    @existing_targets = existing_targets
+$log.warn "build_targets - existing_targets: #{existing_targets}"
+    self.existing_targets = existing_targets
     @targets = []
     for s in self.specs do
       begin
@@ -63,8 +65,11 @@ class TargetBuilder
   # @existing_targets[spec.parent].nil?), an exception is thrown after
   # logging an appropriate warning message.
   def target_for spec
+$log.warn "target_for"
     result = nil
     builder = @target_factory_for[spec.type]
+$log.warn "spec: #{spec.inspect}"
+$log.warn "builder: #{builder.inspect}"
     if builder == nil then
       if spec.type == TEMPLATE_TYPE then
         $log.warn "(Ignoring spec '#{spec.handle}' with '#{spec.type}' type.)"
@@ -74,7 +79,9 @@ class TargetBuilder
       end
     else
       # Build the "target".
+$log.warn "spec: #{spec.inspect}"
       t = builder.call(spec)
+$log.warn "t: #{t.inspect}"
       if t != nil and t.valid? then
         result = t
       elsif t != nil then
@@ -93,6 +100,38 @@ class TargetBuilder
   # @edited_targets.  Return nil to indicate that now new STodoTarget has
   # been created.
   def edit_target(spec)
+    result = nil
+$log.warn "edit_target: spec.handle: #{spec.handle}"
+$log.warn "edit_target: existing_targets.nil?: #{self.existing_targets.nil?}"
+    if self.existing_targets != nil && spec.handle then
+      t = self.existing_targets[spec.handle]
+      if t.type == EDIT then
+        result = t
+      end
+      if t then
+$log.warn "#{t.handle} found"
+        old_time = t.time.clone
+        t.modify_fields(spec, self.existing_targets)
+        if old_time != t.time then
+          @time_changed_for[t] = true
+        end
+$log.warn "edit_target: edited_targets.count: #{self.edited_targets.count}"
+        @edited_targets << t
+$log.warn "edit_target: t (#{t.handle}) added to @edited_targets"
+$log.warn "edit_target: edited_targets.count: #{self.edited_targets.count}"
+else
+$log.warn "t NOT found"
+      end
+    end
+    result
+  end
+
+  # Edit the target from @existing_targets, if one exists, whose handle
+  # matches 'spec.handle', such that its fields are changed according to
+  # fields that are set (not nil) in 'spec'.  Add the edited target to
+  # @edited_targets.  Return nil to indicate that now new STodoTarget has
+  # been created.
+  def previous__edit_target(spec)
     if @existing_targets != nil && spec.handle then
       tgt_handle = spec.handle
       t = @existing_targets[tgt_handle]
@@ -115,6 +154,8 @@ class TargetBuilder
       NOTE        => lambda do |spec| Memorandum.new(spec) end,
       APPOINTMENT => lambda do |spec| ScheduledEvent.new(spec) end,
       CORRECTION  => lambda do |spec| edit_target(spec) end,
+#!!!!:
+EDIT        => lambda do |spec| edit_target(spec) end,
     }
     # Define "type" aliases.
     @target_factory_for[TASK] = @target_factory_for[TASK_ALIAS1]
