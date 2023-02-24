@@ -1,8 +1,10 @@
+require 'ruby_contracts'
 require 'yaml/store'
 require 'errortools'
 
 class YamlStoreBasedDataManager
   include ErrorTools
+  include Contracts::DSL
 
   LAST_UPDATE_TAG = :last_update
 
@@ -27,8 +29,8 @@ class YamlStoreBasedDataManager
 
   # Back up the database file to the paths in 'backup_paths'.
   # precondition: backup_paths != nil
+  pre 'backup_paths != nil' do |backup_paths| backup_paths != nil end
   def backup_database(backup_paths)
-    assert_precondition('backup_paths != nil') {backup_paths != nil}
     begin
       if backup_paths.empty? then
         $log.warn "No backup paths configured: backup aborted."

@@ -1,6 +1,9 @@
+require 'ruby_contracts'
+
 # Editors of "STodoTarget"s
 class STodoTargetEditor
   include SpecTools, ErrorTools
+  include Contracts::DSL
 
   public
 
@@ -83,13 +86,11 @@ class STodoTargetEditor
   ### Methods for @method_for table
 
   # Delete the target IDd by 'handle'.
+  pre "No data change yet" do self.change_occurred == false end
+  pre "target for 'handle' exists" do |handle|
+    ! self.target_for[handle].nil?
+  end
   def delete_target handle
-    assert_precondition("No data change yet") {
-      self.change_occurred == false
-    }
-    assert_precondition("target for #{handle} exists") {
-      ! self.target_for[handle].nil?
-    }
     t = self.target_for[handle]
     if t.parent_handle != nil then
       # "disown" the parent.
@@ -113,14 +114,12 @@ class STodoTargetEditor
   # 'handle' - i.e., the request is to make the child (phandle) the parent
   # of its own parent (handle), this recursive relationship is not created
   # and a warning message to that effect is logged.
+  pre "No data change yet" do self.change_occurred == false end
+  pre "target for 'handle' exists" do |handle|
+    ! self.target_for[handle].nil?
+  end
+  pre "phandle exists" do |h, phandle| ! phandle.nil?  end
   def change_parent handle, phandle
-    assert_precondition("No data change yet") {
-      self.change_occurred == false
-    }
-    assert_precondition("target for #{handle} exists") {
-      ! self.target_for[handle].nil?
-    }
-    assert_precondition("phandle exists") { ! phandle.nil?  }
     t = self.target_for[handle]
     new_parent = nil
     make_orphan = ! phandle.nil? && phandle.downcase == NO_PARENT
@@ -154,14 +153,18 @@ class STodoTargetEditor
     end
   end
 
-  def change_handle handle, new_handle
-    assert_precondition("No data change yet") {
-      self.change_occurred == false
-    }
-    assert_precondition("target for #{handle} exists") {
-      ! self.target_for[handle].nil?
-    }
-    assert_precondition("new_handle exists") { ! new_handle.nil?  }
+  pre "No data change yet" do self.change_occurred == false end
+  pre "target for 'handle' exists" do |handle|
+    ! self.target_for[handle].nil?
+  end
+  pre "new_handle exists" do |handle, new_handle|
+    ! new_handle.nil?
+  end
+  post "target's handle set to 'new_handle'" do |result, handle, new_handle|
+    ! self.target_for[new_handle].nil? &&
+      self.target_for[new_handle].handle == new_handle
+  end
+  def change_handle(handle, new_handle)
     if target_for[new_handle] then
       $log.warn(new_handle_in_use_msg(handle, new_handle))
     else
@@ -186,22 +189,17 @@ class STodoTargetEditor
     }
     assert_precondition("'options' exists") { ! options.nil?  }
     t = self.target_for[handle]
-$log.warn "change_item: handle, t.handle: #{handle}, #{t.handle}"
-$log.warn "change_item: options: #{options.inspect}"
-exit 42
   end
 
   # Remove item with handle 'dhandle' as descendant of item with handle
   # 'handle' - so that it is no longer a descendant - and delete it - that
   # is, remove it from the database of stored items.
+  pre "No data change yet" do self.change_occurred == false end
+  pre "target for 'handle' exists" do |handle, dh|
+    ! self.target_for[handle].nil?
+  end
+  pre "'dhandle' exists" do |handle, dhandle| ! dhandle.nil?  end
   def remove_descendant handle, dhandle
-    assert_precondition("No data change yet") {
-      self.change_occurred == false
-    }
-    assert_precondition("target for #{handle} exists") {
-      ! self.target_for[handle].nil?
-    }
-    assert_precondition("dhandle exists") { ! dhandle.nil?  }
     t = target_for[handle]
     t.remove_descendant dhandle
     if ! t.last_removed_descendant.nil? then
@@ -215,10 +213,8 @@ exit 42
 
   # Clear (delete) all of the specified target's (via 'handle')
   # descendants.
+  pre "No data change yet" do self.change_occurred == false end
   def clear_descendants handle_spec
-    assert_precondition("No data change yet") {
-      self.change_occurred == false
-    }
     hspec_components = handle_spec.split(/#{DEFAULT_COMPONENT_SEPARATOR}/)
     handle = hspec_components[0]
     exceptions = hspec_components[1 .. -1]
@@ -239,16 +235,15 @@ exit 42
   # Create a new STodoTarget descendant that is a clone (minus any children
   # or parent) of the item with handle 'orig_handle' and give the new item
   # the handle 'new_handle'.
+  pre "No data change yet" do self.change_occurred == false
+  end
+  pre "target for 'orig_handle' exists" do |orig_handle|
+    ! self.target_for[orig_handle].nil?
+  end
+  pre "new_handle exists" do |oh, new_handle|
+    ! new_handle.nil? && ! new_handle.empty?
+  end
   def make_clone orig_handle, new_handle
-    assert_precondition("No data change yet") {
-      self.change_occurred == false
-    }
-    assert_precondition("target for #{orig_handle} exists") {
-      ! self.target_for[orig_handle].nil?
-    }
-    assert_precondition("new_handle exists") {
-      ! new_handle.nil? && ! new_handle.empty?
-    }
     if target_for[new_handle].nil? then
       t = self.target_for[orig_handle]
       clone = t.clone
@@ -265,10 +260,8 @@ exit 42
   CANCEL, RESUME, FINISH, SUSPEND = 'cancel', 'resume', 'finish', 'suspend'
 
   # Change the state of the target IDd by 'handle' to 'state'
+  pre "No data change yet" do self.change_occurred == false end
   def modify_state handle, state
-    assert_precondition("No data change yet") {
-      self.change_occurred == false
-    }
     t = @target_for[handle]
     if t != nil then
       execute_guarded_state_change(t, state)

@@ -1,0 +1,38 @@
+## To be run from /home/development/jtc/s-todo
+# (Note: Using the class name in a (set) break(point) command doesn't seem
+# to work.)
+config set no_color true
+# some "tools":
+eval def ccount(o=self) ; puts o.children.count end
+eval def ccnt(o=self) ; ccount(o) end
+eval def sh; puts self.handle end
+eval def iv(o=self) ; puts o.instance_variables end
+# instance variable value (e.g.: ivg(:@foo, obj)):
+eval def ivg(name, o=self) ; o.instance_variable_get(name) end
+# puts instance variable value (e.g.: pivg(:@foo, obj))::
+eval def pivg(name, o=self) ; puts o.instance_variable_get(name) end
+eval def pmeth(o=self) ; puts o.public_methods end
+# like pmeth, but don'w show inherited methods:
+eval def pmetho(o=self) ; puts o.public_methods(false) end
+
+b src/main/stodo-mgmt.rb 11
+b src/main/stodo-mgmt.rb 14
+b src/main/stodo-mgmt.rb 29
+b src/main/stodo-mgmt.rb 38
+b src/main/stodo-mgmt.rb 45
+b src/main/stodo-mgmt.rb 47
+b src/coordination/targeteditor.rb 21
+b src/coordination/targeteditor.rb 25
+b src/coordination/targeteditor.rb 47
+# edit_target, first line:
+b src/coordination/targetbuilder.rb 89
+# edit_target, first line:
+b src/coordination/stodomanager.rb 73
+# update_targets:
+b src/coordination/stodomanager.rb 104
+# beginning of 'main_modify_fields':
+b src/core/stodotarget.rb 486
+# beginning of 'modify_fields':
+b src/core/stodotarget.rb 244
+#b src/coordination/templateoptions.rb 38
+#b src/coordination/templateoptions.rb 77

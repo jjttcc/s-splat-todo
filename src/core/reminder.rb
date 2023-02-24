@@ -1,3 +1,4 @@
+require 'ruby_contracts'
 require 'errortools'
 require 'postconditionerror'
 require 'timetools'
@@ -6,6 +7,7 @@ require 'timetools'
 # a client/user of an event or occurrence scheduled for that date/time
 class Reminder
   include ErrorTools, TimeTools
+  include Contracts::DSL
 
   public
 
@@ -51,8 +53,8 @@ class Reminder
   # Mark the Reminder as triggered - i.e., that is_due? was true and the
   # Reminder was used for a notification.
   # postcondition: not is_due?
+  post 'not due' do ! self.is_due? end
   def trigger
-    assert_postcondition('not is_due?') { ! is_due?}
   end
 
   ###  Element change

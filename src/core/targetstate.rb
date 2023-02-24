@@ -1,8 +1,10 @@
+require 'ruby_contracts'
 require 'targetstatevalues'
 
 # Abstraction for the status of a STodoTarget
 class TargetState
   include TargetStateValues
+  include Contracts::DSL
 
   public
 
@@ -22,52 +24,45 @@ class TargetState
       label = value == COMPLETED ? 'completed on' : 'canceled on'
       result += " (#{time_24hour(completion_time)})"
     end
-    assert_invariant {invariant}
     result
   end
 
   ## State transitions
 
   # Change state to CANCELED.
+  pre 'value == IN_PROGRESS || value == SUSPENDED' do
+    self.value == IN_PROGRESS || self.value == SUSPENDED
+  end
+  post 'value == CANCELED' do self.value == CANCELED end
+  post 'invariant' do invariant end
   def cancel
-    assert_precondition('value == IN_PROGRESS || value == SUSPENDED') {
-      value == IN_PROGRESS || value == SUSPENDED
-    }
     @value = CANCELED
     @completion_time = Time.now
-    assert_postcondition('value == CANCELED') {value == CANCELED}
-    assert_invariant {invariant}
   end
 
   # Change state to COMPLETED.
+  pre 'value == IN_PROGRESS' do self.value == IN_PROGRESS end
+  post 'value == COMPLETED' do self.value == COMPLETED end
+  post 'invariant' do invariant end
   def finish
-    assert_precondition('value == IN_PROGRESS') {
-      value == IN_PROGRESS
-    }
     @value = COMPLETED
     @completion_time = Time.now
-    assert_postcondition('value == COMPLETED') {value == COMPLETED}
-    assert_invariant {invariant}
   end
 
   # Change state to SUSPENDED.
+  pre 'value == IN_PROGRESS' do self.value == IN_PROGRESS end
+  post 'value == SUSPENDED' do self.value == SUSPENDED end
+  post 'invariant' do invariant end
   def suspend
-    assert_precondition('value == IN_PROGRESS') {
-      value == IN_PROGRESS
-    }
     @value = SUSPENDED
-    assert_postcondition('value == SUSPENDED') {value == SUSPENDED}
-    assert_invariant {invariant}
   end
 
   # Change state from SUSPENDED to IN_PROGRESS.
+  pre 'value == SUSPENDED' do value == SUSPENDED end
+  post 'value == IN_PROGRESS' do self.value == IN_PROGRESS end
+  post 'invariant' do invariant end
   def resume
-    assert_precondition('value == SUSPENDED') {
-      value == SUSPENDED
-    }
     @value = IN_PROGRESS
-    assert_postcondition('value == IN_PROGRESS') {value == IN_PROGRESS}
-    assert_invariant {invariant}
   end
 
   ### class invariant
@@ -80,10 +75,10 @@ class TargetState
 
   private
 
+  post 'invariant' do invariant end
   def initialize
     @creation_time = Time.now
     @value = IN_PROGRESS
     @completion_time = nil
-    assert_invariant {invariant}
   end
 end

@@ -1,3 +1,4 @@
+require 'ruby_contracts'
 require 'errortools'
 require 'postconditionerror'
 require 'reminder'
@@ -5,6 +6,7 @@ require 'reminder'
 # Reminders that only trigger a notification once
 class OneTimeReminder < Reminder
   include ErrorTools
+  include Contracts::DSL
 
   public
 
@@ -35,18 +37,16 @@ class OneTimeReminder < Reminder
 
   ###  Status setting
 
-  # postcondition: triggered? and not is_due?
+  post 'triggered? and not due' do self.triggered? && ! self.is_due? end
   def trigger
     @triggered = true
-    assert_postcondition('triggered? and not is_due?') {
-      triggered? and not is_due?}
   end
 
   private
 
   # precondition: datetime != nil
+  pre 'datetime set' do |datetime| ! datetime.nil? end
   def initialize(datetime, time_tolerance = DEFAULT_TOLERANCE)
-    assert_precondition {datetime != nil}
     @date_time = datetime
     @time_tolerance = time_tolerance
     @addendum = ""

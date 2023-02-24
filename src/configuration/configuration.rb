@@ -1,3 +1,4 @@
+require 'ruby_contracts'
 require 'logger'
 require 'fileutils'
 require 'yamlstorebaseddatamanager'
@@ -7,6 +8,7 @@ require 'configtools'
 # Configuration settings for the current run
 class Configuration
   include ConfigTools, FileTest, FileUtils
+  include Contracts::DSL
 
   public
 

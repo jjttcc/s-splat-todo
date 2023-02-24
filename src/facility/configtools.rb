@@ -1,6 +1,9 @@
+require 'ruby_contracts'
+
 # configuration-related tools
 module ConfigTools
   include SpecTools
+  include Contracts::DSL
 
   public
 

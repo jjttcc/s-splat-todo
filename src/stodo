@@ -364,11 +364,11 @@ case $1 in
     shift;
     do_edit change_handle $*
     ;;
-  clear_d*)
+  clear?d*)
     shift;
     do_edit clear_descendants $*
     ;;
-  remove_d*)
+  remove?d*)
     shift;
     do_edit remove_descendant $*
     ;;

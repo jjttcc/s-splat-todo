@@ -1,3 +1,4 @@
+require 'ruby_contracts'
 require 'preconditionerror'
 require 'timetools'
 require 'byebug'
@@ -5,6 +6,7 @@ require 'byebug'
 # Manager of reporting-related actions
 class ReportManager
   include TimeTools, ErrorTools
+  include Contracts::DSL
 
   public
 
@@ -199,9 +201,8 @@ class ReportManager
     create_compare_methods
   end
 
+  pre 'target.can_have_children?' do |target| target.can_have_children?  end
   def report_descendants target, ignore_parent = false
-    assert_precondition('target.can_have_children?') {
-      target.can_have_children? }
     # To prevent redundancy, only report descendants for the top-level
     # ancestor.
     if ignore_parent or ! target.has_parent? then

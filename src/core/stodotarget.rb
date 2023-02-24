@@ -1,3 +1,4 @@
+require 'ruby_contracts'
 require 'time'
 require 'set'
 require 'email'
@@ -14,6 +15,7 @@ require 'periodicdateparser'
 # forget about, and/or complete
 class STodoTarget
   include SpecTools, ErrorTools, TimeTools, TargetStateValues
+  include Contracts::DSL
 
   public
 
@@ -101,7 +103,10 @@ class STodoTarget
   end
 
   # All descendants (children, grandchildren, etc.) of self, if any
-  # postcondition: result != nil && (! can_have_children? implies result.empty?)
+  # post!!!!!: result != nil && (! can_have_children? implies result.empty?)
+  post 'valid result' do |result|
+    ! result.nil? && implies(! self.can_have_children?, result.empty?)
+  end
   def descendants
     result = []
     children.each do |t|
@@ -114,22 +119,17 @@ class STodoTarget
   end
 
   # date and time self was completed or canceled
-  # postcondition:
-  #   (state.value == IN_PROGRESS || state.value == SUSPENDED) implies
-  #      result == nil
+  post '"in-progress or suspended" implies result.nil?' do |result|
+    implies(state.value == IN_PROGRESS || state.value == SUSPENDED, result.nil?)
+  end
   def completion_date
     result = state.completion_time
-    assert_postcondition('(state.value == IN_PROGRESS || ' +
-        'state.value == SUSPENDED) implies result == nil') {
-      implies(state.value == IN_PROGRESS || state.value == SUSPENDED,
-              result == nil)
-    }
     result
   end
 
   # The descendant with handle 'handle' - nil if no such descendant
+  pre '! handle.nil?' do |handle| ! handle.nil?  end
   def descendant handle
-    assert_precondition('! handle.nil?') { ! handle.nil?  }
     result = children.find do |o| o.handle == handle end
     if result.nil? then
       children.each do |c|
@@ -144,21 +144,21 @@ class STodoTarget
   end
 
   # All 'children', c, for which c.parent_handle != self.handle
+  post 'result is an Array' do |result| result.is_a?(Array) end
   def emancipated_children
     result = self.children.select do |c|
       c.parent_handle != self.handle
     end
-    assert_postcondition('result is an Array') { result.is_a?(Array) }
     result
   end
 
   # All "emancipated" 'descendants'
+  post 'result is an Array' do |result| result.is_a?(Array) end
   def emancipated_descendants
     result = self.emancipated_children
     self.children.each do |c|
       result.concat(c.emancipated_children)
     end
-    assert_postcondition('result is an Array') { result.is_a?(Array) }
     result
   end
 
@@ -220,11 +220,10 @@ class STodoTarget
   ###  Element change
 
   # Add a STodoTarget object to 'children'.
-  # precondition: t != nil and t.parent_handle == handle
+  pre 't != nil and t.parent_handle == handle' do |t|
+    ! t.nil? && t.parent_handle == handle
+  end
   def add_child(t)
-    assert_precondition('t != nil and t.parent_handle == handle') do
-      t != nil and t.parent_handle == handle
-    end
     @children << t
   end
 
@@ -232,8 +231,8 @@ class STodoTarget
   # `perform_ongoing_actions'.
   # precondition:  n != nil
   # postcondition: notifiers.length == old notifiers.length + 1
+  pre 'n != nil' do |n| n != nil end
   def add_notifier n
-    assert_precondition('n != nil') { n != nil }
     @notifiers << n
   end
 
@@ -253,14 +252,14 @@ class STodoTarget
   # Change self's handle to 'h'.
   # If self.children.count > 0, set each child's parent_handle to 'h', the
   # new handle.
+  pre 'h exists' do |h| ! h.nil? && h.length > 0 end
+  pre 'h != old handle' do |h| h != self.handle end
+  post 'handle == h' do |result, h| self.handle == h end
   def change_handle h
-    assert_precondition('h exists') { ! h.nil? && h.length > 0 }
-    assert_precondition('h != old h') { h != self.handle }
     self.handle = h
     self.children.each do |c|
       c.parent_handle = self.handle
     end
-    assert_postcondition('handle == h') { self.handle == h }
   end
 
   ###  Removal
@@ -298,8 +297,8 @@ class STodoTarget
   # The query 'last_removed_descendant' will reference the newly found and
   # removed descendant; if the descendant is not found, the result of this
   # query will be nil.
+  pre '! handle.nil?' do |handle| ! handle.nil?  end
   def remove_descendant handle
-    assert_precondition('! handle.nil?') { ! handle.nil?  }
     child = children.find do |o| o.handle == handle end
     if child.nil? then
       children.each do |c|
@@ -415,6 +414,7 @@ class STodoTarget
 
   ###  Initialization
 
+  post 'invariant' do invariant end
   def initialize spec
     @valid = true
     # Extra database field/object to allow future expansion
@@ -439,7 +439,6 @@ class STodoTarget
           "be ignored (#{rems})"
       end
     end
-    assert_invariant {invariant}
   end
 
   def set_fields spec
@@ -482,13 +481,19 @@ class STodoTarget
   # NOTE: If self.parent_handle is changed to a non-empty string, but
   # target_list[spec.parent] does not exist (i.e., spec.parent is bogus),
   # an exception will be thrown and the caller should abort the operation.
-  def main_modify_fields spec, target_list
-    assert_precondition('"spec" is valid') {
+  pre '"spec" is valid' do |spec, target_list|
       ! spec.nil? && self.handle == spec.handle
-    }
-    assert_precondition('target_list is valid') {
+  end
+  pre 'target_list is valid' do |spec, target_list|
       ! target_list.nil? && target_list.is_a?(Hash)
-    }
+  end
+  post 'parent set as specified' do |result, spec, target_list|
+    implies(spec.parent == "", self.parent_handle.nil?) &&
+      implies(! spec.parent.nil? && spec.parent.length > 0,
+              self.parent_handle == spec.parent && self.parent_handle ==
+              target_list[self.parent_handle].handle)
+  end
+  def main_modify_fields spec, target_list
     @title = spec.title if spec.title
     @content = spec.description if spec.description
     @comment = spec.comment if spec.comment
@@ -524,12 +529,6 @@ class STodoTarget
     if spec.calendar_ids != nil then
       @calendar_ids = spec.calendar_ids.split(SPEC_FIELD_DELIMITER)
     end
-    assert_postcondition('parent set as specified') {
-      implies(spec.parent == "", self.parent_handle.nil?) &&
-      (! (! spec.parent.nil? && spec.parent.length > 0) ||
-              (self.parent_handle == spec.parent && self.parent_handle ==
-              target_list[self.parent_handle].handle))
-    }
   end
 
   def post_modify_fields spec
@@ -543,10 +542,10 @@ class STodoTarget
   # and spec.reminders is nil, nil is returned to indicate that no
   # reminders were specified (i.e., the original reminders should be kept).
   # precondition: not spec.is_template? implies time != nil
-  def reminders_from_spec spec
-    assert_precondition('not spec.is_template? implies time != nil') {
+  pre 'not spec.is_template? implies time != nil' do |spec|
       implies(! spec.is_template?, time != nil)
-    }
+  end
+  def reminders_from_spec spec
     reminders_string = spec.reminders
     result = []
     if reminders_string != nil then
@@ -591,8 +590,11 @@ class STodoTarget
 
   # Remove 'child' from 'children', set its parent_handle to nil, and
   # "adopt" its children as our (self's) own.
+  pre '! child.nil?' do |child| ! child.nil? end
+  post 'no longer a child' do |result, child| ! children.include?(child) end
+  post 'no children' do |result, child| child.children.count == 0 end
+  post 'no parent' do |result, child| child.parent_handle.nil? end
   def detach child
-    assert_precondition('! child.nil?') { ! child.nil? }
     remove_child child
     its_children = child.children
     its_children.each do |c|
@@ -601,9 +603,6 @@ class STodoTarget
       child.remove_child c
     end
     child.parent_handle = nil
-    assert_postcondition('no longer a child') { ! children.include?(child) }
-    assert_postcondition('no children') { child.children.count == 0 }
-    assert_postcondition('no parent') { child.parent_handle.nil? }
   end
 
   ### Implementation - utilities
@@ -728,12 +727,12 @@ class STodoTarget
   end
 
   # postcondition: result != nil
+  post 'result != nil' do |result| result != nil end
   def raw_email_addrs
     result = []
     if @email_spec then
       result = @email_spec.split(SPEC_FIELD_DELIMITER)
     end
-    assert_postcondition('result != nil') { result != nil }
     result
   end
 
@@ -785,9 +784,9 @@ class STodoTarget
 
   # Additional information, if any, to add to the description
   # postcondition: result != nil
+  post 'result != nil' do |result| result != nil end
   def description_appendix
     result = ""
-    assert_postcondition('result != nil') { result != nil }
     result
   end
 

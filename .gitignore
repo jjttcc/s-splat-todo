@@ -16,3 +16,14 @@ hide*
 /oldspeclib
 .byebug*
 .vimrc
+/doc/*.html
+/doc/*.pdf
+/doc/*.png
+/doc/*/*
+/src/doc/
+/lib/
+/log/
+/bin/
+doc/git-fix
+doc/notes*
+prototyping/

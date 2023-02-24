@@ -1,3 +1,4 @@
+require 'ruby_contracts'
 require 'mailer'
 require 'calendarentry'
 require 'preconditionerror'
@@ -7,6 +8,7 @@ require 'stodotargeteditor'
 # Basic manager of s*todo actions
 class STodoManager
   include ErrorTools
+  include Contracts::DSL
 
   public
 
@@ -36,9 +38,8 @@ class STodoManager
   end
 
   # Perform any "ongoing processing" required for existing_targets.
-  # precondition: existing_targets != nil
+  pre 'existing_targets != nil' do self.existing_targets != nil end
   def perform_ongoing_processing
-    assert_precondition('existing_targets != nil') { existing_targets != nil }
     self.dirty = false
     email = Email.new(mailer)
     existing_targets.values.each do |t|
@@ -100,11 +101,11 @@ class STodoManager
 
   # Ensure that the specified targets are updated in persistent store.
   # (Make no modifications to any member of 'targets'.)
+  pre '"targets" not nil' do |targets| ! targets.nil? end
+  pre 'targets exist' do |targets|
+    targets.all? { |t| ! self.existing_targets[t.handle].nil? }
+  end
   def update_targets(targets)
-    assert_precondition('"targets" not nil') { ! targets.nil?  }
-    assert_precondition('targets exist') {
-      targets.all? { |t| ! self.existing_targets[t.handle].nil? }
-    }
     @data_manager.store_targets(self.existing_targets)
   end
 

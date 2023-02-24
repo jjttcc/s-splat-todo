@@ -1,5 +1,8 @@
+require 'ruby_contracts'
+
 class TemplateOptions
   include SpecTools, ErrorTools
+  include Contracts::DSL
 
   public
 
@@ -19,6 +22,7 @@ class TemplateOptions
 
   DEFAULT_TYPE=APPOINTMENT
 
+  # postcondition: self.parse_error_is_fatal == parse_error_fatal
   def initialize arg_array = ARGV, parse_error_fatal = false
     self.argument_array = arg_array
     self.parse_error_is_fatal = parse_error_fatal
@@ -29,9 +33,6 @@ class TemplateOptions
       process_options
       set_email
     end
-    assert_postcondition('self.parse_error_is_fatal is set') {
-      self.parse_error_is_fatal == parse_error_fatal
-    }
   end
 
   def process_options

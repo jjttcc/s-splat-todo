@@ -1,3 +1,4 @@
+require 'ruby_contracts'
 require 'project'
 require 'scheduledevent'
 require 'memorandum'
@@ -5,6 +6,7 @@ require 'memorandum'
 # Builder of s*todo target objects
 class TargetBuilder
   include SpecTools, ErrorTools
+  include Contracts::DSL
 
   public
 
@@ -22,9 +24,8 @@ class TargetBuilder
   end
 
   # Build 'targets'.
-  # postcondition: targets != nil
+  post '! targets.nil?' do ! self.targets.nil? end
   def build_targets existing_targets
-$log.warn "build_targets - existing_targets: #{existing_targets}"
     self.existing_targets = existing_targets
     @targets = []
     for s in self.specs do
@@ -45,7 +46,6 @@ $log.warn "build_targets - existing_targets: #{existing_targets}"
         $log.warn e
       end
     end
-    assert_postcondition('targets != nil') {! targets.nil? }
   end
 
   private
@@ -64,6 +64,7 @@ $log.warn "build_targets - existing_targets: #{existing_targets}"
   # If spec.parent != nil and spec.parent is invalid (
   # @existing_targets[spec.parent].nil?), an exception is thrown after
   # logging an appropriate warning message.
+  # postcondition: implies(! result.nil?, result.handle == spec.handle)
   def target_for spec
 $log.warn "target_for"
     result = nil
@@ -88,10 +89,6 @@ $log.warn "t: #{t.inspect}"
         $log.warn "#{t.handle} is not valid [#{t}]"
       end
     end
-    assert_postcondition('handle set') {
-      result.nil? || result.handle == spec.handle
-    }
-    result
   end
 
   # Edit the target from @existing_targets, if one exists, whose handle

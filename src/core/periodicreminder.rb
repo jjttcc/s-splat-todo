@@ -1,3 +1,4 @@
+require 'ruby_contracts'
 require 'active_support/time'
 require 'errortools'
 require 'datetimenotificationtools'
@@ -7,6 +8,7 @@ require 'reminder'
 # example: Remind the client every Thursday at 2 pm.
 class PeriodicReminder < Reminder
   include ErrorTools, DateTimeNotificationTools
+  include Contracts::DSL
 
   # date/time after which no more reminder/notifications will be triggered
   attr_reader :ending_date_time
@@ -75,15 +77,14 @@ class PeriodicReminder < Reminder
 
   private
 
+  pre 'valid first and end date/times' do |first_dt, ending_dt|
+        first_dt.is_a?(Time) && ending_dt.is_a?(Time)
+  end
+  pre 'normalized period_type' do |fdt, edt, period_type|
+    normalized_period_type(period_type) != nil
+  end
   def initialize(first_date_time, ending_date_time, period_type,
                  period_count, time_tolerance = DEFAULT_TOLERANCE)
-    assert_precondition(
-      'first_date_time.is_a?(Time) && ending_date_time.is_a?(Time)') {
-        first_date_time.is_a?(Time) && ending_date_time.is_a?(Time)
-    }
-    assert_precondition('normalized_period_type(period_type) != nil') {
-      normalized_period_type(period_type) != nil
-    }
     @date_time = first_date_time
     @ending_date_time = ending_date_time
     @period_type = normalized_period_type(period_type)

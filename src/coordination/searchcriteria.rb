@@ -1,3 +1,4 @@
+require 'ruby_contracts'
 require 'errortools'
 require 'preconditionerror'
 require 'postconditionerror'
@@ -7,7 +8,7 @@ require 'awesome_print'
 # An instance of this class specifies a set of criteria - statuses and/or
 # priorities and/or regexes for matching titles and/or etc.
 class SearchCriteria
-  include ErrorTools
+  include ErrorTools, Contracts::DSL
 
   public
 
@@ -64,8 +65,8 @@ class SearchCriteria
     :description_exprs, :handles
 
   # precondition: datetime != nil
+  pre 'valid arg' do |criteria| criteria != nil && criteria.states != nil end
   def initialize(criteria)
-    assert_precondition {criteria != nil && criteria.states != nil}
     self.states = criteria.states
     self.title_exprs = (criteria.title_exprs.nil?)? []: criteria.title_exprs
     self.handle_exprs = (criteria.handle_exprs.nil?)? []: criteria.handle_exprs
