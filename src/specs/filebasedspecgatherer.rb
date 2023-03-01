@@ -1,13 +1,29 @@
+require 'ruby_contracts'
 require 'stodospec'
 
 # "gatherer" of specifications stored in files
 class FileBasedSpecGatherer
-  include SpecTools
+  include SpecTools, Contracts::DSL
+
+  public
+
+  #####  Access
 
   # the gathered specs, one object per file
   attr_reader :specs
 
+##!!!!This new 'spec_for' stuff should probably be rescinded:
+  # The element of 'specs' whose handle is 'handle'
+  pre 'handle exists' do |handle| ! handle.nil? end
+  def spec_for handle
+    self.specs.find do |spec|
+      spec.handle == handle
+    end
+  end
+
   public
+
+  #####  Basic operations
 
   # Perform any needed "clean up" operations after "gathering" new specs.
   def initial_cleanup new_handle
@@ -18,7 +34,7 @@ class FileBasedSpecGatherer
     @specs.each do |s|
       if new_handle[s.handle] then
         cur_specfile_path = s.input_file_path
-        if File.exists? cur_specfile_path then
+        if File.exist? cur_specfile_path then
           archive_spec_file(cur_specfile_path)
         end
       end
@@ -45,7 +61,7 @@ class FileBasedSpecGatherer
       path = spec_path + File::SEPARATOR + filename
       if
         File.file?(path) && filename !~ /^\./ then
-        s = spec_for(path)
+        s = new_spec_for(path)
         if s.valid? then
           @specs << s
         else
@@ -56,16 +72,16 @@ class FileBasedSpecGatherer
     end
   end
 
-  def spec_for path
+  def new_spec_for path
     STodoSpec.new(path, @config)
   end
 
   def archive_spec_file source_path
     base_target_path = @config.post_init_spec_path + File::SEPARATOR +
       File.basename(source_path)
-    if File.exists?(base_target_path) then
+    if File.exist?(base_target_path) then
       target_path = "#{base_target_path}" + (rand).to_s[1..-1]
-      while File.exists?(target_path) do
+      while File.exist?(target_path) do
         target_path = "#{base_target_path}" + (rand).to_s[1..-1]
       end
     else

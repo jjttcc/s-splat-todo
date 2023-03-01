@@ -103,7 +103,6 @@ class STodoTarget
   end
 
   # All descendants (children, grandchildren, etc.) of self, if any
-  # post!!!!!: result != nil && (! can_have_children? implies result.empty?)
   post 'valid result' do |result|
     ! result.nil? && implies(! self.can_have_children?, result.empty?)
   end

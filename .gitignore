@@ -27,3 +27,4 @@ hide*
 doc/git-fix
 doc/notes*
 prototyping/
+.env.*

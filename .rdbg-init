@@ -17,5 +17,3 @@ b src/data/stodotargeteditor.rb 164
 b src/core/stodotarget.rb 205
 b src/main/stodo-mgmt.rb 11
 
-eval def ccount(o=self) ; puts o.children.count end
-eval def sh; puts self.handle end

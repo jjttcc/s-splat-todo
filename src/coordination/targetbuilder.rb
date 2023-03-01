@@ -10,6 +10,8 @@ class TargetBuilder
 
   public
 
+  #####  Access
+
   # All targets built from specs: Hash[handle -> STodoTarget]
   attr_reader :targets
   # All targets that were edited by 'build_targets'
@@ -19,20 +21,40 @@ class TargetBuilder
   attr_reader :spec_collector
   attr_accessor :existing_targets
 
-  def specs
-    @spec_collector.specs
+  # Have 'targets' been "prepared"?
+  def targets_prepared?
+    ! self.targets.nil?
   end
 
+  def specs
+    self.spec_collector.specs
+  end
+
+#!!!!This method probably nmeeds to be retracted/removed:
+  def spec_for handle
+    result = self.spec_collector.spec_for handle
+$log.debug "TargetBuilder.spec_for #{handle} class:"
+$log.debug "#{result.class}"
+$log.debug "TargetBuilder.spec_for #{handle} type:"
+$log.debug "#{result.type}"
+$log.debug "TargetBuilder.spec_for - handle #{result.handle}"
+    result
+  end
+
+  #####  Basic operations
+
   # Build 'targets'.
+  pre '"existing_targets" set' do ! self.existing_targets.nil? end
   post '! targets.nil?' do ! self.targets.nil? end
-  def build_targets existing_targets
-    self.existing_targets = existing_targets
-    @targets = []
+  def build_targets
+    if ! targets_prepared? then
+      prepare_targets
+    end
     for s in self.specs do
       begin
         t = target_for(s)
         if t != nil then
-          @targets << t
+          self.targets << t
         else
           msg = "nil target for spec: #{s.handle} (type #{s.type})"
           if s.type == CORRECTION || s.type == TEMPLATE_TYPE then
@@ -42,14 +64,24 @@ class TargetBuilder
         end
       rescue Exception => e
         # Processing of 't' caused an exception, so it will not be added to
-        # @targets and we'll continue to the next iteration.
+        # self.targets and we'll continue to the next iteration.
         $log.warn e
       end
     end
   end
 
+  ##### Public hook methods
+
+  post 'targets exist' do ! self.targets.nil? end
+  def prepare_targets
+    self.targets = []   # redefine if needed
+  end
+
   private
 
+  attr_writer :targets
+
+  post 'targets.nil?' do self.targets.nil? end
   def initialize spec_collector
     @spec_collector = spec_collector
     @edited_targets = []
@@ -66,11 +98,10 @@ class TargetBuilder
   # logging an appropriate warning message.
   # postcondition: implies(! result.nil?, result.handle == spec.handle)
   def target_for spec
-$log.warn "target_for"
     result = nil
-    builder = @target_factory_for[spec.type]
-$log.warn "spec: #{spec.inspect}"
-$log.warn "builder: #{builder.inspect}"
+    builder = @target_factory_for[builder_key spec]
+$log.warn "[t_for] spec: #{spec.inspect}"
+$log.warn "[t_for] builder: #{builder.inspect}"
     if builder == nil then
       if spec.type == TEMPLATE_TYPE then
         $log.warn "(Ignoring spec '#{spec.handle}' with '#{spec.type}' type.)"
@@ -80,15 +111,20 @@ $log.warn "builder: #{builder.inspect}"
       end
     else
       # Build the "target".
-$log.warn "spec: #{spec.inspect}"
+$log.warn "[t_for] spec: #{spec.inspect}"
       t = builder.call(spec)
-$log.warn "t: #{t.inspect}"
+$log.warn "[t_for] t: #{t.inspect}"
+$log.warn "[t_for] result[0] #{result}"
       if t != nil and t.valid? then
         result = t
+$log.warn "[t_for] result[1] #{result}"
       elsif t != nil then
         $log.warn "#{t.handle} is not valid [#{t}]"
+$log.warn "[t_for] result[1] #{result}"
       end
     end
+$log.warn "[t_for] result[2] #{result.inspect}"
+    result
   end
 
   # Edit the target from @existing_targets, if one exists, whose handle
@@ -103,6 +139,8 @@ $log.warn "edit_target: existing_targets.nil?: #{self.existing_targets.nil?}"
     if self.existing_targets != nil && spec.handle then
       t = self.existing_targets[spec.handle]
       if t.type == EDIT then
+#!!!!!temporary experiment:
+#!!!      if true || t.type == EDIT then
         result = t
       end
       if t then
@@ -116,11 +154,13 @@ $log.warn "edit_target: edited_targets.count: #{self.edited_targets.count}"
         @edited_targets << t
 $log.warn "edit_target: t (#{t.handle}) added to @edited_targets"
 $log.warn "edit_target: edited_targets.count: #{self.edited_targets.count}"
-else
+      else
 $log.warn "t NOT found"
       end
     end
+####!!!!Note: This stuff is in flux!!!!
     result
+nil
   end
 
   # Edit the target from @existing_targets, if one exists, whose handle
@@ -160,6 +200,18 @@ EDIT        => lambda do |spec| edit_target(spec) end,
     @target_factory_for[NOTE_ALIAS2] = @target_factory_for[NOTE]
     @target_factory_for[APPOINTMENT_ALIAS1] = @target_factory_for[APPOINTMENT]
     @target_factory_for[APPOINTMENT_ALIAS2] = @target_factory_for[APPOINTMENT]
+  end
+
+  ##### Hook methods
+
+  post 'targets exist' do ! self.targets.nil? end
+  def prepare_targets
+    self.targets = []   # redefine if needed
+  end
+
+  # key for Proc/builder
+  def builder_key spec
+    spec.type
   end
 
 end

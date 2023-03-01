@@ -12,8 +12,7 @@ if ARGV.length > 1 then
   manager = STodoManager.new Configuration.new
   command = ARGV[0]; arguments = ARGV[1..-1]
   case command
-  when /ch.*par/, /clone/, /remove_d/, /ch.*han/, /zhznge_/  # two+-arg commands
-###!!!!!^^^
+  when /ch.*par/, /clone/, /remove_d/, /ch.*han/  # two+-arg commands
     handle = arguments[0]
     command_and_args = [command, arguments[1..-1]].flatten
     if command_and_args.count < 2 then
@@ -25,13 +24,15 @@ if ARGV.length > 1 then
     require 'templatetargetbuilder'
     require 'templateoptions'
     target_builder = TemplateTargetBuilder.new(
-      TemplateOptions.new arguments, true)
-    manager.add_new_targets(target_builder.targets)
-  when /change/
-    require 'templatetargetbuilder'
+      TemplateOptions.new(arguments, true))
+    manager.target_builder = target_builder
+    manager.add_new_targets
+  when /change*/
+    require 'targeteditor'
     require 'templateoptions'
     handle = arguments[0]
 $log.warn "arguments: #{arguments}, handle: #{handle}"
+    # Adapt to the expected arg/options format (i.e.: '-h <handle'):
     arguments.unshift '-h'
 $log.warn "mgr.existing_targets.count: #{manager.existing_targets.count}"
 ##!!!don't need this, perhaps:
@@ -42,9 +43,10 @@ $log.warn "t.type: #{t.type}"
 #!!!old:    arguments.unshift SpecTools::CORRECTION
     arguments.unshift SpecTools::EDIT
 $log.warn "arguments: #{arguments}"
-    target_builder = TemplateTargetBuilder.new(
+    target_editor = TargetEditor.new(
       TemplateOptions.new(arguments, true), manager.existing_targets)
-    manager.update_targets(target_builder.targets)
+    manager.target_builder = target_editor
+    manager.update_targets
   else
     # Iterate over item handles:
     arguments.each do |h|

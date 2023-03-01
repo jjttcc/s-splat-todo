@@ -50,6 +50,9 @@ class Configuration
     set_config_vars settings
     @test_run = ENV[STTESTRUN] != nil
     @data_manager = YamlStoreBasedDataManager.new(data_path, user)
+$log.warn "spec_path: #{spec_path}"
+$log.warn "ST_CONFIG_PATH: #{ENV[ST_CONFIG_PATH]}"
+$log.warn "data_path: #{data_path}"
   end
 
   def set_config_vars settings
@@ -69,7 +72,7 @@ class Configuration
   end
 
   def setup_config_path
-    if not exists? CONFIG_DIR_PATH then
+    if not exist? CONFIG_DIR_PATH then
       begin
         mkdir_p CONFIG_DIR_PATH
       rescue Exception => e
@@ -77,7 +80,7 @@ class Configuration
           "created [#{e}]"
       end
     end
-    if not exists? CONFIG_FILE_PATH then
+    if not exist? CONFIG_FILE_PATH then
       begin
         f = File.open(CONFIG_FILE_PATH, 'w')
       rescue Exception => e
@@ -117,7 +120,7 @@ class Configuration
         errors << "Path not set for '#{pname}'"
       else
         if not File.readable?(p) then
-          if not File.exists?(p) then
+          if not File.exist?(p) then
             errors << "File '#{p}' does not exist."
           else
             errors << "File '#{p}' does is not readable."

@@ -252,13 +252,12 @@ report_help() {
 
 add_help() {
   local s='     '
-  echo -e "Usage: $progname add [<type>] [options]"
+  echo -e "Usage: $progname add <type> -h <handle> [other-options]"
   echo -e "Where <type> is one of:\c"
   echo -e " task, memo, appointment (or event), project"
   echo -e "(If <type> is not specified, assume 'task'.)"
-  echo -e "\nOptions:"
+  echo -e "\nOther-options:"
   echo -e "  -t <title> $s     use <title> as the Title"
-  echo -e "  -h <handle> $s    use <handle> as the Handle"
   echo -e "  -d <desc> $s      use <desc> as the Description"
   echo -e "  -c <cat>... $s    use <cat>... as the Category/Categories"
   echo -e "  -e <email> $s     use <email> as the Email address"

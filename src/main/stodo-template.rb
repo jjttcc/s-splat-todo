@@ -10,4 +10,5 @@ include SpecTools
 
 target_builder = TemplateTargetBuilder.new TemplateOptions.new
 manager = STodoManager.new Configuration.new
-manager.output_template target_builder
+manager.target_builder = target_builder
+manager.output_template

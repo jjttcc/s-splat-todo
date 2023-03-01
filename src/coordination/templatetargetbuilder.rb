@@ -4,44 +4,28 @@ require 'stubbedspec'
 # Builder of "template" s*todo target objects
 class TemplateTargetBuilder < TargetBuilder
 
+  public
+
+  def prepare_targets
+    self.targets = []
+    t = target_for(spec)
+$log.warn "[TTB::prepare_targets] spec.class: #{spec.class}"
+$log.warn "[TTB::prepare_targets] spec: #{spec}"
+$log.warn "[TTB::prepare_targets] t: #{t.class}"
+    if t != nil then
+$log.warn "[TTB::prepare_targets] t: #{t.handle}"
+      self.targets << t
+    end
+  end
+
   private
 
-  def previous__initialize options
-    spec = StubbedSpec.new options
-    init_target_factory
-    @targets = []
-    t = target_for(spec)
-    if t != nil then
-      @targets << t
-    end
-  end
+  attr_accessor :spec
 
-#!!![new version]:
-  def initialize options, tmp_exist_tgts = nil
-    self.existing_targets = tmp_exist_tgts
-    spec = StubbedSpec.new options
+  def initialize options, the_existing_targets = nil
+    self.existing_targets = the_existing_targets
+    self.spec = StubbedSpec.new options
     super nil
-    @targets = []
-    t = target_for(spec)
-    if t != nil then
-      @targets << t
-    end
-  end
-#!!![end new version!!!]
-
-  def work_initialize_v1 options,
-#!!!:
-tmp_exit_tgts = nil
-self.existing_targets = tmp_exit_tgts
-@time_changed_for = {}
-#!!![end newstuff!!!]
-    spec = StubbedSpec.new options
-    init_target_factory
-    @targets = []
-    t = target_for(spec)
-    if t != nil then
-      @targets << t
-    end
   end
 
 end

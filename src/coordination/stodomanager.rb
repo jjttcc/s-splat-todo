@@ -5,18 +5,41 @@ require 'preconditionerror'
 require 'targetbuilder'
 require 'stodotargeteditor'
 
-# Basic manager of s*todo actions
+# Basic manager of STodoTarget objects - creating, modifying/editing,
+# deleting, storing, etc.
 class STodoManager
-  include ErrorTools
-  include Contracts::DSL
+  include ErrorTools, Contracts::DSL
 
   public
 
-  attr_reader :existing_targets, :mailer, :calendar, :configuration
+  ###  Access
+
+  attr_reader :configuration, :mailer, :calendar
+
+  # "STodoTarget"s that are currently stored in the database
+  attr_reader :existing_targets
+
+  # Object responsible for building and/or updating STodoTarget objects
+  attr_accessor :target_builder
+
+  # Does persistent data need updating (has it been changed)?
   attr_accessor :dirty
 
-  # Call `initiate' on all new or edited targets.
+  # Has any required preparation been completed before calling
+  # 'perform_initial_processing' or 'perform_ongoing_processing'?
+  def preparation_completed
+    self.target_builder.nil? || ! self.target_builder.targets.nil?
+  end
+
+  ###  Basic operations
+
+  # Call `initiate' on all new or edited targets and save the results to
+  # persistent store.
+  pre 'target_builder set' do ! self.target_builder.nil? end
   def perform_initial_processing
+    if ! preparation_completed then
+      prepare_for_processing
+    end
     if processing_required then
       email = Email.new(mailer)
       @new_targets.values.each do |t|
@@ -24,15 +47,15 @@ class STodoManager
         t.initiate(calendar, self)
       end
       @edited_targets.values.each do |t|
-        if @target_builder.time_changed_for[t] then
+        if self.target_builder.time_changed_for[t] then
           t.initiate(calendar, self)
         end
       end
-      @target_builder.spec_collector.initial_cleanup @new_targets
+      self.target_builder.spec_collector.initial_cleanup @new_targets
       if ! @edited_targets.empty? then
-        @target_builder.spec_collector.initial_cleanup @edited_targets
+        self.target_builder.spec_collector.initial_cleanup @edited_targets
       end
-      all_targets = existing_targets.merge(@new_targets)
+      all_targets = self.existing_targets.merge(@new_targets)
       @data_manager.store_targets(all_targets)
     end
   end
@@ -40,108 +63,171 @@ class STodoManager
   # Perform any "ongoing processing" required for existing_targets.
   pre 'existing_targets != nil' do self.existing_targets != nil end
   def perform_ongoing_processing
+    if ! preparation_completed then
+      prepare_for_processing
+    end
     self.dirty = false
     email = Email.new(mailer)
-    existing_targets.values.each do |t|
+    self.existing_targets.values.each do |t|
       t.add_notifier(email)
       # Pass 'self' to allow t to set 'dirty':
       t.perform_ongoing_actions(self)
     end
     if dirty then
-      @data_manager.store_targets(existing_targets)
+      @data_manager.store_targets(self.existing_targets)
     end
   end
 
-  def output_template target_builder
+  # Output a "template" for each element of 'target_builder.targets'.
+  pre 'target_builder set' do ! self.target_builder.nil? end
+  def output_template
+    if ! target_builder.targets_prepared? then
+      target_builder.prepare_targets
+    end
     tgts = target_builder.targets
+$log.warn "tgts.nil: #{tgts.nil?}"
+$log.warn "tgts: #{tgts}"
     if tgts and ! tgts.empty? then
       tgts.each do |t|
         puts t.to_s(true)
       end
-      if existing_targets then
-        cand_parents = existing_targets.values.select {|t| t.can_have_children?}
+      if self.existing_targets then
+        cand_parents = self.existing_targets.values.select do |t|
+          t.can_have_children?
+        end
         if ! cand_parents.empty? then
           print "#candidate-parents: "
           puts (cand_parents.map {|t| t.handle }).join(', ')
         end
       end
-      puts "#spec-path: #{@configuration.spec_path}"
+      puts "#spec-path: #{self.configuration.spec_path}"
     end
   end
 
   # Perform `command' on the target with handle `handle'.
+  pre 'args valid' do |handle, command|
+    ! handle.nil? && ! command.nil? && ! handle.empty? && ! command.empty?
+  end
   def edit_target(handle, command)
     editor.apply_command(handle, command)
     if editor.last_command_failed then
       $log.error editor.last_failure_message
     else
       if editor.change_occurred then
-        @data_manager.store_targets(existing_targets)
+        @data_manager.store_targets(self.existing_targets)
       end
     end
   end
 
-  # Add the newly-created targets to persistent store.
-  def add_new_targets(targets)
-    targets.each do |t|
-      self.existing_targets[t.handle] = t
-      if ! t.parent_handle.nil? then
-        p = self.existing_targets[t.parent_handle]
-        if p then
-          p.add_child t
-        else
-          $log.warn "invalid parent handle (#{t.parent_handle}) for" \
-            "item #{t.handle} - changing to 'no-parent'"
-          t.parent_handle = nil
+  # Add the newly-created targets specified by target_builder.targets -
+  # to persistent store.
+  pre 'target_builder set' do ! target_builder.nil? end
+  def add_new_targets
+    if ! target_builder.targets_prepared? then
+      target_builder.prepare_targets
+    end
+    targets = target_builder.targets
+    if ! targets.empty? then
+      targets.each do |t|
+        self.existing_targets[t.handle] = t
+        if ! t.parent_handle.nil? then
+          p = self.existing_targets[t.parent_handle]
+          if p then
+            p.add_child t
+          else
+            $log.warn "invalid parent handle (#{t.parent_handle}) for" \
+              "item #{t.handle} - changing to 'no-parent'"
+              t.parent_handle = nil
+          end
         end
       end
+      @data_manager.store_targets(self.existing_targets)
     end
-    @data_manager.store_targets(self.existing_targets)
   end
 
   # Ensure that the specified targets are updated in persistent store.
   # (Make no modifications to any member of 'targets'.)
-  pre '"targets" not nil' do |targets| ! targets.nil? end
-  pre 'targets exist' do |targets|
-    targets.all? { |t| ! self.existing_targets[t.handle].nil? }
-  end
-  def update_targets(targets)
+  pre 'target_builder set' do ! self.target_builder.nil? end
+  def update_targets
+    if ! target_builder.targets_prepared? then
+      target_builder.prepare_targets
+    end
     @data_manager.store_targets(self.existing_targets)
   end
 
   private
 
+  ###    Initialization
+
+  pre  'config exists' do |config| ! config.nil?  end
+  post 'existing_targets set' do ! self.existing_targets.nil? end
+  post 'other attributes set' do
+    ! self.existing_targets.nil?
+  end
+  post 'configuration set' do ! self.configuration.nil? end
+  def initialize config, tgt_builder = nil
+    @data_manager = config.data_manager
+    @existing_targets = @data_manager.restored_targets
+    @mailer = Mailer.new config
+    @calendar = CalendarEntry.new config
+    @configuration = config
+    init_new_targets tgt_builder
+  end
+
   def editor
     if @editor == nil then
-      @editor = STodoTargetEditor.new(existing_targets)
+      @editor = STodoTargetEditor.new(self.existing_targets)
     end
     @editor
   end
 
-  def initialize config = nil, tgt_builder = nil
-    if config != nil then
-      @data_manager = config.data_manager
-      @existing_targets = @data_manager.restored_targets
-      @mailer = Mailer.new config
-      @calendar = CalendarEntry.new config
-      @configuration = config
-    end
-    if tgt_builder != nil then
-      init_new_targets tgt_builder
-    end
+  # Set target-related attributes to initial (empty) value
+  post 'target_builder set' do |tgt_bldr| self.target_builder == tgt_bldr end
+  post 'no targets yet' do
+    self.target_builder.nil? || self.target_builder.targets.nil?
   end
-
+  post 'target-related attributes not nil' do
+    ! (@new_targets.nil? || @edited_targets.nil?)
+  end
+  post 'target-related attributes empty' do
+    @new_targets.empty? && @edited_targets.empty?
+  end
   def init_new_targets tgt_builder
-    new_duphndles = {}
     @new_targets = {}
     @edited_targets = {}
-    @target_builder = tgt_builder
-    @target_builder.build_targets existing_targets
-    tgts = @target_builder.targets
+    self.target_builder = tgt_builder
+  end
+
+  ###    Implementation
+
+  def prepare_for_processing
+    process_targets
+  end
+
+  # Use self.target_builder to process new STodoTargets or edit existing
+  # ones (self.existing_targets), depending on current context/state.
+  # Insert any new STodoTargets created as a result into the @new_targets
+  # hash-table, using the handle as the key.
+  # Insert any existing targets that were edited
+  # (target_builder.edited_targets) into @edited_targets.
+  # Call 'add_child' on each new or edited STodoTarget to ensure that its
+  # parent/child relation is up to date.
+  pre  'target_builder not nil' do ! self.target_builder.nil? end
+  pre  'existing_targets not nil' do ! self.existing_targets.nil? end
+  pre  'other target-related attributes not nil' do
+    ! (@new_targets.nil? || @edited_targets.nil?)
+  end
+  pre  'targets not yet processed' do self.target_builder.targets.nil?  end
+  post 'targets processed' do ! self.target_builder.targets.nil?  end
+  def process_targets
+    self.target_builder.existing_targets = self.existing_targets
+    self.target_builder.build_targets
+    tgts = self.target_builder.targets
+    new_duphndles = {}
     tgts.each do |tgt|
       hndl = tgt.handle
-      if @existing_targets[hndl] != nil then
-        t = @existing_targets[hndl]
+      if self.existing_targets[hndl] != nil then
+        t = self.existing_targets[hndl]
         $log.warn "Handle #{hndl} already exists - cannot process the" +
           " associated #{t.formal_type} - skipping this item."
       else
@@ -158,9 +244,24 @@ class STodoManager
     @new_targets.values.each do |t|
       add_child(t)
     end
-    @target_builder.edited_targets.each do |tgt|
+    self.target_builder.edited_targets.each do |tgt|
       @edited_targets[tgt.handle] = tgt
-      add_child(tgt)
+#!!!!...spec_for doesn't work here:
+      tgt_spec = self.target_builder.spec_for tgt.handle
+#!!!!Actually, it seems to be the case that the add_child below is not
+#!!!!needed and is actualy a mistake/bug
+#!!!!So ... - remove this block?:
+=begin # [remove?]
+      if tgt_spec.nil? then
+        $log.warn "No spec found for target with handle #{tgt.handle}"
+      else
+        if tgt.parent_handle != tgt_spec.parent then
+          add_child(tgt)
+        else
+          $log.debug "(parent for #{tgt.handle} has not changed.)"
+        end
+      end
+=end
     end
   end
 
@@ -185,7 +286,7 @@ class STodoManager
     if p then
       candidate_parent = @new_targets[p]
       if not candidate_parent then
-        candidate_parent = @existing_targets[p]
+        candidate_parent = self.existing_targets[p]
         if candidate_parent then
           $log.debug "#{t.handle}'s parent found among old targets: " +
             "'#{candidate_parent.title}'"

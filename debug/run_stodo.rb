@@ -7,4 +7,8 @@ pwd = ENV["PWD"]
 "src/main/", "src/notification/", "src/specs/", "src/util/"].each do |p|
   $LOAD_PATH.unshift "#{pwd}/#{p}"
 end
+env_args = ENV['dbug_temp_args']
+env_args.split(/ /).each do |a|
+  ARGV << a
+end
 require 'stodo-mgmt.rb'
