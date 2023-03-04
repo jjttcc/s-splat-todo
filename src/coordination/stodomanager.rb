@@ -25,21 +25,18 @@ class STodoManager
   # Does persistent data need updating (has it been changed)?
   attr_accessor :dirty
 
-  # Has any required preparation been completed before calling
-  # 'perform_initial_processing' or 'perform_ongoing_processing'?
-  def preparation_completed
-    self.target_builder.nil? || ! self.target_builder.targets.nil?
-  end
-
   ###  Basic operations
 
-  # Call `initiate' on all new or edited targets and save the results to
-  # persistent store.
+#!!! old:If 'target_builder.targets.nil?', call 'target_builder.process_targets'
+  # Call 'target_builder.process_targets' to carry out any pending
+  # target-based operations (i.e., pending creation of new targets or
+  # pending modification of existing targets).
+  # Call `initiate' on the resulting new or edited targets and save the
+  # results to persistent store.
   pre 'target_builder set' do ! self.target_builder.nil? end
+  pre 'targets nil' do target_builder.targets.nil? end
   def perform_initial_processing
-    if ! preparation_completed then
-      prepare_for_processing
-    end
+    process_targets
     if processing_required then
       email = Email.new(mailer)
       @new_targets.values.each do |t|
@@ -63,9 +60,6 @@ class STodoManager
   # Perform any "ongoing processing" required for existing_targets.
   pre 'existing_targets != nil' do self.existing_targets != nil end
   def perform_ongoing_processing
-    if ! preparation_completed then
-      prepare_for_processing
-    end
     self.dirty = false
     email = Email.new(mailer)
     self.existing_targets.values.each do |t|
@@ -82,7 +76,7 @@ class STodoManager
   pre 'target_builder set' do ! self.target_builder.nil? end
   def output_template
     if ! target_builder.targets_prepared? then
-      target_builder.prepare_targets
+      target_builder.process_targets
     end
     tgts = target_builder.targets
 $log.warn "tgts.nil: #{tgts.nil?}"
@@ -123,12 +117,18 @@ $log.warn "tgts: #{tgts}"
   # to persistent store.
   pre 'target_builder set' do ! target_builder.nil? end
   def add_new_targets
+=begin #!!!!probably obsolete:
     if ! target_builder.targets_prepared? then
       target_builder.prepare_targets
     end
+=end
+#!!!check:
+target_builder.process_targets
     targets = target_builder.targets
+$log.warn "[add_new_targets] # of targets: #{targets.count}"
     if ! targets.empty? then
       targets.each do |t|
+$log.warn "[add_new_targets] adding #{t.handle}"
         self.existing_targets[t.handle] = t
         if ! t.parent_handle.nil? then
           p = self.existing_targets[t.parent_handle]
@@ -152,6 +152,7 @@ $log.warn "tgts: #{tgts}"
     if ! target_builder.targets_prepared? then
       target_builder.prepare_targets
     end
+    target_builder.process_targets
     @data_manager.store_targets(self.existing_targets)
   end
 
@@ -200,10 +201,6 @@ $log.warn "tgts: #{tgts}"
 
   ###    Implementation
 
-  def prepare_for_processing
-    process_targets
-  end
-
   # Use self.target_builder to process new STodoTargets or edit existing
   # ones (self.existing_targets), depending on current context/state.
   # Insert any new STodoTargets created as a result into the @new_targets
@@ -221,15 +218,14 @@ $log.warn "tgts: #{tgts}"
   post 'targets processed' do ! self.target_builder.targets.nil?  end
   def process_targets
     self.target_builder.existing_targets = self.existing_targets
-    self.target_builder.build_targets
+    self.target_builder.process_targets
     tgts = self.target_builder.targets
     new_duphndles = {}
     tgts.each do |tgt|
       hndl = tgt.handle
       if self.existing_targets[hndl] != nil then
         t = self.existing_targets[hndl]
-        $log.warn "Handle #{hndl} already exists - cannot process the" +
-          " associated #{t.formal_type} - skipping this item."
+        $log.debug "Handle #{hndl} already exists."
       else
         if @new_targets[hndl] != nil then
           new_duphndles[hndl] = true
@@ -246,22 +242,6 @@ $log.warn "tgts: #{tgts}"
     end
     self.target_builder.edited_targets.each do |tgt|
       @edited_targets[tgt.handle] = tgt
-#!!!!...spec_for doesn't work here:
-      tgt_spec = self.target_builder.spec_for tgt.handle
-#!!!!Actually, it seems to be the case that the add_child below is not
-#!!!!needed and is actualy a mistake/bug
-#!!!!So ... - remove this block?:
-=begin # [remove?]
-      if tgt_spec.nil? then
-        $log.warn "No spec found for target with handle #{tgt.handle}"
-      else
-        if tgt.parent_handle != tgt_spec.parent then
-          add_child(tgt)
-        else
-          $log.debug "(parent for #{tgt.handle} has not changed.)"
-        end
-      end
-=end
     end
   end
 

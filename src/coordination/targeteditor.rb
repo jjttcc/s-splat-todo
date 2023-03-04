@@ -6,6 +6,7 @@ class TargetEditor < TemplateTargetBuilder
 
   private
 
+#!!!!!Is this still relevant?:
   def builder_key spec
     EDIT
   end

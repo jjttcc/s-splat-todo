@@ -12,15 +12,6 @@ class FileBasedSpecGatherer
   # the gathered specs, one object per file
   attr_reader :specs
 
-##!!!!This new 'spec_for' stuff should probably be rescinded:
-  # The element of 'specs' whose handle is 'handle'
-  pre 'handle exists' do |handle| ! handle.nil? end
-  def spec_for handle
-    self.specs.find do |spec|
-      spec.handle == handle
-    end
-  end
-
   public
 
   #####  Basic operations

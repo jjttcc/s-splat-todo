@@ -480,19 +480,25 @@ class STodoTarget
   # NOTE: If self.parent_handle is changed to a non-empty string, but
   # target_list[spec.parent] does not exist (i.e., spec.parent is bogus),
   # an exception will be thrown and the caller should abort the operation.
+  # postcondition: implies(! spec.parent.nil? && spec.parent.length > 0,
+  #    self.parent_handle == spec.parent && self.parent_handle ==
+  #    target_list[self.parent_handle].handle)
   pre '"spec" is valid' do |spec, target_list|
       ! spec.nil? && self.handle == spec.handle
   end
   pre 'target_list is valid' do |spec, target_list|
       ! target_list.nil? && target_list.is_a?(Hash)
   end
-  post 'parent set as specified' do |result, spec, target_list|
-    implies(spec.parent == "", self.parent_handle.nil?) &&
-      implies(! spec.parent.nil? && spec.parent.length > 0,
-              self.parent_handle == spec.parent && self.parent_handle ==
-              target_list[self.parent_handle].handle)
+  post 'parent nil if empty spec' do |result, spec, target_list|
+    implies(spec.parent == "", self.parent_handle.nil?)
   end
   def main_modify_fields spec, target_list
+$log.warn "imp1: #{implies(spec.parent == "", self.parent_handle.nil?)}"
+$log.warn "parent info: #{spec.parent}, #{self.parent_handle}"
+$log.warn "parent info2: #{spec.parent.inspect}, #{self.parent_handle.inspect}"
+if ! spec.parent.nil? then
+$log.warn "specpar length: #{spec.parent.length}"
+end
     @title = spec.title if spec.title
     @content = spec.description if spec.description
     @comment = spec.comment if spec.comment

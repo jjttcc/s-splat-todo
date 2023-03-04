@@ -6,23 +6,45 @@ config set no_color true
 eval def ccount(o=self) ; puts o.children.count end
 eval def ccnt(o=self) ; ccount(o) end
 eval def sh; puts self.handle end
+eval def iv(o=self) ; puts o.instance_variables end
+# instance variable value (e.g.: ivg(:@foo, obj)):
+eval def ivg(name, o=self) ; o.instance_variable_get(name) end
+# puts instance variable value (e.g.: pivg(:@foo, obj))::
+eval def pivg(name, o=self) ; puts o.instance_variable_get(name) end
+eval def pmeth(o=self) ; puts o.public_methods end
+# like pmeth, but don'w show inherited methods:
+eval def pmetho(o=self) ; puts o.public_methods(false) end
 # tip: to display method parameters and their values, simply: bt
 
 b src/main/stodo-template.rb 11
 b src/main/stodo-template.rb 12
 b src/main/stodo-template.rb 13
+b src/main/stodo-template.rb 14
 # initialize:
-b src/coordination/templatetargetbuilder.rb 10
-b src/coordination/templatetargetbuilder.rb 14
+b src/coordination/templatetargetbuilder.rb 30
+b src/coordination/templatetargetbuilder.rb 32
+b src/coordination/templatetargetbuilder.rb 34
 # initialize:
-b src/coordination/templateoptions.rb 16
-# process_options:
+b src/coordination/targetbuilder.rb 104
+# process_targets:
+b src/coordination/targetbuilder.rb 61
+# new_target:
+b src/coordination/targetbuilder.rb 125
+# edit_target:
+b src/coordination/targetbuilder.rb 161
+# initialize:
 b src/coordination/templateoptions.rb 27
-b src/coordination/templateoptions.rb 67
-b src/coordination/templateoptions.rb 73
+## process_options:
+#b src/coordination/templateoptions.rb 39
+#b src/coordination/templateoptions.rb 67
+## if @type == nil then:
+#b src/coordination/templateoptions.rb 78
+#b src/coordination/templateoptions.rb 88
+# output_template:
+b src/coordination/stodomanager.rb 84
 ## apply_command, line 1:
-#b src/data/stodotargeteditor.rb 13
-#b src/data/stodotargeteditor.rb 27
+b src/data/stodotargeteditor.rb 16
+b src/data/stodotargeteditor.rb 30
 ## delete_target:
 #b src/data/stodotargeteditor.rb 176
 #b src/data/stodotargeteditor.rb 178

@@ -1,0 +1,39 @@
+mapping of "stodo" commands to STodoTarget main create/edit structures:
+
+command       "main" file             "main" class[1]       new_/edit_ target[2]
+-------------------------------------------------------------------------------
+report        report.rb               [not used]
+[old:change        stodo-mgmt.rb           TargetEditor          edit_target]
+change        stodo-mgmt.rb           TemplateTargetBuilder edit_target
+add           stodo-mgmt.rb           TemplateTargetBuilder new_target
+new           initial-processing.rb   TargetBuilder         both[3]
+chparent      stodo-mgmt.rb           STodoTargetEditor     [NA]
+chhandle      stodo-mgmt.rb           STodoTargetEditor     [NA]
+clone         stodo-mgmt.rb           STodoTargetEditor     [NA]
+remove_d      stodo-mgmt.rb           STodoTargetEditor     [NA]
+notify        ongoing-processing.rb   [not used]            [NA]
+combined      ongoing-processing.rb &
+(combined)    initial-processing.rb   TargetBuilder         new_target
+temp          stodo-template.rb       STodoManager          new_target
+
+
+mapping of "stodo" commands to utility debug functions:
+
+command       function
+--------------------------------------------------------------------------------
+new           rdebug_initp
+temp          rdebug_temp
+...
+
+
+[1] "main" meaning, essentially, the class that does the most/main work
+end
+[2] i.e., uses new_target or edit_target method of TargetBuilder class:
+new_target   -> CREATE_MODE
+edit_target  -> EDIT_MODE
+[3] "new" uses new_target when reading/processing spec files (files
+with STodoTarget specifications that reside in "specpath") - for new
+items - items of type task, memo, appointment, or project; "new" uses
+edit_target when reading/processing spec files for "corrected" items -
+items of type "correction", which specify changes to be applied to
+existing items.

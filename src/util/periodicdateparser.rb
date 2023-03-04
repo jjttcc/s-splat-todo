@@ -38,10 +38,10 @@ class PeriodicDateParser
   # array if 'spec' is not parse-able
   def first_time_period_type_count(spec)
     result = []
-    spec_for = period_spec_table(spec)
-    period_spec = spec_for[PERIOD_SPEC_KEY]
-    datetime_spec = spec_for[DATE_TIME_KEY]
-    period_count = spec_for[PERIOD_COUNT_KEY].to_i
+    time_spec_for = period_spec_table(spec)
+    period_spec = time_spec_for[PERIOD_SPEC_KEY]
+    datetime_spec = time_spec_for[DATE_TIME_KEY]
+    period_count = time_spec_for[PERIOD_COUNT_KEY].to_i
     parser = @time_parser_for[period_spec]
     if parser == nil then
       msg = "Could not parse date/time spec: #{spec}"
