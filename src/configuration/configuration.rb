@@ -50,9 +50,6 @@ class Configuration
     set_config_vars settings
     @test_run = ENV[STTESTRUN] != nil
     @data_manager = YamlStoreBasedDataManager.new(data_path, user)
-$log.warn "spec_path: #{spec_path}"
-$log.warn "ST_CONFIG_PATH: #{ENV[ST_CONFIG_PATH]}"
-$log.warn "data_path: #{data_path}"
   end
 
   def set_config_vars settings

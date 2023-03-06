@@ -32,13 +32,11 @@ if ARGV.length > 1 then
     require 'targeteditor'
     require 'templateoptions'
     handle = arguments[0]
-$log.warn "arguments: #{arguments}, handle: #{handle}"
-    # Adapt to the expected arg/options format (i.e.: '-h <handle'):
+    $log.debug "arguments: #{arguments}, handle: #{handle}"
+    # unshift: Adapt to the expected arg/options format (i.e.: '-h <handle'):
     arguments.unshift '-h'
-$log.warn "mgr.existing_targets.count: #{manager.existing_targets.count}"
-    arguments.unshift SpecTools::EDIT
-$log.warn "arguments: #{arguments}"
-#!!!!remove:    target_editor = TargetEditor.new(
+    arguments.unshift SpecTools::EDIT   # (the 'type' argument)
+    $log.debug "arguments: #{arguments}"
     target_editor = TemplateTargetBuilder.new(
       TemplateOptions.new(arguments, true), manager.existing_targets)
     manager.target_builder = target_editor

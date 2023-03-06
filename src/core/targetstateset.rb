@@ -96,9 +96,6 @@ class TargetStateSet
   # The contents of @states, but with non-word characters (such as '-')
   # removed
   def cleaned_states
-#!!!!!after ensuring that this line does not change the output - remove it:
-#!!!!!or, if it does change the output to an incorrect result, put it back in:
-#@states.map {|s| s.gsub(/[\W_]/, "")}
     result = {}
     @states.each do |s|
       result[s.gsub(/[\W_]/, "")] = s

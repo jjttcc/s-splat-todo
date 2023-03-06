@@ -13,19 +13,6 @@ class TemplateTargetBuilder < TargetBuilder
     self.processing_mode = m
   end
 
-#!!!!remove asap:
-  def obsolete_perhaps__prepare_targets
-    self.targets = []
-    t = target_for(spec)
-$log.warn "[TTB::prepare_targets] spec.class: #{spec.class}"
-$log.warn "[TTB::prepare_targets] spec: #{spec}"
-$log.warn "[TTB::prepare_targets] t: #{t.class}"
-    if t != nil then
-$log.warn "[TTB::prepare_targets] t: #{t.handle}"
-      self.targets << t
-    end
-  end
-
   def specs
     [self.spec]
   end
@@ -41,7 +28,6 @@ $log.warn "[TTB::prepare_targets] t: #{t.handle}"
     self.spec = StubbedSpec.new options
     super nil
     # (override creation-mode setting in parent:)
-#!!!![to-do: check if this is the right mode]:
     self.processing_mode = EDIT_MODE
   end
 

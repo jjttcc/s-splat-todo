@@ -493,12 +493,6 @@ class STodoTarget
     implies(spec.parent == "", self.parent_handle.nil?)
   end
   def main_modify_fields spec, target_list
-$log.warn "imp1: #{implies(spec.parent == "", self.parent_handle.nil?)}"
-$log.warn "parent info: #{spec.parent}, #{self.parent_handle}"
-$log.warn "parent info2: #{spec.parent.inspect}, #{self.parent_handle.inspect}"
-if ! spec.parent.nil? then
-$log.warn "specpar length: #{spec.parent.length}"
-end
     @title = spec.title if spec.title
     @content = spec.description if spec.description
     @comment = spec.comment if spec.comment

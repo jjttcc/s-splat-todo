@@ -1,0 +1,97 @@
+#!/bin/bash
+
+init_tools() {
+  no_h=false
+}
+
+# For each environment variable v in: ST_HANDLE, ; do
+#   parse v and insert the result into environment variable STODO_OPTS
+# end
+set_opts_from_env() {
+  STODO_OPTS=''
+  if [ "$ST_HANDLE" ]; then
+    if eval $no_h; then
+      STODO_OPTS="$STODO_OPTS '$ST_HANDLE'"
+    else
+      STODO_OPTS="$STODO_OPTS -h '$ST_HANDLE'"
+    fi
+  fi
+  if [ "$ST_TITLE" ]; then
+    STODO_OPTS="$STODO_OPTS -t '$ST_TITLE'"
+  fi
+  if [ "$ST_DESC" ]; then
+    STODO_OPTS="$STODO_OPTS -d '$ST_DESC'"
+  fi
+  if [ "$ST_EMAIL" ]; then
+    STODO_OPTS="$STODO_OPTS -e '$ST_EMAIL'"
+  fi
+  if [ "$ST_PARENT" ]; then
+    STODO_OPTS="$STODO_OPTS -p '$ST_PARENT'"
+  fi
+  if [ "$ST_PRIO" ]; then
+    STODO_OPTS="$STODO_OPTS -pr '$ST_PRIO'"
+  fi
+  if [ "$ST_DTTIME" ]; then
+    STODO_OPTS="$STODO_OPTS -ti '$ST_DTTIME'"
+  fi
+}
+
+handle_exists() {
+  [ "$ST_HANDLE" ]
+}
+
+type_exists() {
+  [ "$ST_TYPE" ]
+}
+
+create() {
+  if ! handle_exists; then
+    echo "create: fatal: ST_HANDLE is not set." >&2
+    return 3
+  fi
+  if ! type_exists; then
+    echo "create: fatal: ST_TYPE is not set." >&2
+    return 4
+  fi
+  set_opts_from_env
+  eval stodo add $ST_TYPE $STODO_OPTS
+}
+
+report() {
+  if ! handle_exists; then
+    echo "report: fatal: ST_HANDLE is not set." >&2
+    return 7
+  fi
+  no_h=true set_opts_from_env
+  eval stodo rep comp $ST_HANDLE
+}
+
+modify() {
+  if ! handle_exists; then
+    echo "modify: fatal: ST_HANDLE is not set." >&2
+    return 5
+  fi
+  no_h=true set_opts_from_env
+  eval stodo change $STODO_OPTS
+}
+
+# Usage: change_state <state-change-cmd> <handle>
+change_state() {
+  if [ $# -lt 2 ]; then
+    echo "change_state: fatal: too few arguments ($*)"
+  fi
+  eval stodo stat $1 $2
+}
+
+# Usage: delete <handle>
+delete() {
+  if [ $# -lt 1 ]; then
+    echo "delete: fatal error: No handle specified."
+    return 27
+  fi
+  if [ "$STODO_KEEP_ARTIFACTS" ]; then
+    return 0
+  fi
+  local handle=$1
+  eval stodo delete $handle
+}

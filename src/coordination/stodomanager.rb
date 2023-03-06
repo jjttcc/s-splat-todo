@@ -27,10 +27,8 @@ class STodoManager
 
   ###  Basic operations
 
-#!!! old:If 'target_builder.targets.nil?', call 'target_builder.process_targets'
-  # Call 'target_builder.process_targets' to carry out any pending
-  # target-based operations (i.e., pending creation of new targets or
-  # pending modification of existing targets).
+  # Process any pending "STodoTarget"s - i.e., those that are specified to
+  # be created and/or existing "STodoTarget"s to be edited.
   # Call `initiate' on the resulting new or edited targets and save the
   # results to persistent store.
   pre 'target_builder set' do ! self.target_builder.nil? end
@@ -57,7 +55,8 @@ class STodoManager
     end
   end
 
-  # Perform any "ongoing processing" required for existing_targets.
+  # Perform any "ongoing processing" (i.e., call
+  # STodoTarget#perform_ongoing_processing) required for existing_targets.
   pre 'existing_targets != nil' do self.existing_targets != nil end
   def perform_ongoing_processing
     self.dirty = false
@@ -79,8 +78,6 @@ class STodoManager
       target_builder.process_targets
     end
     tgts = target_builder.targets
-$log.warn "tgts.nil: #{tgts.nil?}"
-$log.warn "tgts: #{tgts}"
     if tgts and ! tgts.empty? then
       tgts.each do |t|
         puts t.to_s(true)
@@ -117,18 +114,11 @@ $log.warn "tgts: #{tgts}"
   # to persistent store.
   pre 'target_builder set' do ! target_builder.nil? end
   def add_new_targets
-=begin #!!!!probably obsolete:
-    if ! target_builder.targets_prepared? then
-      target_builder.prepare_targets
-    end
-=end
-#!!!check:
-target_builder.process_targets
+    target_builder.process_targets
     targets = target_builder.targets
-$log.warn "[add_new_targets] # of targets: #{targets.count}"
     if ! targets.empty? then
       targets.each do |t|
-$log.warn "[add_new_targets] adding #{t.handle}"
+        $log.debug "[add_new_targets] adding #{t.handle}"
         self.existing_targets[t.handle] = t
         if ! t.parent_handle.nil? then
           p = self.existing_targets[t.parent_handle]
