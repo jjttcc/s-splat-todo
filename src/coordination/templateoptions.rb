@@ -90,21 +90,20 @@ class TemplateOptions
   end
 
   def init_attributes
-    @categories = ''
-    @description = ''
-    @email = ''
-    @handle = ''
-    @location = ''
-    @parent = ''
-    @title = ''
-    @calendar_ids = ''
-    @duration = ''
-    @time = ''
-    @priority = ''
-
-    @main_email = ''
-    @initial_email = ''
-    @ongoing_email = ''
+    @categories = nil
+    @description = nil
+    @email = nil
+    @handle = nil
+    @location = nil
+    @parent = nil
+    @title = nil
+    @calendar_ids = nil
+    @duration = nil
+    @time = nil
+    @priority = nil
+    @main_email = nil
+    @initial_email = nil
+    @ongoing_email = nil
   end
 
   def next_arg(i, flag, multiple_args = false)
@@ -124,14 +123,23 @@ class TemplateOptions
 
   # Set 'email' from the various "email" attributes.
   def set_email
-    emails = @main_email.split(SPEC_FIELD_DELIMITER)
-    emails += @initial_email.split(SPEC_FIELD_DELIMITER).map do |e|
-      e + INITIAL_EMAIL_TAG
+    @email = ''; emails = nil
+    if ! @main_email.nil? then
+      emails = @main_email.split(SPEC_FIELD_DELIMITER)
     end
-    emails += @ongoing_email.split(SPEC_FIELD_DELIMITER).map do |e|
-      e + ONGOING_EMAIL_TAG
+    if ! @initial_email.nil? then
+      emails += @initial_email.split(SPEC_FIELD_DELIMITER).map do |e|
+        e + INITIAL_EMAIL_TAG
+      end
     end
-    @email = emails.join(SPEC_FIELD_JOINER)
+    if ! @ongoing_email.nil? then
+      emails += @ongoing_email.split(SPEC_FIELD_DELIMITER).map do |e|
+        e + ONGOING_EMAIL_TAG
+      end
+    end
+    if emails then
+      @email = emails.join(SPEC_FIELD_JOINER)
+    end
   end
 
 end

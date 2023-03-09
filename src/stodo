@@ -28,7 +28,7 @@ mainhelp() {
     echo -e "${longgap}the item is set as parentless."
     echo -e "  chhandle <h> <nh>  change handle of the item with handle <h> \c"
     echo -e "to <nh>"
-    echo -e "  change <h> ...     change attribute(s) of item with handle <h>"
+    echo -e "  change <h>         change attribute(s) of item with handle <h>"
     echo -e "  add       ${gap}     add a new item"
     echo -e "  del <h>...${gap}     delete items with handles <h>, ..."
     echo -e "  clear_d <h>...${gap} clear descendants of items with \c"
@@ -52,6 +52,7 @@ indepth_help() {
     clear*) clear_d_help ;;
     temp*) template_help ;;
     sta*) state_help ;;
+    admin) admin_help ;;
   esac
 }
 
@@ -271,6 +272,19 @@ add_help() {
   echo -e "  -pr <priority> $s use <priority> as the priority"
 }
 
+admin_help() {
+  local gap="    "
+  local lgap="$gap${gap}${gap}${gap}${gap} "
+  echo -e "stodo administration commands:"
+  echo -e "  readopt <h>... ${gap}re-\"adopt\" emancipated descendants \c"
+  echo -e "of the items with\n${lgap}handles <h>..."
+  echo -e "  desc_clean <h>${gap} for each descendant, d, of item with \c"
+  echo -e "handle <h>, if the\n${lgap}handle of d's parent, p, (i.e., \c"
+  echo -e "p claims d as its child)\n${lgap}does not match d.parent_handle \c"
+  echo -e "and d.parent_handle\n${lgap}identifies an existing item that \c"
+  echo -e "claims d as its child,\n${lgap}remove d as one of p's children."
+}
+
 change_help() {
   local s='        '
   echo -e "Usage: $progname change <handle> [options]"
@@ -280,7 +294,6 @@ change_help() {
   echo -e "  -c <cat>... $s replace Categories with <cat[,<cat>...]>"
   echo -e "  -e <email> $s  replace the ongoing Email address with <email>"
   echo -e "  -ti <datetime>       replace the <datetime> with date&time"
-#  echo -e "  -oe <email> $s replace the Ongoing Email address with <email>"
 #  echo -e "  -ci <id>... $s replace the Calendar Ids with <id>..."
   echo -e "  -l <loc> $s    replace the Location (appointment only) with <loc>"
   echo -e "  -du <dur> $s   replace the Duration (appointment only) with <dur>"
@@ -383,6 +396,10 @@ case $1 in
   temp*) shift; make_template "$@"
     ;;
   back*) shift; do_backup $*
+    ;;
+  read*)
+    shift;
+    do_edit re_adopt_descendants $*
     ;;
   *) shift; help $*
     ;;

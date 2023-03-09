@@ -31,9 +31,7 @@ class STodoTarget
   attr_writer :parent_handle
   attr_writer :handle         # Needed for cloning
 
-  public
-
-  ###  Access
+  public    ###  Access
 
   def type
     self.class.to_s.downcase
@@ -161,7 +159,7 @@ class STodoTarget
     result
   end
 
-  ###  Comparison
+  public    ###  Comparison
 
   VERY_LATE = Time.parse('10000-01-01 00:00')
 
@@ -172,7 +170,12 @@ class STodoTarget
     result
   end
 
-  ###  Status report
+  public    ###  Status report
+
+  # Did the last invocation of a method that can change this object's
+  # state, and is documented as updating this query, acutally change the
+  # state of 'self'?
+  attr_reader :last_op_changed_state
 
   # Is self in an active state?
   def active?
@@ -216,7 +219,7 @@ class STodoTarget
     ! target.nil? && target.children.include?(self)
   end
 
-  ###  Element change
+  public    ###  Element change
 
   # Add a STodoTarget object to 'children'.
   pre 't != nil and t.parent_handle == handle' do |t|
@@ -236,8 +239,10 @@ class STodoTarget
   end
 
   # Set self's fields from the non-nil fields in spec.
-  # precondition: ! spec.nil? && self.handle == spec.handle
-  # precondition: ! target_list.nil? && target_list.is_a?(Hash)
+  pre 'valid_spec' do |spec| ! spec.nil? && self.handle == spec.handle end
+  pre 'target_list valid' do |spec, target_list|
+    ! target_list.nil? && target_list.is_a?(Hash)
+  end
   def modify_fields spec, target_list
     main_modify_fields spec, target_list
     post_modify_fields spec
@@ -261,7 +266,7 @@ class STodoTarget
     end
   end
 
-  ###  Removal
+  public    ###  Removal
 
   # Remove child `t' from 'children'.
   def remove_child t
@@ -314,7 +319,7 @@ class STodoTarget
     end
   end
 
-  ###  Duplication
+  public    ###  Duplication
 
   # Called by 'dup':
   # Ensure no 'children' and that 'children' and the other complex object
@@ -352,7 +357,7 @@ class STodoTarget
     end
   end
 
-  ###  Hash-related queries
+  public    ###  Hash-related queries
 
   # hash to allow use in a hashtable (Hash)
   def hash
@@ -368,7 +373,7 @@ class STodoTarget
     self.handle == object.handle
   end
 
-  ###  Basic operations
+  public    ###  Basic operations
 
   # Perform required initial notifications and related actions.
   def initiate calendar, client
@@ -383,7 +388,27 @@ class STodoTarget
     end
   end
 
-  ###  Miscellaneous
+  # Adopt all of self's descendants that are "emancipated" - i.e., for each
+  # descendant, d, of 'self', if d.parent_handle is nil or has a value other
+  # than that of the "parent", p, (who claims the descendant as its child)
+  # set d's parent_handle to p.handle.
+  # If any "emancipated" descendants were found and updated, set
+  # last_op_changed_state to true; otherwise, it is set to false.
+  def adopt_descendants
+    self.last_op_changed_state = false
+    self.children.each do |c|
+      if c.parent_handle != self.handle then
+        c.parent_handle = self.handle
+        self.last_op_changed_state = true
+      end
+      c.adopt_descendants
+      if ! last_op_changed_state then
+        self.last_op_changed_state = c.last_op_changed_state
+      end
+    end
+  end
+
+  public    ###  Miscellaneous
 
   def descendants_report
     tree = TreeNode.new(self)
@@ -392,7 +417,7 @@ class STodoTarget
     end
   end
 
-  ###  Persistence
+  public    ###  Persistence
 
   # Make any needed changes before the persistent attributes are saved.
   def prepare_for_db_write
@@ -409,7 +434,15 @@ class STodoTarget
 
   private
 
-  attr_writer :last_removed_descendant
+  ###  Assignment (<attribute>= methods)
+
+  attr_writer   :last_removed_descendant
+  attr_writer   :last_op_changed_state
+  attr_writer   :title, :content, :priority, :comment, :reminders,
+    :categories, :state
+  attr_accessor :email_spec
+
+  private
 
   ###  Initialization
 
@@ -424,6 +457,7 @@ class STodoTarget
     @notifiers = []
     @state = TargetState.new
     @reminders = []
+    self.last_op_changed_state = false
     if spec.is_template? || time != nil then
       # Build @reminders last because it depends on 'time' (which is an
       # attribute in descendant classes) being set/non-nil.
@@ -493,12 +527,12 @@ class STodoTarget
     implies(spec.parent == "", self.parent_handle.nil?)
   end
   def main_modify_fields spec, target_list
-    @title = spec.title if spec.title
-    @content = spec.description if spec.description
-    @comment = spec.comment if spec.comment
-    @priority = spec.priority if spec.priority
+    guarded_scalar_assignment(:title, spec, nil)
+    guarded_scalar_assignment(:content, spec, :description)
+    guarded_scalar_assignment(:comment, spec)
+    guarded_scalar_assignment(:priority, spec)
     if spec.email then
-      @email_spec = spec.email
+      guarded_scalar_assignment(:email_spec, spec, :email)
       set_email_addrs
     end
     if spec.parent != nil then
@@ -512,12 +546,12 @@ class STodoTarget
         if new_parent.nil? then
           raise invalid_parent_handle_msg(self.handle, self.parent_handle)
         end
-        if orig_parent == nil || orig_parent.handle != spec.parent then
+        if orig_parent.nil? || orig_parent.handle != spec.parent then
           # self's parent has changed - add self to new parent:
           new_parent.add_child(self)
         end
       end
-      if orig_parent != nil && orig_parent.handle != spec.parent then
+      if ! orig_parent.nil? && orig_parent.handle != spec.parent then
         # The parent has been changed, so "un-adopt" the original parent.
         orig_parent.remove_child(self)
       end
@@ -525,7 +559,7 @@ class STodoTarget
     if spec.categories then
       @categories = spec.categories.split(SPEC_FIELD_DELIMITER)
     end
-    if spec.calendar_ids != nil then
+    if spec.calendar_ids then
       @calendar_ids = spec.calendar_ids.split(SPEC_FIELD_DELIMITER)
     end
   end
@@ -604,7 +638,32 @@ class STodoTarget
     child.parent_handle = nil
   end
 
-  ### Implementation - utilities
+  ### Implementation - utilities/tools
+
+  # Assign the specified 'spec' value to the attribute with name
+  # 'attr_name', with the following guard:
+  #    o if the "'spec' value" is nil or is an empty String, abort the
+  #      assignment
+  # If ! alt_name.nil? use it as the name of the "attribute" of 'spec' to
+  # assign to self.<attr_name>; otherwise, use 'spec.<attr_name>'.
+  pre 'args are valid' do |aname, spec| ! aname.nil? && ! spec.nil? end
+  def guarded_scalar_assignment(attr_name, spec, alt_name = nil)
+    if ! alt_name.nil? then
+      specname = alt_name
+    else
+      specname = attr_name
+    end
+    new_value = spec.send(specname)
+    if ! new_value.nil? then
+      newval_valid = true
+      if new_value.is_a?(String) then
+        newval_valid = ! new_value.empty?
+      end
+      if newval_valid then
+        self.send("#{attr_name}=", spec.send(specname))
+      end
+    end
+  end
 
   # Constructed suffix for the subject/title/...
   def subject_suffix(client)

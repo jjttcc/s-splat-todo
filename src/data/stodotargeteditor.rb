@@ -54,13 +54,14 @@ class STodoTargetEditor
 
   def initialize_method_map
     @method_for = {
-      'delete'             =>  :delete_target,
-      'change_parent'      =>  :change_parent,
-      'change_handle'      =>  :change_handle,
-      'remove_descendant'  =>  :remove_descendant,
-      'state'              =>  :modify_state,
-      'clear_descendants'  =>  :clear_descendants,
-      'clone'              =>  :make_clone,
+      'delete'                => :delete_target,
+      'change_parent'         => :change_parent,
+      'change_handle'         => :change_handle,
+      'remove_descendant'     => :remove_descendant,
+      'state'                 => :modify_state,
+      'clear_descendants'     => :clear_descendants,
+      'clone'                 => :make_clone,
+      're_adopt_descendants'  => :re_adopt_descendants,
     }
   end
 
@@ -213,6 +214,19 @@ class STodoTargetEditor
       end
       # (If t's descendant count didn't change, assume no data change.)
       self.change_occurred = orig_desc_count != t.descendants.count
+    end
+  end
+
+  # "re-adopt" all of the specified target's (via 'handle')
+  # descendants.
+  pre "No data change yet" do self.change_occurred == false end
+  def re_adopt_descendants handle
+    t = @target_for[handle]
+    if t != nil then
+      t.adopt_descendants
+      self.change_occurred = t.last_op_changed_state
+    else
+      $log.warn "No item found with handle: '#{handle}'"
     end
   end
 

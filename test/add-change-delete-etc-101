@@ -29,7 +29,7 @@ create_test() {
       }
     }'
   then
-    echo "creation test succeeded"
+    echo "creation test SUCCEEDED"
   else
     echo "creation test failed"
     exit 99
@@ -38,9 +38,9 @@ create_test() {
 
 modify_test() {
   modify $testhndl
-  if report $testhndl|awk 'BEGIN { hitcount = 0; EXPCOUNT = 5 }
+  if report $testhndl|awk 'BEGIN { hitcount = 0; EXPCOUNT = 6 }
     /handle: *'$testhndl'/ {  ++hitcount }
-    /title: *'"$newttl"'/ {  ++hitcount }
+    /title: *'"$newttlregex"'/ {  ++hitcount }
     /email: *'$email'/ {  if (! emailset) { ++hitcount}; ++emailset }
     /description: *'"$desc"'/ {  ++hitcount }
     /type: *'$testtype'/ {  ++hitcount }
@@ -54,7 +54,7 @@ modify_test() {
       }
     }'
   then
-    echo "modification test succeeded"
+    echo "modification test SUCCEEDED"
   else
     echo "modification test failed"
     exit 98
@@ -65,13 +65,13 @@ delete_test() {
   if ! [ "$STODO_KEEP_ARTIFACTS" ]; then
     delete $testhndl
     if report $testhndl|grep -q "$testhndl"; then
-      echo "deletion test failed"
+      echo "deletion test failed in deletion of $testhndl"
       exit 97
     else
-      echo "deletion test succeeded"
+      echo "deletion test SUCCEEDED"
     fi
   else
-      echo "deletion test bypassed"
+      echo "deletion test bypassed (keeping new item with handle: $testhndl"
   fi
 }
 
@@ -90,7 +90,6 @@ set_nvars() {
   ST_TITLE=$newttl
   ST_DESC=$desc
   ST_EMAIL=$email
-  ST_TITLE=$newttl
   ST_PRIO=$newprio
 }
 
@@ -107,6 +106,7 @@ testtype=task
 origttl="original title"
 desc='original, bland description'
 newttl="This is title number $$.  It is long."
+newttlregex="This.is.title.number.*It.is.long"
 newprio=3
 
 parse_args $@

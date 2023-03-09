@@ -29,7 +29,7 @@ create_test() {
       }
     }'
   then
-    echo "creation test succeeded"
+    echo "creation test SUCCEEDED"
   else
     echo "creation test failed"
     exit 99
@@ -50,7 +50,7 @@ state_test() {
       }
     }'
   then
-    echo "state-change test succeeded"
+    echo "state-change test SUCCEEDED"
   else
     echo "state-change test failed"
     exit 96
@@ -61,13 +61,13 @@ delete_test() {
   if ! [ "$STODO_KEEP_ARTIFACTS" ]; then
     delete $testhndl
     if report $testhndl|grep -q "$testhndl"; then
-      echo "deletion test failed"
+      echo "deletion test failed in deletion of $testhndl"
       exit 97
     else
-      echo "deletion test succeeded"
+      echo "deletion test SUCCEEDED"
     fi
   else
-      echo "deletion test bypassed"
+      echo "deletion test bypassed (keeping new item with handle: $testhndl"
   fi
 }
 
@@ -86,7 +86,6 @@ set_nvars() {
   ST_TITLE=$newttl
   ST_DESC=$desc
   ST_EMAIL=$email
-  ST_TITLE=$newttl
   ST_PRIO=$newprio
 }
 

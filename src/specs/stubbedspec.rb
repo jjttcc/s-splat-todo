@@ -11,18 +11,26 @@ class StubbedSpec < STodoSpec
 
   private
 
-  def initialize options
+  def initialize options, use_defaults = true
     @setting_for = {}
     @setting_for[TYPE_KEY] = options.type
-    set_fields options
+    set_fields options, use_defaults
   end
 
-  def set_fields options
-    expire_date = DateTime.now + 30
-    handle = options.handle.empty? ? '<unique-handle1>' : options.handle
-    email = options.email.empty? ? '<template>@<template.org>' : options.email
-    due_time = options.time.empty? ? Time.now.to_s : options.time
-    expire_date = options.time.empty? ? DateTime.now + 30 : options.time
+  def set_fields options, use_defaults
+    handle = options.handle
+    email = options.email
+    due_time = options.time
+    expire_date = options.time
+    if use_defaults then
+      if handle.empty? then handle = '<unique-handle1>' end
+      if email.empty? then email = '<template>@<template.org>' end
+      if due_time.nil? then due_time = Time.now.to_s end
+      if expire_date.nil? then expire_date = DateTime.now + 30 end
+    else
+      if handle.empty? then handle = nil end
+      if email.empty? then email = nil end
+    end
     @setting_for[TITLE_KEY] = options.title
     @setting_for[DESCRIPTION_KEY] = options.description
     @setting_for[HANDLE_KEY] = options.handle

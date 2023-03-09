@@ -94,11 +94,13 @@ class TargetBuilder
     self.targets = []   # redefine if needed
   end
 
+  protected
+
+  attr_accessor :last_edited_target
+
   private
 
   attr_writer :targets, :processing_mode
-
-  attr_accessor :last_edited_target
 
   post 'targets.nil?' do self.targets.nil? end
   # Set self.processing_mode to CREATE_MODE, unless overridden in descendant.

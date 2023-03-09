@@ -37,8 +37,10 @@ if ARGV.length > 1 then
     arguments.unshift '-h'
     arguments.unshift SpecTools::EDIT   # (the 'type' argument)
     $log.debug "arguments: #{arguments}"
-    target_editor = TemplateTargetBuilder.new(
-      TemplateOptions.new(arguments, true), manager.existing_targets)
+    options = TemplateOptions.new(arguments, true)
+    spec = StubbedSpec.new(options, false)  # false => don't use defaults
+    target_editor = TemplateTargetBuilder.new(options,
+                                              manager.existing_targets, spec)
     manager.target_builder = target_editor
     manager.update_targets
   else

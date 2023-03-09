@@ -19,11 +19,13 @@ b src/main/stodo-mgmt.rb 11
 b src/main/stodo-mgmt.rb 14
 b src/main/stodo-mgmt.rb 29
 b src/main/stodo-mgmt.rb 38
-b src/main/stodo-mgmt.rb 45
-b src/main/stodo-mgmt.rb 47
+b src/main/stodo-mgmt.rb 40
+b src/main/stodo-mgmt.rb 42
+b src/main/stodo-mgmt.rb 43
 b src/coordination/targeteditor.rb 21
 b src/coordination/targeteditor.rb 25
 b src/coordination/targeteditor.rb 47
+b src/coordination/templatetargetbuilder.rb 27
 # edit_target, first line:
 b src/coordination/targetbuilder.rb 89
 # edit_target, first line:
@@ -31,8 +33,16 @@ b src/coordination/stodomanager.rb 73
 # update_targets:
 b src/coordination/stodomanager.rb 104
 # beginning of 'main_modify_fields':
-b src/core/stodotarget.rb 486
+b src/core/stodotarget.rb 535
 # beginning of 'modify_fields':
-b src/core/stodotarget.rb 244
-#b src/coordination/templateoptions.rb 38
-#b src/coordination/templateoptions.rb 77
+b src/core/stodotarget.rb 250
+b src/coordination/templateoptions.rb 27
+b src/coordination/templateoptions.rb 39
+b src/coordination/templateoptions.rb 81
+b src/coordination/templateoptions.rb 88
+b src/specs/stubbedspec.rb 15
+b src/specs/stubbedspec.rb 21
+b src/specs/stubbedspec.rb 27
+b src/specs/stubbedspec.rb 32
+b src/specs/stubbedspec.rb 35
+b src/specs/stubbedspec.rb 42
