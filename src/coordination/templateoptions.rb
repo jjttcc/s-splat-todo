@@ -128,11 +128,13 @@ class TemplateOptions
       emails = @main_email.split(SPEC_FIELD_DELIMITER)
     end
     if ! @initial_email.nil? then
+      emails ||= []
       emails += @initial_email.split(SPEC_FIELD_DELIMITER).map do |e|
         e + INITIAL_EMAIL_TAG
       end
     end
     if ! @ongoing_email.nil? then
+      emails ||= []
       emails += @ongoing_email.split(SPEC_FIELD_DELIMITER).map do |e|
         e + ONGOING_EMAIL_TAG
       end

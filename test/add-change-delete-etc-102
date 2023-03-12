@@ -91,12 +91,20 @@ set_nvars() {
 
 basedir=$(dirname $0)
 toolsfile=$basedir/tools
+testenv=$basedir/.env
+if [ -r $testenv -a -f $testenv ]; then
+  . $testenv    # Might set, e.g., ST_EMAIL
+fi
 if [ -r $toolsfile -a -f $toolsfile ]; then
   . $toolsfile
   init_tools
 fi
 
-email="foo@foo.test"
+if [ $"ST_EMAIL" ]; then
+  email="$ST_EMAIL"
+else
+  email="foo@foo.test"
+fi
 testhndl=test-stodo$$
 testtype=task
 origttl="original title"

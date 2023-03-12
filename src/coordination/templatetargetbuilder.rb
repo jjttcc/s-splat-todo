@@ -17,9 +17,11 @@ class TemplateTargetBuilder < TargetBuilder
     [self.spec]
   end
 
-  private
+  protected
 
   attr_accessor :spec
+
+  private
 
   # Initialize with 'options', 'the_existing_targets'.
   # Set processing_mode to EDIT_MODE.

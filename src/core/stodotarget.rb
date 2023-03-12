@@ -408,6 +408,26 @@ class STodoTarget
     end
   end
 
+  # For each child, c, of 'self' if c.parent_handle is either blank or is the
+  # handle of a target other than self, remove c as one of self's children.
+  # If 'recursive', perform this same operation recursively on all of self's
+  # children.
+  def remove_false_children recursive = false
+    self.last_op_changed_state = false
+    self.children.each do |c|
+      if c.parent_handle != self.handle then
+        self.remove_child(c)
+        self.last_op_changed_state = true
+      end
+      if recursive then
+        c.remove_false_children(recursive)
+        if ! last_op_changed_state then
+          self.last_op_changed_state = c.last_op_changed_state
+        end
+      end
+    end
+  end
+
   public    ###  Miscellaneous
 
   def descendants_report

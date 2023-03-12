@@ -275,14 +275,16 @@ add_help() {
 admin_help() {
   local gap="    "
   local lgap="$gap${gap}${gap}${gap}${gap} "
+  local desc_clean_help=\
+"for each child, c, of item, i (whose handle is <h>) if"\
+"\n${lgap}c.parent_handle "\
+"is either blank or identifies an item\n${lgap}other than i, remove c as "\
+"one of i's children. Perform\n${lgap}this same operation recursively on all "\
+"of i's children."
   echo -e "stodo administration commands:"
   echo -e "  readopt <h>... ${gap}re-\"adopt\" emancipated descendants \c"
   echo -e "of the items with\n${lgap}handles <h>..."
-  echo -e "  desc_clean <h>${gap} for each descendant, d, of item with \c"
-  echo -e "handle <h>, if the\n${lgap}handle of d's parent, p, (i.e., \c"
-  echo -e "p claims d as its child)\n${lgap}does not match d.parent_handle \c"
-  echo -e "and d.parent_handle\n${lgap}identifies an existing item that \c"
-  echo -e "claims d as its child,\n${lgap}remove d as one of p's children."
+  echo -e "  desc_clean <h>...  $desc_clean_help"
 }
 
 change_help() {
@@ -400,6 +402,10 @@ case $1 in
   read*)
     shift;
     do_edit re_adopt_descendants $*
+    ;;
+  desc_cl*)
+    shift;
+    do_edit remove_false_children $*
     ;;
   *) shift; help $*
     ;;

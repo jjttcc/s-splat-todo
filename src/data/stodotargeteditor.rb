@@ -62,6 +62,7 @@ class STodoTargetEditor
       'clear_descendants'     => :clear_descendants,
       'clone'                 => :make_clone,
       're_adopt_descendants'  => :re_adopt_descendants,
+      'remove_false_children' => :remove_false_children,
     }
   end
 
@@ -85,6 +86,7 @@ class STodoTargetEditor
   ### Methods for @method_for table
 
   # Delete the target IDd by 'handle'.
+  pre "handle exists" do |handle| ! handle.nil? end
   pre "No data change yet" do self.change_occurred == false end
   pre "target for 'handle' exists" do |handle|
     ! self.target_for[handle].nil?
@@ -113,6 +115,7 @@ class STodoTargetEditor
   # 'handle' - i.e., the request is to make the child (phandle) the parent
   # of its own parent (handle), this recursive relationship is not created
   # and a warning message to that effect is logged.
+  pre "handle exists" do |handle| ! handle.nil? end
   pre "No data change yet" do self.change_occurred == false end
   pre "target for 'handle' exists" do |handle|
     ! self.target_for[handle].nil?
@@ -153,6 +156,7 @@ class STodoTargetEditor
   end
 
   pre "No data change yet" do self.change_occurred == false end
+  pre "handle exists" do |handle| ! handle.nil? end
   pre "target for 'handle' exists" do |handle|
     ! self.target_for[handle].nil?
   end
@@ -179,6 +183,7 @@ class STodoTargetEditor
   # Remove item with handle 'dhandle' as descendant of item with handle
   # 'handle' - so that it is no longer a descendant - and delete it - that
   # is, remove it from the database of stored items.
+  pre "handle exists" do |handle| ! handle.nil? end
   pre "No data change yet" do self.change_occurred == false end
   pre "target for 'handle' exists" do |handle, dh|
     ! self.target_for[handle].nil?
@@ -196,8 +201,9 @@ class STodoTargetEditor
     end
   end
 
-  # Clear (delete) all of the specified target's (via 'handle')
+  # Clear (delete) all of the specified target's (via 'handle_spec')
   # descendants.
+  pre "handle_spec exists" do |handle_spec| ! handle_spec.nil? end
   pre "No data change yet" do self.change_occurred == false end
   def clear_descendants handle_spec
     hspec_components = handle_spec.split(/#{DEFAULT_COMPONENT_SEPARATOR}/)
@@ -219,11 +225,28 @@ class STodoTargetEditor
 
   # "re-adopt" all of the specified target's (via 'handle')
   # descendants.
+  pre "handle exists" do |handle| ! handle.nil? end
   pre "No data change yet" do self.change_occurred == false end
   def re_adopt_descendants handle
     t = @target_for[handle]
     if t != nil then
       t.adopt_descendants
+      self.change_occurred = t.last_op_changed_state
+    else
+      $log.warn "No item found with handle: '#{handle}'"
+    end
+  end
+
+  # For each child, c, of target, t (whose handle is 'handle') if
+  # c.parent_handle is either blank or is the handle of a target other than
+  # t, remove c as one of t's children. Perform this same operation
+  # recursively on all of t's children.
+  pre "handle exists" do |handle| ! handle.nil? end
+  pre "No data change yet" do self.change_occurred == false end
+  def remove_false_children handle
+    t = @target_for[handle]
+    if t != nil then
+      t.remove_false_children(true)
       self.change_occurred = t.last_op_changed_state
     else
       $log.warn "No item found with handle: '#{handle}'"
