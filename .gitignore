@@ -28,4 +28,5 @@ doc/git-fix
 doc/notes*
 prototyping/
 .env.*
+test/.env
 src/util/external-date-examples

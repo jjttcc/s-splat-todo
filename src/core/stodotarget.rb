@@ -231,7 +231,6 @@ class STodoTarget
 
   # Add a notifier to the list of notifiers to be used by `initiate' and
   # `perform_ongoing_actions'.
-  # precondition:  n != nil
   # postcondition: notifiers.length == old notifiers.length + 1
   pre 'n != nil' do |n| n != nil end
   def add_notifier n
@@ -594,7 +593,6 @@ class STodoTarget
   # "Reminder"s created based on spec.reminders - If spec.type == CORRECTION
   # and spec.reminders is nil, nil is returned to indicate that no
   # reminders were specified (i.e., the original reminders should be kept).
-  # precondition: not spec.is_template? implies time != nil
   pre 'not spec.is_template? implies time != nil' do |spec|
       implies(! spec.is_template?, time != nil)
   end
@@ -804,7 +802,6 @@ class STodoTarget
     end
   end
 
-  # postcondition: result != nil
   post 'result != nil' do |result| result != nil end
   def raw_email_addrs
     result = []
@@ -861,7 +858,6 @@ class STodoTarget
   end
 
   # Additional information, if any, to add to the description
-  # postcondition: result != nil
   post 'result != nil' do |result| result != nil end
   def description_appendix
     result = ""

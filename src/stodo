@@ -41,7 +41,7 @@ mainhelp() {
     echo -e "state-change <x>"
     echo -e "  temp [<type> ...]  output a to-do item template \c"
     echo -e "(for target type <type>)"
-    echo -e "  backup ${gap}        back up data files"
+    echo -e "  backup [opts] ${gap} back up data files"
 }
 
 indepth_help() {
@@ -53,6 +53,7 @@ indepth_help() {
     temp*) template_help ;;
     sta*) state_help ;;
     admin) admin_help ;;
+    back*) backup_help ;;
   esac
 }
 
@@ -285,6 +286,13 @@ admin_help() {
   echo -e "  readopt <h>... ${gap}re-\"adopt\" emancipated descendants \c"
   echo -e "of the items with\n${lgap}handles <h>..."
   echo -e "  desc_clean <h>...  $desc_clean_help"
+}
+
+backup_help() {
+  local s='        '
+  echo -e "Usage: $progname backup [options]"
+  echo -e "\nOptions:"
+  echo -e "  tmp|temp $s  make an ad hoc, \"temporary\" backup"
 }
 
 change_help() {
