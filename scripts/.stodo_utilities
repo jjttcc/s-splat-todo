@@ -1,11 +1,26 @@
 #!/bin/bash
+# Utilities - functions, aliases, etc. - for 'stodo'
+# vim: ts=4 sw=4 expandtab
 
-s_init_addr=me@me.org
-s_ongoing_addr=me@me.org
-cal_email=stodouser.me@gmail.com
+stodo_spec_path=~/.stodo/specs
+# These 3 email addresses should be overridden in $rcfile:
+s_init_addr=default_email@default.org
+s_ongoing_addr=default_email@default.org
+cal_email=default_email@default.org
+tod_editor=gvim
+tod_viewer=gview
+tabbed_viewer='gview -p'
 # (-1 days ago means tomorrow)
 default_date='date --date="-1 days ago" +%Y-%m-%d'
 default_time='12:00'
+boundary='======================================================='
+boundary="$boundary===================="
+
+rcfile=~/.stodo_user_rc
+# (Use $rcfile to override any of the "default" settings above.)
+if [ -f $rcfile -a -r $rcfile ]; then
+    . $rcfile
+fi
 
 ## s*todo convenience aliases
 alias hnd='stodo rep'               # list handles
@@ -19,10 +34,17 @@ alias rem='stodo rep rem'
 alias rema='stodo rep remall'
 alias remh='stodo rep remh'
 alias chi='stodo rep child'
+alias child-handles-only='descendant-handles-only'
+alias chih='child-handles-only'
+alias stree='chi|less'
+alias roots="stree|\grep '^[^ ]'|sort|more"
 alias seth='set $(hnd)'
 alias setha='set $(hnd -a)'
 alias shlp='stodo help'
 alias del='stodo del'
+alias chpar='stodo chpar'
+alias chha='stodo chhandle'
+alias clone='stodo clone'
 alias temp='stodo temp'
 alias sinit='stodo init'
 alias sstat='stodo stat'
@@ -95,58 +117,750 @@ stodo_date() {
 # remaining "stodo temp" options.)
 tempm() {
     if [ $# = 0 ]; then
-        echo "Usage: tempm <handle> [...]"
+        local cmd=${ST_CMDNAME:-tempm}
+        echo "Usage: $cmd <handle> [...]" >&2
         return 2
     fi
+    # ("$STATUS_FILE" was created by the caller - remove it to indicate
+    # that 'tempm' was called correctly:)
+    rm $STATUS_FILE
     hndl=$1; shift
     dt=$(stodo_date)
-    stodo temp memo -h $hndl $(emails) -pr 2 -t $hndl $dt "$@"
+    ST_RM_EXTRN=1 stodo temp memo -h $hndl $(emails) -pr 2 -t $hndl $dt "$@"
 }
 
 # spec-file template for task:
 tempt() {
     if [ $# = 0 ]; then
-        echo "Usage: tempt <handle> [...]"
+        local cmd=${ST_CMDNAME:-tempt}
+        echo "Usage: $cmd <handle> [...]" >&2
         return 2
     fi
+    # ("$STATUS_FILE" was created by the caller - remove it to indicate
+    # that 'tempt' was called correctly:)
+    rm $STATUS_FILE
     hndl=$1; shift
     dt=$(stodo_date)
-    stodo temp task -h $hndl $(emails) -pr 2 -t $hndl $dt "$@"
+    ST_RM_EXTRN=1 stodo temp task -h $hndl $(emails) -pr 2 -t $hndl $dt "$@"
 }
 
 # spec-file template for project:
 tempp() {
     if [ $# = 0 ]; then
-        echo "Usage: tempp <handle> [...]"
+        local cmd=${ST_CMDNAME:-tempp}
+        echo "Usage: $cmd <handle> [...]" >&2
         return 2
     fi
+    # ("$STATUS_FILE" was created by the caller - remove it to indicate
+    # that 'tempp' was called correctly:)
+    rm $STATUS_FILE
     hndl=$1; shift
     dt=$(stodo_date)
-    stodo temp project -h $hndl $(emails) -pr 2 -t $hndl $dt "$@"
+    ST_RM_EXTRN=1 stodo temp project -h $hndl $(emails) -pr 2 -t $hndl $dt "$@"
 }
 
 # spec-file template for appointment/meeting:
 tempa() {
-    if [ $# = 0 ]; then
-        echo "Usage: tempa <handle> [...]"
-        return 2
+    if [ $# -le 1 ]; then
+        local cmd=${ST_CMDNAME:-tempa}
+        echo "Usage: $cmd <handle> <datetime> [...]" >&2
+        return
     fi
+    # ("$STATUS_FILE" was created by the caller - remove it to indicate
+    # that 'tempa' was called correctly:)
+    rm $STATUS_FILE
     hndl=$1; shift
-    dt=$(stodo_date)
-    stodo temp meeting -h $hndl $(emails) -pr 2 -t $hndl $dt "$@"
+    datetime="$1"; shift
+    ST_RM_EXTRN=1 stodo temp meeting -h $hndl -ti "$datetime" $(emails) \
+        -pr 2 -t $hndl "$@"
 }
 
-stodoals='due sh[o]rt summ comp rem rema chi hnd seth del shlp'
+stodoals='due sh[o]rt summ comp rem rema chi hnd seth del shlp stree roots'
 stodoals="$stodoals temp sinit sstat temp[mtpa] sus can fin res"
+stodoals="$stodoals ctree todcor todnew newt newa newm newp hndls hre"
 
-alias stal="echo $stodoals"
+#### stodo-related tools
+
+# All known stodo handles, sorted - optionally, add an argument <arg> to
+# narrow down the list to <arg> and children of <arg>.
+handles() {
+#    stodo rep child $*|
+#        sed 's@,.*@@;s@^  *@@'|sort -u|more
+    stodo rep hand
+}
+alias hndls=handles
+
+# grep all handles for a regular expression.
+handlesre() {
+    handles|egrep "$*"
+}
+alias hre=handlesre
+alias ohgrep=handlesre
+
+# grep for 'handle's with the specified regex.
+# Print all handles for which a match was found.
+hgrep() {
+    if [ $# -lt 1 ]; then
+        return 3
+    fi
+    expr=$1; shift
+    stodo rep handle handle:$expr $@
+}
+
+# grep for 'description's with the specified regex.
+# Print all handles for which a match was found.
+dgrep() {
+    if [ $# -lt 1 ]; then
+        return 3
+    fi
+    expr=$1; shift
+    stodo rep handle descr:$expr $@
+}
+
+# grep for 'title's with the specified regex.
+# Print all handles for which a match was found.
+tgrep() {
+    if [ $# -lt 1 ]; then
+        return 3
+    fi
+    expr=$1; shift
+    stodo rep handle title:$expr $@
+}
+
+# grep for 'title's and 'description's with the specified regex.
+# Print all handles for which a match was found.
+tdgrep() {
+    if [ $# -lt 1 ]; then
+        return 3
+    fi
+    expr=$1; shift
+    stodo rep handle "title:$expr@descr:$expr" $@
+}
+
+# Handles of all descendants of the specified handles
+descendant-handles-only() {
+    stodo rep child $*|sed 's@^ *@@;s@,.*@@'
+}
+
+# List handles of all items with status "in-progress" that have the specified
+# priority (default to 1).
+# Usage: listpriority [<n>]
+listpriority_slow() {
+    local priority=1
+    local hlist=
+    local states="in-progress"
+    if [ $# -gt 0 ]; then
+        priority=$1
+    fi
+    for h in $(handles); do
+        local compfile=$(mktemp /tmp/$h.XXXX)
+        comp $h >$compfile
+        if
+            has_status_f $compfile $states &&
+            has_pri_f $compfile $priority
+        then
+            if [ "$hlist" = "" ]; then
+                hlist=$h
+            else
+                hlist="$hlist $h"
+            fi
+        fi
+        rm $compfile
+    done
+    if [ "$hlist" ]; then
+        echo $hlist
+    fi
+}
+
+# List, sorted, handles of all items with status "in-progress" that have
+# the specified priority (default to 1) or list-of-priorities
+# (comma-separated list of integers).  If an argument is not an integer,
+# assume it is a state specification (a comma-separated list of requested
+# statses) to use instead of "in-progress".
+# Usage: listpriority -h | [<n>] [<s>]
+# If environment variable PRINUM is set, display with line numbers.
+listpriority() {
+    local priorities=1
+    local states="in-progress"
+    local tailcmd='sort'
+    hmsg='Usage: listpriority -h | [<pri_number>[,...]] [<state>[,...]]'
+    if [ "$PRINUM" ]; then
+        tailcmd='sort|pr -n --omit-header'
+    fi
+    if [ $# -gt 0 ]; then
+        if [ "$1" = "-h" ]; then
+            echo $hmsg >&2
+            return 0
+        fi
+        for arg; do
+            if expr "$arg" :  '[0-9]' >/dev/null; then
+                priorities="$arg"
+            else
+                states="$arg"
+            fi
+        done
+    fi
+    stodo rep hand stat:"$states"@pri:"$priorities"|eval $tailcmd
+}
+
+# List, sorted, handles of all items with status "in-progress" that have
+# the specified priority (default to 1) or list-of-priorities
+# (comma-separated list of integers).  If an argument is not an integer,
+# assume it is a state specification (a comma-separated list of requested
+# statses) to use instead of "in-progress".
+# Usage: listpriority -h | [<n>] [<s>]
+# If environment variable PRINUM is set, display with line numbers.
+#..................................
+# List, sorted, handles of all items with status "in-progress" and that have
+# both the specified priority and that are descendants of the specified
+# ancestor. If the priority is not specified, assume 1.
+# Usage: descendants_with_priority -h | [-p <n>] <handle>
+# If environment variable PRINUM is set, display with line numbers.
+descendants_with_priority() {
+    local priority=1
+    local states="in-progress"
+    local handle hnds handle_list
+    local tailcmd='sort'
+    hmsg='Usage: listpriority -h | [-p <n>] <handle>'
+    if [ "$PRINUM" ]; then
+        tailcmd='sort|pr -n --omit-header'
+    fi
+    if [ $# -eq 0 -o "$1" = "-h" ]; then
+        echo $hmsg >&2
+        return 0
+    fi
+    case $1 in
+        -p*) shift
+            if [ $# -eq 0 ]; then
+                echo "Missing priority number; $hmsg" >&2
+                return 1
+            fi
+            priority=$1; shift
+            ;;
+    esac
+    if [ $# -eq 0 ]; then
+        echo "Missing handle; $hmsg" >&2
+        return 2
+    fi
+    handle=$1
+#    hnds=$(stodo rep hand stat:"$states"@handle:"$handle"@pri:"$priority"|
+#        eval $tailcmd)
+#    handle_list=$(
+#set -x
+####!!!!This is too slow and doesn't take status into account:
+    for h in $(child-handles-only $handle); do
+        if [ "$h" = "$handle" ]; then continue; fi
+        if has_pri $h $priority; then
+            echo $h
+        fi
+    done
+#set +x
+#)
+#    echo $handle_list
+}
+
+# referenced handles extracted from an stodo item
+# Usage: references [-d] [-r] <handle>
+references() {
+    local desc loop recursive level
+    level=0
+    desc=false
+    loop=true
+    recursive=false
+    if [ $# -gt 0 ]; then
+        while $loop; do
+            case $1 in
+                -d*)
+                    desc=true
+                    shift
+                    ;;
+                -r*)
+                    recursive=true
+                    shift
+                    ;;
+                -level*)
+                    level=$(echo $1|sed 's@.*=@@')
+                    shift
+                    ;;
+                *) loop=false
+                    ;;
+            esac
+        done
+        local refhndl="$1"
+        local refs=$(comp "$refhndl"|awk '
+        /^ *references:/ { sub(/^ *references: */, ""); gsub(/,/, ""); print }
+        ')
+        if [ "$refs" ]; then
+            if $desc; then
+                descr $refs|pager
+            else
+                local i=0
+                while [ $i -lt $level ]; do
+                    echo -e "  \c"
+                    ((++i))
+                done
+                echo $refs
+            fi
+            if $recursive; then
+                local args
+                if $desc; then
+                    args='-d'
+                fi
+                args="$args -r"
+                for h in $refs; do
+                    references -level=$(expr $level + 1) $args $h
+                done
+            fi
+        fi
+    fi
+}
+
+# Generate a "correction" edit/work file for the specified handle and
+# "install" it.
+todo-corr() {
+    if [ $# -eq 0 ]; then
+        return 42
+    fi
+    local result=0
+    local handle=$1
+    local file=/tmp/$handle.corr.$(date "+%Y-%m-%d_%H%M")
+    stodo rep comp $handle| awk '
+    function print_as_comment() {
+        print "#" $0; next
+    }
+    (in_comment) {
+        if ($1 ~ /^[a-z][-_a-z]*:/) {
+            in_comment = 0
+        } else {
+            print_as_comment()
+        }
+    }
+    /^type:/ {
+        print "type: correction"
+        print "# Change \"correction\" to \"cancel\""\
+            ", above, to cancel edit."
+        next
+    }
+    /^status:/ { next }     # (Change status with a separate command.)
+    /^comment:/ { in_comment = 1; print_as_comment() }
+    # skip these:
+    /^initial.email/ { next }
+    /^calendar_ids/ { next }
+    /^children/ { next }
+    # print as comment so that the user can, by default, ignore these:
+    /^(goal|title|priority|comment|parent|reminders|categories|[a-z]+_date):/ {
+        print_as_comment() }
+    /^([a-z _]*)email:/ {
+        print_as_comment() }
+    # print anything not skipped or changed:
+    { print }
+    ' > $file
+    edit_and_install $file
+    result=$?
+    return $result
+}
+
+# Generate a "correction" edit/work file - that contains only the handle
+# and description fields - for the specified handle and "install" it.
+todo-corrd() {
+    if [ $# -eq 0 ]; then
+        return 43
+    fi
+    local result=0
+    local handle=$1
+    local file=/tmp/$handle.corr.$(date "+%Y-%m-%d_%H%M")
+    echo "type: correction" >>$file
+    echo '# Change "correction" to "cancel", above, to cancel edit.' >>$file
+    echo "handle: $handle" >>$file
+    stodo rep desc $handle|awk '
+        (NR == 1) { print "description: " $0 ; next}
+        { print }
+    ' >> $file
+    edit_and_install $file
+    result=$?
+    return $result
+}
+
+# Generate a "correction" edit/work file - that contains only the handle,
+# title, and description fields - for the specified handle and "install" it.
+todo-corrtd() {
+    if [ $# -eq 0 ]; then
+        return 44
+    fi
+    local result=0
+    local handle=$1
+    local file=/tmp/$handle.corr.$(date "+%Y-%m-%d_%H%M")
+    echo "type: correction" >>$file
+    echo '# Change "correction" to "cancel", above, to cancel edit.' >>$file
+    echo "handle: $handle" >>$file
+    stodo rep tdesc $handle|awk '
+        (NR == 1) { sub(/:$/, ""); print "title: " $0 ; next}
+        (NR == 2) { print "description: " $0 ; next}
+        { print }
+    ' >> $file
+    edit_and_install $file
+    result=$?
+    return $result
+}
+
+# Generate a "correction" edit/work file - that contains only the handle and
+# title fields - for the specified handle and "install" it.
+todo-corrt() {
+    if [ $# -eq 0 ]; then
+        return 45
+    fi
+    local result=0
+    local handle=$1
+    local file=/tmp/$handle.corr.$(date "+%Y-%m-%d_%H%M")
+    echo "type: correction" >>$file
+    echo '# Change "correction" to "cancel", above, to cancel edit.' >>$file
+    echo "handle: $handle" >>$file
+    stodo rep tdesc $handle|awk '
+        (NR == 1) { sub(/:$/, ""); print "title: " $0 ; next}
+        (NR == 2) { exit }
+    ' >> $file
+    edit_and_install $file
+    result=$?
+    return $result
+}
+
+# View the to-do item with the specified handle.
+view-todo() {
+    if [ $# -eq 0 ]; then
+        return 42
+    fi
+    local result=0
+    local handle=$1
+    local file=/tmp/$handle.view.$(date "+%Y-%m-%d_%H%M")
+    stodo rep comp $handle > $file
+    view_todo_file $file
+    result=$?
+    return $result
+}
+
+# View the to-do items with the specified handles in one "tabbed" file.
+view-tabbed-todos() {
+    if [ $# -eq 0 ]; then
+        return 44
+    fi
+    local result=0
+    local handle=$1
+    local files=
+    local curfile
+    for h; do
+        curfile=$(mktemp /tmp/$h.view.XXXX)
+        files="$files $curfile"
+        stodo rep comp $h > $curfile
+    done
+    $tabbed_viewer $files
+    result=$?
+    return $result
+}
+
+alias vttod='view-tabbed-todos'
+
+# Generate a new spec file for the specified handle and "install" it.
+# Usage: todo-new m|t|p|a <handle> ...
+# m = memo, t = task, p = project, a = appointment
+todo-new() {
+    if ! expr $1 : '[tmap]' >/dev/null; then
+        echo "Wrong type specification: '$1'" >&2
+        return 43
+    fi
+    local result=0
+    local handle=$2
+    local command=temp$1
+    local errstatf=$(mktemp /tmp/newtemp_error.XXXX)
+    shift
+    local file=/tmp/$handle.new.$(date "+%Y-%m-%d_%H%M")
+    # (EDITOR='' ensures that the file is "cat"d - no editor is invoked:)
+    STATUS_FILE=$errstatf EDITOR='' $command "$@"|awk '
+        /^type:/ {
+            print
+            print "# Change the type to \"cancel\", above, to cancel creation."
+            next
+        }
+        { print }
+    ' > $file
+    # If the above $command execution did not remove $errstatf, it failed:
+    if [ -e $errstatf ]; then
+        result=1
+    fi
+    if [ $result -eq 0 ]; then
+        edit_and_install $file
+        result=$?
+    else
+        echo "stodo template command failed" >&2
+    fi
+    return $result
+}
+
+#### Miscellaneous convenience aliases
+alias stal="echo $stodoals|fmt"
+# Force output of 'stal' into one column:
+alias stalc='rows-to-column stal'
+alias stals='stalc|sort'
+alias lpri=listpriority
+alias npri='PRINUM=y listpriority'
+alias refs=references
+alias refd='references -d'
+alias todcor=todo-corr
+alias etod=todo-corr
+alias etodd=todo-corrd
+alias etodtd=todo-corrtd
+alias etodt=todo-corrt
+alias todview=view-todo
+alias toview=todview
+# to-do view - or "view to-do":
+alias tov=todview
+# tabbed to-do view - or 'view-tabbed-todos':
+alias ttov=vttod
+alias todnew=todo-new
+alias newt='ST_CMDNAME=newt todnew t'
+alias newa='ST_CMDNAME=newa todnew a'
+alias newm='ST_CMDNAME=newm todnew m'
+alias newp='ST_CMDNAME=newp todnew p'
+alias ctree=comptree
+# Call 'set' on the output of "listpriority 1" - i.e., set to all
+# 1st-priority handles:
+alias setp1='set $(listpriority 1)'
+# "View" all 1st-priority items in a tabbed editor:
+alias viewp1='view-tabbed-todos $(listpriority 1)'
+# "View" all 1st-priority items - all together in one file:
+alias viewallp1='va_file=$(mktemp /tmp/vap1.XXXX)
+for h in $(listpriority 1); do
+  comp $h; echo $boundary
+done > $va_file
+view_todo_file +/^handle:/ $va_file'
+alias vap1=viewallp1
+alias va1=viewallp1
+alias vp1=viewp1
+alias ancpri=ancestors_with_priority
+alias runcmt=run_comment_code
 
 #### Utilities
 
-# Run the specified command, output with line numbers.
-numbered_command() {
-    eval "$@"|pr -t -n
+# The description and handle (only) from the specified handles.
+# If variable "DESCR_NO_HANDLE" is defined and not empty, the handle
+# is omitted.
+descr() {
+    local with_boundary=true
+    local h
+    local handle_statement='/^handle:/ { print ; next }'
+    local other_dsc_labels='priority|comment|parent|reminders|email'
+    other_dsc_labels="$other_dsc_labels|calendar_ids|categories|due_date"
+    if [ $# -eq 1 ]; then
+        with_boundary=false
+    fi
+    if ! [ -z "$DESCR_NO_HANDLE" ]; then
+        handle_statement=
+    fi
+    for h; do
+        stodo rep comp $h|
+            awk '
+                '"$handle_statement"'
+                /^description:/ { in_desc = 1; print ; next }
+                (in_desc && $0 ~ /^('$other_dsc_labels'):/) { in_desc = 0 }
+                (in_desc) { print } '
+        if $with_boundary; then
+            echo $boundary
+        fi
+    done
 }
 
-alias cmdn=numbered_command
-alias ctree=comptree
+# Just the guts - the description content only for the specified handle:
+guts() {
+    if [ $# -gt 0 ]; then
+        descr $1|awk '/^handle:/ { next } /^description:/ {
+            sub(/^description: */, "") } { print }'
+    fi
+}
+
+# Page the 'guts' for <handle>.
+pgguts() {
+    guts $1|pager
+}
+
+#### stodo-related utility functions
+
+# Edit and install (in $stodo_spec_path) the specified to-do spec file.
+edit_and_install() {
+    file=$1
+    local result=0
+    $tod_editor -c 'set expandtab' -f $file # (-f: foreground)
+    if canceled $file; then
+        echo "(Installation of $file has been canceled.)" >&2
+        result=1
+    else
+        if cp -p $file $stodo_spec_path; then
+            echo "$(date): $file copied to $stodo_spec_path"
+        fi
+    fi
+    return $result
+}
+
+# View the specified file, with an optional (editor) argument.
+view_todo_file() {
+    local arg=
+    if [ $# -gt 1 ]; then
+        arg=$1; shift
+    fi
+    local file=$1
+    local result=0
+    $tod_viewer -c 'set expandtab' $arg $file
+    return $result
+}
+
+# Is the specified stodo-item spec file canceled?
+canceled() {
+    true=0  # i.e., is canceled
+    false=1 # i.e., NOT canceled
+    local result=$false   # (default to not canceled.)
+    cancel_ptrn='^type:.*cancel'
+    if [ $# -ne 0 ]; then
+        tgt=$1
+        if grep -q "$cancel_ptrn" $tgt; then
+            result=$true
+        fi
+    fi
+    return $result
+}
+
+# Does the item for the specified handle have the specified priority?
+# Usage: has_pri <handle> <priority>
+has_pri() {
+    local handle=$1
+    local pri=$2
+    local hpfile=$(mktemp /tmp/$handle.XXXX)
+    comp $handle >$hpfile
+    has_pri_f $hpfile $pri
+    result=$?
+    rm $hpfile
+    return $result
+}
+
+# Does the item-report contained in the specified file have the specified
+# priority?
+# Usage: has_pri <file> <priority>
+has_pri_f() {
+    local file=$1
+    local pri=$2
+    grep -q -E "^priority:\s*$pri\s*$" $file
+}
+
+# Usage: has_status_f <file> <state1> [<state2> ...]
+has_status_f() {
+    local file=$1
+    shift
+    result=1
+    for state; do
+        if grep -q -E "^status:\s*$state\>" $file; then
+            result=0
+            # A match was found, so the answer is "yes".
+            break
+        fi
+    done
+    return $result
+}
+
+pager() {
+    if [ "$PAGER" ]; then
+        p=$PAGER
+    else
+        # default to 'more'
+        p=more
+    fi
+    $p
+}
+
+#### Utilities - embedded programming
+
+## Note: Unfinished, but working (at least somewhat) code resides below.
+
+# Run the code embedded in the "comment:" section - to be called by
+# 'run_comment_code' - using standard input.
+#!!!!to-do - document:
+#    "/^>{comment-start-string}/" for the user to "insert" comments
+#    the "/bang.*line:/" construct
+run_extracted_comment_code() {
+#!!!!!!!!!!!!!REMINDERS:
+#!!!!Add check in "code" for something like:
+#bangline: ruby
+#  or:
+#bangline: awk
+# (bangline or bang-line)
+    local funcnm=run_extracted_comment_code
+    local handle=$1
+    local codefile=$(mktemp /tmp/$handle.code.XXXX)
+    local result=0
+    local parse_error='error encountered parsing the code' >&2
+    if comp $handle|awk 'BEGIN { in_code = 0; }
+        /^comment:/ {
+            in_code = 1
+#print "line A"
+            if ($0 ~ /ignore/) {
+#print "line B"
+                exit
+            } else if ($0 ~ /bang.*line:/) {
+                gsub(/.*bang.*line:\s*/, "", $0)
+                print
+            }
+            next
+#print "line C"
+        }
+        (in_code) {
+#print "line D"
+            if ($0 ~ /^[a-zA-Z].*:/) {
+                # "stodo" key-word detected
+#print "stodo key-word detected:" $0
+                exit
+            } else {
+#print "test :"
+                if ($0 ~ /^>/) {    # comment "construct"
+                    sub(/^>/, "", $0)
+                }
+                print
+            }
+#print "line E"
+        }
+        ' >$codefile
+    then
+        chmod 500 $codefile
+        cat -|$codefile
+        xstatus=$?
+        if [ $xstatus -ne 0 ]; then
+            result=$xstatus
+            echo "'$funcnm': $run_error - exit status: $xstatus" >&2
+        fi
+    else
+        echo "'$funcnm': $parse_error" >&2
+        result=1
+    fi
+    if [ -z "$STODO_UTL_DEBUG" ]; then
+#!!!!don't forget to restore this:        rm $codefile
+:   # <<<- and remove this line >>>
+    else
+        ls -lhd $codefile
+    fi
+    return $result
+}
+
+# For the handle ($1), run the code embedded in the "comment:" section
+# (all lines from the first line after the /^comment:/ line until the
+# last line of the comment - the line just before the next section),
+# using the code from the "description:" section as input.
+# Note1: If the "comment:" line contains the word 'ignore', the code will be
+# ignored - i.e., treated as a null program.
+# Note2: Any lines in the comment section that start with an alphabetic
+# character and contain a colon (i.e.: /^[a-zA-Z].*:/) will be assumed to a
+# keyword starting the # next section, thus ending the program. (Indent to
+# work around this.)
+# WARNING!!!!: This is potentially very dangerous security-wise, even when
+# run as a regular user (dangerous for the user, at least); obviously,
+# it shouldn't be run as root.
+run_comment_code() {
+    if [ $# -gt 0 ]; then
+        local handle=$1
+        DESCR_NO_HANDLE=y descr $handle|run_extracted_comment_code $handle
+    fi
+}
