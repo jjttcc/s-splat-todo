@@ -49,6 +49,8 @@ class StubbedSpec < STodoSpec
     @setting_for[LOCATION_KEY] = options.location
     @setting_for[CALENDAR_IDS_KEY] = options.calendar_ids
     @setting_for[CATEGORIES_KEY] = options.categories
+    @setting_for[ATTACHMENTS_KEY] = options.attachments
+    @setting_for[REFERENCES_KEY] = options.references
   end
 
 end

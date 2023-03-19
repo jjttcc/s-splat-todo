@@ -4,10 +4,11 @@ module SpecTools
   TYPE_KEY, TITLE_KEY, DESCRIPTION_KEY, HANDLE_KEY, PRIORITY_KEY, DUE_DATE_KEY,
     GOAL_KEY, EMAIL_KEY, COMMENT_KEY, PARENT_KEY, REMINDER_KEY, START_DATE_KEY,
     EXPIRATION_DATE_KEY, DATE_TIME_KEY, DURATION_KEY, LOCATION_KEY,
-    CALENDAR_IDS_KEY, CATEGORIES_KEY =
+    CALENDAR_IDS_KEY, CATEGORIES_KEY, ATTACHMENTS_KEY, REFERENCES_KEY =
     'type', 'title', 'description', 'handle', 'priority', 'due_date', 'goal',
     'email', 'comment', 'parent', 'reminders', 'start_date', 'expiration_date',
-    'date_time', 'duration', 'location', 'calendar_ids', 'categories'
+    'date_time', 'duration', 'location', 'calendar_ids', 'categories',
+    'attachments', 'references'
   SINGULAR_REMINDER_KEY = 'reminder'
   SPEC_FIELD_DELIMITER = /,\s*/
   SPEC_FIELD_JOINER = ','
@@ -23,12 +24,14 @@ module SpecTools
 
 
   # system-wide constants - Env vars:
-  STDEBUG = 'STODO_DEBUG'
-  STTESTRUN = 'STODO_TEST'
-  STLOG_LEVEL = 'STODO_LOG_LEVEL'
-  ST_CONFIG_PATH = 'STODO_CONFIG_PATH'
-  ST_LOG_PATH = 'STODO_LOG'
-  STODO_PATH = 'STODO_PATH'
+  STDEBUG               = 'STODO_DEBUG'
+  STTESTRUN             = 'STODO_TEST'
+  STLOG_LEVEL           = 'STODO_LOG_LEVEL'
+  ST_CONFIG_PATH        = 'STODO_CONFIG_PATH'
+  ST_LOG_PATH           = 'STODO_LOG'
+  STODO_PATH            = 'STODO_PATH'
+  ST_REJECT_BADREFS     = 'STODO_REJECT_BADREFS'
+  ST_REJECT_BADATTCHMTS = 'STODO_REJECT_BADATTCHMTS'
 
   # tags/patterns from spec with special meaning
   INITIAL_EMAIL_PTRN = Regexp.new('\[initial\]')
@@ -78,6 +81,20 @@ module SpecTools
     result = HANDLE_IN_USE_TEMPLATE.sub(HANDLE_TAG, handle)
     result = result.sub(N_HANDLE_TAG, new_handle)
     result
+  end
+
+  # Should proposed references to non-existent "STodoTarget"s be rejected?
+  def reject_false_references
+    answer = ENV[ST_REJECT_BADREFS]
+$log.warn "[reject_false_references] ret: #{! answer.nil? && ! answer.empty?}"
+    ! answer.nil? && ! answer.empty?
+  end
+
+  # Should proposed attachments referring to non-existent files be rejected?
+  def reject_nonexistent_attachments
+    answer = ENV[ST_REJECT_BADATTCHMTS]
+$log.warn "[reject_nonexistent_attachments] ret: #{! answer.nil? && ! answer.empty?}"
+    ! answer.nil? && ! answer.empty?
   end
 
 end

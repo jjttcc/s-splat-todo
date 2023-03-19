@@ -1,4 +1,5 @@
 require 'ruby_contracts'
+require 'debug/session'
 
 class TemplateOptions
   include SpecTools, ErrorTools
@@ -7,7 +8,8 @@ class TemplateOptions
   public
 
   attr_reader :type, :categories, :description, :email, :handle, :location,
-    :time, :parent, :title, :calendar_ids, :duration, :priority
+    :time, :parent, :title, :calendar_ids, :duration, :priority,
+    :references, :attachments
 
   # query: Is a parse error to be treated as fatal - i.e., causes an
   # exception to be raised?
@@ -22,7 +24,12 @@ class TemplateOptions
 
   DEFAULT_TYPE=APPOINTMENT
 
-  # postcondition: self.parse_error_is_fatal == parse_error_fatal
+  post 'arg_array set' do |r, aa|
+    implies(! aa.nil?, self.argument_array == aa)
+  end
+  post 'peif set' do |r, a1, peif_arg|
+    implies(! peif_arg.nil?, self.parse_error_is_fatal == peif_arg)
+  end
   def initialize arg_array = ARGV, parse_error_fatal = false
     self.argument_array = arg_array
     self.parse_error_is_fatal = parse_error_fatal
@@ -38,8 +45,8 @@ class TemplateOptions
   def process_options
     i = 0
     catf, descf, emf, hndf, locf, parf, titf, cif, durf, ief, oef,
-      timf, prif = 'c', 'd', 'e', 'h', 'l', 'p', 't', 'ci', 'du', 'ie',
-      'oe', 'ti', 'pr'
+      timf, prif, reff, atf = 'c', 'd', 'e', 'h', 'l', 'p', 't', 'ci', 'du',
+        'ie', 'oe', 'ti', 'pr', 'r', 'at'
     while i < self.argument_array.length do
       case self.argument_array[i]
       when /^-#{catf}\b/
@@ -74,6 +81,12 @@ class TemplateOptions
       when /^-#{oef}/
         emails = next_arg(i + 1, oef, true); i += emails.length
         @ongoing_email = emails.join(SPEC_FIELD_JOINER)
+      when /^-#{reff}\b/
+        refs = next_arg(i + 1, reff, true); i += refs.length
+        @references = refs.join(SPEC_FIELD_JOINER)
+      when /^-#{atf}\b/
+        attchmts = next_arg(i + 1, atf, true); i += attchmts.length
+        @attachments = attchmts.join(SPEC_FIELD_JOINER)
       else
         if @type == nil then
           @type = self.argument_array[i]
@@ -104,8 +117,19 @@ class TemplateOptions
     @main_email = nil
     @initial_email = nil
     @ongoing_email = nil
+    @references = nil
+    @attachments = nil
   end
 
+  # Scan the option-arguments in 'argument_array', starting at index 'i',
+  # and stopping at i+n where 'argument_array[i+n]' starts with "-" (i.e.,
+  # holds the next set of option-arguments).
+  # Return the result as an array containing each argument found.
+  pre 'i: good-int' do |i| ! i.nil? && i.is_a?(Integer) && i >= 0  end
+  pre 'i: good-flag' do |i, flag|
+    ! flag.nil? && flag.is_a?(String) && ! flag.empty?
+  end
+  post 'result: array' do |result| ! result.nil? && result.is_a?(Array) end
   def next_arg(i, flag, multiple_args = false)
     result = [""]
     if i >= self.argument_array.length then

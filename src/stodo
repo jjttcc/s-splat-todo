@@ -254,6 +254,7 @@ report_help() {
 
 add_help() {
   local s='     '
+  local ls='                    '
   echo -e "Usage: $progname add <type> -h <handle> [other-options]"
   echo -e "Where <type> is one of:\c"
   echo -e " task, memo, appointment (or event), project"
@@ -271,6 +272,10 @@ add_help() {
   echo -e "  -l <loc> $s       use <loc> as the location (appointment only)"
   echo -e "  -du <dur> $s      use <dur> as the duration (appointment only)"
   echo -e "  -pr <priority> $s use <priority> as the priority"
+  echo -e "  -at <a1>[,<a2>...]   use <a1>,... to create an"\
+    "\"attachments\" line"
+  echo -e "  -r <r1>[,<r2>...]    use <r1>,... to create a"\
+    "line of \"references\"\n${ls}   (handles) to existing items"
 }
 
 admin_help() {
@@ -297,6 +302,7 @@ backup_help() {
 
 change_help() {
   local s='        '
+  local ls='                    '
   echo -e "Usage: $progname change <handle> [options]"
   echo -e "\nOptions:"
   echo -e "  -t <title> $s  replace the Title with <title>"
@@ -308,6 +314,10 @@ change_help() {
   echo -e "  -l <loc> $s    replace the Location (appointment only) with <loc>"
   echo -e "  -du <dur> $s   replace the Duration (appointment only) with <dur>"
   echo -e "  -pr <priority>       replace the Priority with <priority>"
+  echo -e "  -at <a1>[,<a2>...]   use <a1>,... to assign a new"\
+    "\"attachments\" line"
+  echo -e "  -r <r1>[,<r2>...]    use handles <r1>,... to assign a new"\
+    "line of\n${ls}   \"references\" to existing items"
 }
 
 clear_d_help() {
@@ -323,6 +333,7 @@ clear_d_help() {
 
 template_help() {
   local s='     '
+  local ls='                    '
   echo -e "Usage: $progname temp [<type>] [options]"
   echo -e "Where <type> is one of:\c"
   echo -e " task, memo, appointment (or event), project"
@@ -341,6 +352,10 @@ template_help() {
   echo -e "  -l <loc> $s       use <loc> as the location (appointment only)"
   echo -e "  -du <dur> $s      use <dur> as the duration (appointment only)"
   echo -e "  -pr <priority> $s use <priority> as the priority"
+  echo -e "  -at <a1>[,<a2>...]   use <a1>,... to create an"\
+    "\"attachments\" line"
+  echo -e "  -r <r1>[,<r2>...]    use handles <r1>,... to create a"\
+    "line of \"references\"\n${ls}   to existing items"
 }
 
 state_help() {

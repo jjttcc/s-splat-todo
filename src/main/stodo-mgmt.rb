@@ -24,7 +24,7 @@ if ARGV.length > 1 then
     require 'templatetargetbuilder'
     require 'templateoptions'
     target_builder = TemplateTargetBuilder.new(
-      TemplateOptions.new(arguments, true))
+      TemplateOptions.new(arguments, true), manager.existing_targets)
     target_builder.set_processing_mode TemplateTargetBuilder::CREATE_MODE
     manager.target_builder = target_builder
     manager.add_new_targets

@@ -1,0 +1,218 @@
+#!/bin/bash
+# (define env. var. STODO_KEEP_ARTIFACTS to force any new items to NOT
+# be deleted.)
+
+parse_args() {
+  for arg; do
+    if expr $arg : ".*@" >/dev/null; then
+      email=$arg
+    else
+      testhndl=$arg$$
+    fi
+  done
+}
+
+# Create the "references" to refer to.
+create_ref() {
+  create
+  hndl=$ST_HANDLE
+  if report $hndl|awk 'BEGIN { hitcount = 0; EXPCOUNT = 1 }
+    /handle: *'$hndl'/ {  ++hitcount }
+    END {
+      if (hitcount != EXPCOUNT) {
+        print "(expected " EXPCOUNT " matches, got: " hitcount ")"
+        exit 1
+      } else {
+      exit 0
+      }
+    }'
+  then
+    echo "creation of ref $hndl SUCCEEDED"
+  else
+    echo "creation of ref $hndl failed"
+    return 98
+  fi
+}
+
+# Create an item that refers to the "references".
+# If an argument is supplied that evaluates to 'true', lie about failure
+# status - i.e., report: 'creation of $hndl "succeeded"' and return with
+# status value of $lie_retval.
+create_item_with_refs() {
+  local lie=false
+  if [ $# -gt 0 ]; then
+    lie=$1
+  fi
+  create
+  hndl=$ST_HANDLE
+echo "refsexpr: '$refsexpr'" >&2
+  if report $hndl|awk 'BEGIN { hitcount = 0; EXPCOUNT = 6 }
+    /handle: *'$hndl'/ {  ++hitcount }
+    /title: *'"$mainttl"'/ {  ++hitcount }
+    /email: *'$email'/ {  if (! emailset) { ++hitcount}; ++emailset }
+    /description: *'"$desc"'/ {  ++hitcount }
+    /type: *'$testtype'/ {  ++hitcount }
+    /references: *'"$refsexpr"'/ {  ++hitcount }
+    END {
+      if (hitcount != EXPCOUNT) {
+        print "(expected " EXPCOUNT " matches, got: " hitcount ")"
+        exit 1
+      } else {
+      exit 0
+      }
+    }'
+  then
+    tail=''
+    if eval $lie; then
+      tail=' (Brilliantly!)'
+    fi
+    echo "creation of $hndl SUCCEEDED$tail"
+  else
+    if eval $lie; then
+      echo "creation of $hndl \"succeeded\""
+      return $lie_retval
+    else
+      echo "creation of $hndl failed"
+      return 99
+    fi
+  fi
+}
+
+modify_test() {
+  : # to be defined
+}
+
+delete_test() {
+  local hndl=$testhndl
+  if [ $# -gt 0 ]; then
+    hndl=$1
+  fi
+  if ! [ "$STODO_KEEP_ARTIFACTS" ]; then
+    delete $hndl$2
+    if report $hndl|grep -q "$hndl"; then
+      echo "deletion of $hndl failed"
+      return 97
+    else
+      echo "deletion of $hndl SUCCEEDED"
+    fi
+  else
+      echo "deletion test bypassed (keeping new item with handle: $hndl"
+  fi
+}
+
+# Set "vars" for origination/creation.
+set_main_vars() {
+  ST_HANDLE=$testhndl
+  ST_TYPE=$testtype
+  ST_TITLE=$mainttl
+  ST_DESC=$desc
+  ST_EMAIL=$email
+  ST_REFS="$refs"
+  ST_DTTIME='now'
+}
+
+set_badref_vars() {
+  ST_HANDLE=$bad_testhndl
+  ST_TYPE=$testtype
+  ST_TITLE=$mainttl
+  ST_DESC=$desc
+  ST_EMAIL=$email
+  ST_REFS="$badrefs"
+  ST_DTTIME='now'
+  refsexpr=$badrefsexpr
+}
+
+# Set "vars" for references.
+set_refs_vars() {
+  if [ $# -eq 0 ]; then
+    echo "[set_refs_vars] fatal error: missing handle argument" >&2
+    return 7
+  fi
+  ST_HANDLE=$1
+  ST_TITLE=$newttl
+  ST_DESC=$maindesc
+  ST_EMAIL=$email
+  ST_TYPE=$testtype
+  ST_REFS=''  # (Unset - in case it's set.)
+  ST_DTTIME='now'
+}
+
+basedir=$(dirname $0)
+toolsfile=$basedir/tools
+testenv=$basedir/.env
+if [ -r $testenv -a -f $testenv ]; then
+  . $testenv
+fi
+if [ -r $toolsfile -a -f $toolsfile ]; then
+  . $toolsfile
+  init_tools
+fi
+
+# (Use file $testenv, sourced above, to set user_email.)
+if [ "$ST_EMAIL" ]; then
+  email="$ST_EMAIL"
+else
+  email="foo@foo.test"
+fi
+testhndl=test-stodo$$
+bad_testhndl=$testhndl-bad
+testtype=task
+mainttl="main title"
+refdesc='one of a few items to be referenced'
+newttl="This is title number $$.  It is long."
+newttlregex="This.is.title.number.*It.is.long"
+ref1="testref1"
+ref2="testref2"
+ref3="testref3"
+refs="$ref1,$ref2, $ref3"
+badrefs="$ref1,non-existence$$,$ref3"
+refsexpr="$ref1[, ]*$ref2[, ]*$ref3"
+badrefsexpr="$ref1[, ]*non-existence$$[, ]*$ref3"
+maindesc='task with references'
+lie_retval=42
+
+failures=0
+parse_args $@
+for handle in $ref1 $ref2 $ref3; do
+  set_refs_vars $handle
+  create_ref
+  stat=$?
+  if [ $stat != 0 ]; then
+    echo "creation of item for $handle failed - cannot continue" >&2
+    exit $stat
+  fi
+done
+set_main_vars
+create_item_with_refs
+if [ $? != 0 ]; then
+  ((++failures))
+fi
+set_badref_vars
+STODO_REJECT_BADREFS=1 create_item_with_refs true
+stat=$?
+if [ $stat != $lie_retval ]; then
+  echo "creation of item for $handle (with bad references) FAILED" >&2
+  ((++failures))
+else
+  echo "creation of $hndl [with bad/checked references] SUCCEEDED"
+fi
+for h in $ref1 $ref2 $ref3; do
+  if ! delete_test $h; then
+    ((++failures))
+  fi
+done
+delete_test $testhndl
+if [ $? != 0 ]; then
+  ((++failures))
+fi
+delete_test $bad_testhndl
+if [ $? != 0 ]; then
+  ((++failures))
+fi
+if [ $failures -gt 0 ]; then
+  echo "$failures tests FAILED." >&2
+  exit $failures
+else
+  echo "All tests passed" >&2
+  exit 0
+fi

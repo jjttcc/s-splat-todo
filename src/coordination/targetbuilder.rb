@@ -2,6 +2,7 @@ require 'ruby_contracts'
 require 'project'
 require 'scheduledevent'
 require 'memorandum'
+require 'debug/session'
 
 # Builder of s*todo target objects
 class TargetBuilder
@@ -53,17 +54,16 @@ class TargetBuilder
   # Process STodoTarget objects according to self.specs, and, based on
   # 'processing_mode', create a new STodoTarget object or edit the
   # existing one that corresponds to the specification.
-  pre '"existing_targets" set if editing' do
-    implies(in_editing_mode?, ! self.existing_targets.nil?)
-  end
-  pre 'specs exist' do ! specs.nil? end
-  post '! targets.nil?' do ! self.targets.nil? end
+  pre '"existing_targets" set' do ! self.existing_targets.nil? end
+  pre 'specs exist' do ! self.specs.nil? end
+  post 'targets exist' do ! self.targets.nil? end
   def process_targets
     if ! targets_prepared? then
       prepare_targets
     end
     for s in self.specs do
       begin
+        s.existing_targets = self.existing_targets
         if new_target_needed(s) then
           t = new_target(s)
         else
@@ -167,27 +167,6 @@ class TargetBuilder
         $log.debug "t NOT found"
       end
     end
-  end
-
-  # Edit the target from @existing_targets, if one exists, whose handle
-  # matches 'spec.handle', such that its fields are changed according to
-  # fields that are set (not nil) in 'spec'.  Add the edited target to
-  # @edited_targets.  Return nil to indicate that now new STodoTarget has
-  # been created.
-  def previous__edit_target(spec)
-    if @existing_targets != nil && spec.handle then
-      tgt_handle = spec.handle
-      t = @existing_targets[tgt_handle]
-      if t then
-        old_time = t.time.clone
-        t.modify_fields(spec, @existing_targets)
-        if old_time != t.time then
-          @time_changed_for[t] = true
-        end
-        @edited_targets << t
-      end
-    end
-    nil
   end
 
   def init_target_factory

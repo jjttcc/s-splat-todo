@@ -1,0 +1,124 @@
+#!/bin/bash
+# (define env. var. STODO_KEEP_ARTIFACTS to force any new items to NOT
+# be deleted.)
+
+parse_args() {
+  for arg; do
+    if expr $arg : ".*@" >/dev/null; then
+      email=$arg
+    else
+      testhndl=$arg$$
+    fi
+  done
+}
+
+# Create an item that with attachments.
+create_item_with_attachments() {
+  create
+  hndl=$ST_HANDLE
+echo "attchsexpr: '$attchsexpr'" >&2
+  if report $hndl|awk 'BEGIN { hitcount = 0; EXPCOUNT = 6 }
+    /handle: *'$hndl'/ {  ++hitcount }
+    /title: *'"$mainttl"'/ {  ++hitcount }
+    /email: *'$email'/ {  if (! emailset) { ++hitcount}; ++emailset }
+    /description: *'"$desc"'/ {  ++hitcount }
+    /type: *'$testtype'/ {  ++hitcount }
+    /attachments: *'"$attchsexpr"'/ {  ++hitcount }
+    END {
+      if (hitcount != EXPCOUNT) {
+        print "(expected " EXPCOUNT " matches, got: " hitcount ")"
+        exit 1
+      } else {
+      exit 0
+      }
+    }'
+  then
+    echo "creation of $hndl SUCCEEDED"
+  else
+    echo "creation of $hndl failed"
+    exit 99
+  fi
+}
+
+modify_test() {
+  modify $testhndl
+  if report $testhndl|awk 'BEGIN { hitcount = 0; EXPCOUNT = 6 }
+    /handle: *'$testhndl'/ {  ++hitcount }
+    /title: *'"$newttlregex"'/ {  ++hitcount }
+    /email: *'$email'/ {  if (! emailset) { ++hitcount}; ++emailset }
+    /description: *'"$desc"'/ {  ++hitcount }
+    /type: *'$testtype'/ {  ++hitcount }
+    END {
+      if (hitcount != EXPCOUNT) {
+        print "(expected " EXPCOUNT " matches, got: " hitcount ")"
+        exit 1
+      } else {
+        exit 0
+      }
+    }'
+  then
+    echo "modification test SUCCEEDED"
+  else
+    echo "modification test failed"
+    exit 98
+  fi
+}
+
+delete_test() {
+  if ! [ "$STODO_KEEP_ARTIFACTS" ]; then
+    delete $testhndl
+    if report $testhndl|grep -q "$testhndl"; then
+      echo "deletion test failed in deletion of $testhndl"
+      exit 97
+    else
+      echo "deletion test SUCCEEDED"
+    fi
+  else
+      echo "deletion test bypassed (keeping new item with handle: $testhndl"
+  fi
+}
+
+# Set "vars" for origination/creation.
+set_main_vars() {
+  ST_HANDLE=$testhndl
+  ST_TYPE=$testtype
+  ST_TITLE=$mainttl
+  ST_DESC=$desc
+  ST_EMAIL=$email
+  ST_ATTACH="$attchs"
+  ST_DTTIME='now'
+}
+
+basedir=$(dirname $0)
+toolsfile=$basedir/tools
+testenv=$basedir/.env
+if [ -r $testenv -a -f $testenv ]; then
+  . $testenv
+fi
+if [ -r $toolsfile -a -f $toolsfile ]; then
+  . $toolsfile
+  init_tools
+fi
+
+# (Use file $testenv, sourced above, to set user_email.)
+if [ "$ST_EMAIL" ]; then
+  email="$ST_EMAIL"
+else
+  email="foo@foo.test"
+fi
+testhndl=test-stodo$$
+testtype=task
+mainttl="main title"
+newttl="This is title number $$."
+newttlregex="This.is.title.number"
+att1="attachment1.pdf"
+att2="attachment2.txt"
+att3="attachment3.ogg"
+attchs="$att1,$att2, $att3"
+attchsexpr="$att1[, ]*$att2[, ]*$att3"
+maindesc='task with attachments'
+
+parse_args $@
+set_main_vars
+create_item_with_attachments
+delete_test

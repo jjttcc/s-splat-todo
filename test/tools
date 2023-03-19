@@ -4,7 +4,7 @@ init_tools() {
   no_h=false
 }
 
-# For each environment variable v in: ST_HANDLE, ; do
+# For each environment variable v in: ST_HANDLE, ST_TITLE, ...; do
 #   parse v and insert the result into environment variable STODO_OPTS
 # end
 set_opts_from_env() {
@@ -30,6 +30,12 @@ set_opts_from_env() {
   fi
   if [ "$ST_PRIO" ]; then
     STODO_OPTS="$STODO_OPTS -pr '$ST_PRIO'"
+  fi
+  if [ "$ST_REFS" ]; then
+    STODO_OPTS="$STODO_OPTS -r '$ST_REFS'"
+  fi
+  if [ "$ST_ATTACH" ]; then
+    STODO_OPTS="$STODO_OPTS -at '$ST_ATTACH'"
   fi
   if [ "$ST_DTTIME" ]; then
     STODO_OPTS="$STODO_OPTS -ti '$ST_DTTIME'"
@@ -58,12 +64,16 @@ create() {
 }
 
 report() {
+  local hndl=$1
   if ! handle_exists; then
     echo "report: fatal: ST_HANDLE is not set." >&2
     return 7
   fi
-  no_h=true set_opts_from_env
-  eval stodo rep comp $ST_HANDLE
+  if [ ! "$hndl" ]; then
+    no_h=true set_opts_from_env
+    hndl=$ST_HANDLE
+  fi
+  eval stodo rep comp $hndl
 }
 
 modify() {

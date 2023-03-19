@@ -22,6 +22,10 @@ class STodoTarget
   attr_reader :title, :content, :handle, :calendar_ids, :priority, :comment,
     :reminders, :categories, :parent_handle, :notifiers, :children, :state,
     :last_removed_descendant
+  # Array of attached media files:
+  attr_reader :attachments
+  # Array of STodoTarget references (via handle):
+  attr_reader :references
   alias :description :content
   alias :name :handle
   alias :detail :comment
@@ -84,6 +88,12 @@ class STodoTarget
     result += email_info(template)
     result += "#{CALENDAR_IDS_KEY}: #{calendar_ids.join(', ')}\n"
     result += "#{CATEGORIES_KEY}: #{categories.join(', ')}\n"
+    if self.attachments then
+      result += "#{ATTACHMENTS_KEY}: #{self.attachments.join(", ")}\n"
+    end
+    if self.references then
+      result += "#{REFERENCES_KEY}: #{self.references.join(", ")}\n"
+    end
     result + to_s_appendix
   end
 
@@ -351,6 +361,12 @@ class STodoTarget
     orig.categories.each do |o|
       @categories << o.dup
     end
+    orig.attachments.each do |o|
+      @attachments << o.dup
+    end
+    orig.references.each do |o|
+      @references << o.dup
+    end
     orig.notifiers.each do |o|
       @notifiers << o.dup
     end
@@ -458,7 +474,7 @@ class STodoTarget
   attr_writer   :last_removed_descendant
   attr_writer   :last_op_changed_state
   attr_writer   :title, :content, :priority, :comment, :reminders,
-    :categories, :state
+    :categories, :state, :attachments, :references
   attr_accessor :email_spec
 
   private
@@ -491,6 +507,11 @@ class STodoTarget
           "be ignored (#{rems})"
       end
     end
+#!!!!!Clean up:
+$log.warn "[initialize] attachments count: #{self.attachments.count}"
+$log.warn "[initialize] attachments: #{self.attachments.inspect}"
+$log.warn "[initialize] references count: #{self.references.count}"
+$log.warn "[initialize] references: #{self.references.inspect}"
   end
 
   def set_fields spec
@@ -501,11 +522,12 @@ class STodoTarget
     @content = spec.description
     @comment = spec.comment
     @priority = spec.priority
-    if spec.categories then
-      @categories = spec.categories.split(SPEC_FIELD_DELIMITER)
-    else
-      @categories = []
-    end
+    @categories = []
+    @attachments = []
+    @references = []
+    assign_categories spec
+    assign_attachments spec
+    assign_references spec
     @calendar_ids = []
     if spec.calendar_ids != nil then
       @calendar_ids = spec.calendar_ids.split(SPEC_FIELD_DELIMITER)
@@ -554,33 +576,13 @@ class STodoTarget
       guarded_scalar_assignment(:email_spec, spec, :email)
       set_email_addrs
     end
-    if spec.parent != nil then
-      orig_parent = target_list[self.parent_handle]
-      if spec.parent == "" then
-        @parent_handle = nil  # self becomes a top-level ancestor.
-      else
-        assert('spec.parent not empty') { spec.parent.length > 0 }
-        self.parent_handle = spec.parent
-        new_parent = target_list[self.parent_handle]
-        if new_parent.nil? then
-          raise invalid_parent_handle_msg(self.handle, self.parent_handle)
-        end
-        if orig_parent.nil? || orig_parent.handle != spec.parent then
-          # self's parent has changed - add self to new parent:
-          new_parent.add_child(self)
-        end
-      end
-      if ! orig_parent.nil? && orig_parent.handle != spec.parent then
-        # The parent has been changed, so "un-adopt" the original parent.
-        orig_parent.remove_child(self)
-      end
-    end
-    if spec.categories then
-      @categories = spec.categories.split(SPEC_FIELD_DELIMITER)
-    end
+    assign_parent spec.parent, target_list
     if spec.calendar_ids then
       @calendar_ids = spec.calendar_ids.split(SPEC_FIELD_DELIMITER)
     end
+    assign_categories spec
+    assign_attachments spec
+    assign_references spec
   end
 
   def post_modify_fields spec
@@ -635,6 +637,54 @@ class STodoTarget
       result.sort
     end
     result
+  end
+
+  ###  Initialization/modification utilities
+
+  def assign_categories spec
+    if spec.categories then
+      @categories = spec.categories.split(SPEC_FIELD_DELIMITER)
+    end
+  end
+
+  def assign_attachments spec
+    if spec.attachments then
+      @attachments = spec.attachments.split(SPEC_FIELD_DELIMITER)
+    end
+  end
+
+  pre 'spec-targets-exist' do |spec| ! spec.existing_targets.nil? end
+  def assign_references spec
+    if spec.references then
+      @references = spec.references.split(SPEC_FIELD_DELIMITER)
+      check_references spec
+    end
+  end
+
+  pre 'refs exist' do ! self.references.nil? end
+  pre 'spec exists' do |spec| ! spec.nil? end
+  pre 'extargets exist' do |spec| ! spec.existing_targets.nil? end
+  pre 'extargets is-hash' do |spec| spec.existing_targets.is_a?(Hash) end
+  def check_references spec
+    ex_targets = spec.existing_targets
+    myhandle = self.handle
+$log.warn "checking #{self.handle}'s references:"
+$log.warn self.references.join(", ")
+    valid_refs = self.references.select do |r|
+      if ex_targets.has_key?(r) then
+        true
+      else
+        $log.warn "candidate ref for #{myhandle} is invalid: #{r}"
+        false
+      end
+    end
+    if spec.reject_false_references then
+      self.references = valid_refs
+    end
+$log.warn "After checking #{self.handle}'s references:"
+$log.warn self.references.join(", ")
+$log.warn "valid references:"
+$log.warn valid_refs.join(", ")
   end
 
   ### Implementation
@@ -726,6 +776,31 @@ class STodoTarget
       end
       if not e.match(INITIAL_EMAIL_PTRN) then
         @ongoing_email_addrs << e.gsub(ONGOING_EMAIL_PTRN, "")
+      end
+    end
+  end
+
+  # Execute new-parent logic.
+  def assign_parent parent_h, target_list
+    if parent_h != nil then
+      orig_parent = target_list[self.parent_handle]
+      if parent_h == "" then
+        @parent_handle = nil  # self becomes a top-level ancestor.
+      else
+        assert('parent_h not empty') { parent_h.length > 0 }
+        self.parent_handle = parent_h
+        new_parent = target_list[self.parent_handle]
+        if new_parent.nil? then
+          raise invalid_parent_handle_msg(self.handle, self.parent_handle)
+        end
+        if orig_parent.nil? || orig_parent.handle != parent_h then
+          # self's parent has changed - add self to new parent:
+          new_parent.add_child(self)
+        end
+      end
+      if ! orig_parent.nil? && orig_parent.handle != parent_h then
+        # The parent has been changed, so "un-adopt" the original parent.
+        orig_parent.remove_child(self)
       end
     end
   end

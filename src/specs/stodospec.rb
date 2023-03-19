@@ -9,7 +9,9 @@ class STodoSpec
 
   public
 
-  attr_reader :input_file_path, :config
+  attr_reader   :input_file_path, :config
+  # All current, stored STodoTarget objects
+  attr_accessor :existing_targets
 
   public
 
@@ -89,11 +91,12 @@ class STodoSpec
   # Extract the settings implied in `spec_string' and use them to set
   # "self"'s fields.
   def extract_settings spec_string
+$log.warn "[extract_settings] spec_string: '#{spec_string}'"
     split_expr = '('
     for key in [TYPE_KEY, TITLE_KEY, DESCRIPTION_KEY, HANDLE_KEY, PRIORITY_KEY,
         DUE_DATE_KEY, GOAL_KEY, EMAIL_KEY, CALENDAR_IDS_KEY, COMMENT_KEY,
         PARENT_KEY, EXPIRATION_DATE_KEY, DATE_TIME_KEY, DURATION_KEY,
-        LOCATION_KEY, CATEGORIES_KEY] do
+        LOCATION_KEY, CATEGORIES_KEY, ATTACHMENTS_KEY, REFERENCES_KEY] do
       split_expr += '^' + key + ':\s*|'
     end
     split_expr += '^' + REMINDER_EXPR + ':\s*|^' + START_EXPR + ':\s*)'
@@ -114,6 +117,7 @@ class STodoSpec
       end
     end
     standardize_values
+$log.warn "[extract_settings] @setting_for: #{@setting_for.inspect}"
   end
 
   # `s' stripped of lines starthing with '#'

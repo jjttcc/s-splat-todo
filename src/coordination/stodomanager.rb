@@ -4,6 +4,7 @@ require 'calendarentry'
 require 'preconditionerror'
 require 'targetbuilder'
 require 'stodotargeteditor'
+require 'debug/session'
 
 # Basic manager of STodoTarget objects - creating, modifying/editing,
 # deleting, storing, etc.
@@ -73,8 +74,12 @@ class STodoManager
 
   # Output a "template" for each element of 'target_builder.targets'.
   pre 'target_builder set' do ! self.target_builder.nil? end
+  pre 'existing_targets set' do
+      self.target_builder.existing_targets == self.existing_targets
+  end
   def output_template
     if ! target_builder.targets_prepared? then
+#!!!!rm:      target_builder.existing_targets = self.existing_targets
       target_builder.process_targets
     end
     tgts = target_builder.targets
@@ -113,6 +118,9 @@ class STodoManager
   # Add the newly-created targets specified by target_builder.targets -
   # to persistent store.
   pre 'target_builder set' do ! target_builder.nil? end
+  pre 'tbuilder.existing_targets set' do
+    ! self.target_builder.existing_targets.nil?
+  end
   def add_new_targets
     target_builder.process_targets
     targets = target_builder.targets
@@ -152,9 +160,6 @@ class STodoManager
 
   pre  'config exists' do |config| ! config.nil?  end
   post 'existing_targets set' do ! self.existing_targets.nil? end
-  post 'other attributes set' do
-    ! self.existing_targets.nil?
-  end
   post 'configuration set' do ! self.configuration.nil? end
   def initialize config, tgt_builder = nil
     @data_manager = config.data_manager
