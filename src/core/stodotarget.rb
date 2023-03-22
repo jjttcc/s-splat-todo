@@ -7,6 +7,7 @@ require 'spectools'
 require 'timetools'
 require 'treenode'
 require 'targetstate'
+require 'attachment'
 require 'dateparser'
 require 'targetstatevalues'
 require 'periodicdateparser'
@@ -538,11 +539,6 @@ $log.warn "[initialize] references: #{self.references.inspect}"
     end
   end
 
-  def check_fields
-    # handle serves as an id and is mandatory.
-    if not self.handle then $log.warn "No handle for #{self.title}" end
-  end
-
   # Update any of self's fields according to 'spec'. Any fields in 'spec'
   # that are nil will be ignored - that is, a nil field is taken to imply
   # that that particular field is not to be changed.
@@ -641,24 +637,71 @@ $log.warn "[initialize] references: #{self.references.inspect}"
 
   ###  Initialization/modification utilities
 
-  def assign_categories spec
+  # Assign categories from 'spec' to self.categories.
+  # If 'append', append to self.categories; otherwise, replace its contents
+  # with what is in 'spec'.
+#!!!!rethink:  pre 'categories exists' do ! self.categories.nil? end
+  def assign_categories spec, append = false
     if spec.categories then
       @categories = spec.categories.split(SPEC_FIELD_DELIMITER)
     end
   end
 
-  def assign_attachments spec
+  # Assign attachments from 'spec' to self.attachments.
+  # If 'append', append to self.attachments; otherwise, replace its contents
+  # with what is specified in 'spec'.
+  pre '"attachments" exists' do
+    ! self.attachments.nil? && self.attachments.is_a?(Array)
+  end
+  post '"attachments" still exists' do ! self.attachments.nil? end
+  def assign_attachments spec, append = false
+    new_attchmts = []
     if spec.attachments then
-      @attachments = spec.attachments.split(SPEC_FIELD_DELIMITER)
+      spec.attachments.split(SPEC_FIELD_DELIMITER).each do |s|
+$log.warn "[assign_attachments] s: #{s}"
+        if s.empty? then
+          $log.warn "empty attachment (in #{spec.attachment})"
+        else
+          a = Attachment.new s, spec.config.user_path
+$log.warn "[assign_attachments] a: #{a}"
+          if ! a.is_valid? then
+            $log.warn "#{a.invalidity_reason}"
+            if ! spec.reject_nonexistent_attachments then
+              new_attchmts << a
+            end
+          else
+              new_attchmts << a
+          end
+        end
+      end
+    else
+      $log.warn "no attachments specified"
+    end
+$log.warn "[assign_attachments] new_attchmts: #{new_attchmts.inspect}"
+    if append then
+      self.attachments.concat(new_attchmts)
+    else  # replace
+      self.attachments = new_attchmts
     end
   end
 
+  # Assign references from 'spec' to self.references.
+  # If 'append', append to self.references; otherwise, replace its contents
+  # with what is in 'spec'.
+#!!!!rethink:  pre 'references exists' do ! self.references.nil? end
   pre 'spec-targets-exist' do |spec| ! spec.existing_targets.nil? end
-  def assign_references spec
+  def assign_references spec, append = false
     if spec.references then
       @references = spec.references.split(SPEC_FIELD_DELIMITER)
       check_references spec
     end
+  end
+
+  ### Implementation/verification
+
+  def check_fields
+    # handle serves as an id and is mandatory.
+    if not self.handle then $log.warn "No handle for #{self.title}" end
   end
 
   pre 'refs exist' do ! self.references.nil? end
@@ -668,6 +711,7 @@ $log.warn "[initialize] references: #{self.references.inspect}"
   def check_references spec
     ex_targets = spec.existing_targets
     myhandle = self.handle
+#!!!![clean up:]
 $log.warn "checking #{self.handle}'s references:"
 $log.warn self.references.join(", ")
     valid_refs = self.references.select do |r|
@@ -685,6 +729,40 @@ $log.warn "After checking #{self.handle}'s references:"
 $log.warn self.references.join(", ")
 $log.warn "valid references:"
 $log.warn valid_refs.join(", ")
+  end
+
+  pre 'attachments exist' do ! self.attachments.nil? end
+  pre 'spec exists' do |spec| ! spec.nil? end
+  def remove_me_please___check_attachments spec
+#!!!![clean up:]
+$log.warn "[check_attachments] user_path: #{spec.config.user_path}"
+$log.warn "[check_attachments] checking #{self.handle}'s attachments:"
+$log.warn self.attachments.join(", ")
+    user_path = spec.config.user_path
+    valid_attachments = self.attachments.select do |a|
+#!!!!!in-progress...:
+      if true then
+        true
+      else
+        $log.warn "candidate attachment #{a} is invalid: #{a}"
+        false
+      end
+=begin
+      if a.path is absolete and exists || is in user_path then
+        true
+      else
+        $log.warn "candidate attachment #{a} is invalid: #{a}"
+        false
+      end
+=end
+    end
+    if spec.reject_nonexistent_attachments then
+      self.attachments = valid_attachments
+    end
+$log.warn "After checking #{self.handle}'s attachments:"
+$log.warn self.attachments.join(", ")
+$log.warn "valid attachments:"
+$log.warn valid_attachments.join(", ")
   end
 
   ### Implementation

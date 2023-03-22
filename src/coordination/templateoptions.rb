@@ -11,6 +11,7 @@ class TemplateOptions
     :time, :parent, :title, :calendar_ids, :duration, :priority,
     :references, :attachments
 
+  attr_accessor :config
   # query: Is a parse error to be treated as fatal - i.e., causes an
   # exception to be raised?
   attr_reader :parse_error_is_fatal

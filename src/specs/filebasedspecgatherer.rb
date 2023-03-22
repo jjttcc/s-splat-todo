@@ -11,6 +11,8 @@ class FileBasedSpecGatherer
 
   # the gathered specs, one object per file
   attr_reader :specs
+  # the current app configuration
+  attr_reader :config
 
   public
 
@@ -34,6 +36,7 @@ class FileBasedSpecGatherer
 
   private
 
+  pre 'config exists' do |config| ! config.nil? end
   def initialize config, new_specs = true
     @specs = []
     @config = config

@@ -115,7 +115,7 @@ att1="attachment1.pdf"
 att2="attachment2.txt"
 att3="attachment3.ogg"
 attchs="$att1,$att2, $att3"
-attchsexpr="$att1[, ]*$att2[, ]*$att3"
+attchsexpr=".*$att1.*$att2.*$att3"
 maindesc='task with attachments'
 
 parse_args $@

@@ -39,6 +39,7 @@ module ConfigTools
   ### config tags
   SPEC_PATH_TAG        = 'specpath'
   DATA_PATH_TAG        = 'datapath'
+  USER_PATH_TAG        = 'userpath'
   BACKUP_PATH_TAG      = 'backuppath'
   OLD_SPECS_TAG        = 'processed_specs'
   EMAIL_TEMPLATE_TAG   = 'emailtemplate'

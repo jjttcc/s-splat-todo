@@ -1,17 +1,18 @@
+require 'ruby_contracts'
 require 'spectools'
 
 # Specification for a target (action, project, or memorandum) of the s*todo
 # system
 class STodoSpec
-  include SpecTools
+  include SpecTools, Contracts::DSL
 
   REMINDER_EXPR, START_EXPR = 'reminders?', 'start[a-z_]*'
 
   public
 
-  attr_reader   :input_file_path, :config
+  attr_reader   :input_file_path
   # All current, stored STodoTarget objects
-  attr_accessor :existing_targets
+  attr_accessor :existing_targets, :config
 
   public
 
@@ -44,6 +45,8 @@ class STodoSpec
 
   private
 
+  pre 'input exists' do |input_filepath| ! input_filepath.nil? end
+  pre 'config exists' do |config| ! config.nil? end
   def initialize input_filepath, config
     spec_string = File.read input_filepath
     @input_file_path = input_filepath

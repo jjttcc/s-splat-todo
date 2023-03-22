@@ -35,10 +35,6 @@ class TemplateTargetBuilder < TargetBuilder
     implies(! the_existing_targets.nil?,
             self.existing_targets == the_existing_targets)
   end
-#!!!!!remove:
-#  post 'spec.existing_targets set' do
-#    self.spec.existing_targets == self.existing_targets
-#  end
   def initialize(options, the_existing_targets = nil, the_spec = nil)
     self.existing_targets = the_existing_targets
     if the_spec.nil? then
@@ -47,9 +43,8 @@ class TemplateTargetBuilder < TargetBuilder
     else
       self.spec = the_spec
     end
-#!!!!!remove:
-#!!!    self.spec.existing_targets = self.existing_targets
-    super nil
+$log.warn "options: #{options}"
+    super options
     # (override creation-mode setting in parent:)
     self.processing_mode = EDIT_MODE
   end

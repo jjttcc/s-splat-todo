@@ -21,6 +21,8 @@ class Configuration
   attr_reader :post_init_spec_path
   # path for application data files
   attr_reader :data_path
+  # path for user files
+  attr_reader :user_path
   # path(s) for backups of data files
   attr_reader :backup_paths
   # command to use to send email
@@ -57,13 +59,14 @@ class Configuration
     @category_prefix = cat_prefix settings
     @spec_path = settings[SPEC_PATH_TAG]
     @data_path = settings[DATA_PATH_TAG]
+    @user_path = settings[USER_PATH_TAG]
     @post_init_spec_path =
       ConfigTools::constructed_path([data_path, OLD_SPECS_TAG])
     @templated_email_command = settings[EMAIL_TEMPLATE_TAG]
     @calendar_tool = settings[CALENDAR_COMMAND_TAG]
     @backup_paths = scanned_backup_paths(settings[BACKUP_PATH_TAG])
     validate_paths({:spec_path => spec_path, :data_path => data_path,
-      :post_init_spec_path => post_init_spec_path})
+        :user_path => user_path, :post_init_spec_path => post_init_spec_path})
     validate_paths(labeled_paths(backup_paths))
     validate_exefiles(@calendar_tool)
   end

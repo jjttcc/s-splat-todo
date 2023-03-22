@@ -26,6 +26,17 @@ class STodoManager
   # Does persistent data need updating (has it been changed)?
   attr_accessor :dirty
 
+  ###  Element change
+
+  def target_builder=(t)
+    @target_builder = t
+    if ! self.target_builder.nil? then
+      self.target_builder.specs.each do |s|
+        s.config = self.configuration
+      end
+    end
+  end
+
   ###  Basic operations
 
   # Process any pending "STodoTarget"s - i.e., those that are specified to
@@ -79,7 +90,6 @@ class STodoManager
   end
   def output_template
     if ! target_builder.targets_prepared? then
-#!!!!rm:      target_builder.existing_targets = self.existing_targets
       target_builder.process_targets
     end
     tgts = target_builder.targets
