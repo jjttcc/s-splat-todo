@@ -1,8 +1,10 @@
 # Change these settings as needed/desired.
 specpath = /home/mylogin/.stodo/specs
 datapath = /home/mylogin/.stodo/data
+# Default path for user files, such as attachments:
+userpath = /home/mylogin/.stodo/user
 # comma-separated list of one or more backup paths:
-backuppath = /home4/backups/jtc/stodo,/home3/backups/misc/jtc/stodo/
+backuppath = /home2/backups/mylogin/stodo,/home3/backups/misc/mylogin/stodo/
 emailtemplate = mutt -s <subject> <addrs>
 # To use a user name other than your UNIX login name, edit/uncomment this:
 #user = mymyselfandi
@@ -12,3 +14,30 @@ calendarcmd = /home/mylogin/lib/python2/bin/gcalcli
 categoryprefix = cat-
 # To specify no category prefix, uncomment this line:
 # categoryprefix =
+# Paths to executables for various types of media viewers and editors
+# (modify as needed):
+view_msword = /bin/libreoffice
+edit_msword = /bin/libreoffice
+view_msexcel = /bin/libreoffice
+edit_msexcel = /bin/libreoffice
+view_openspread = /bin/libreoffice
+edit_openspread = /bin/libreoffice
+view_openxml = /bin/libreoffice
+edit_openxml = /bin/libreoffice
+# (view here means "run", of course:)
+view_executable = 'bash -c'
+# (empty string [''] here means to run the executable directly)
+#view_executable = ''
+edit_executable = /bin/hexedit
+view_plain_text = /bin/gview
+edit_plain_text = /bin/gvim
+view_pdf = /bin/evince
+edit_pdf = /bin/libreoffice
+view_video = /bin/vlc
+#view_video = /bin/mpv
+edit_video = /bin/kdenlive
+view_code = /bin/gview
+edit_code = /bin/gvim
+# (view here means "play/listen", of course:)
+view_audio = mpv --no-video
+edit_audio = /bin/audacity

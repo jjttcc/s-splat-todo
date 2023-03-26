@@ -85,10 +85,8 @@ class STodoManager
 
   # Output a "template" for each element of 'target_builder.targets'.
   pre 'target_builder set' do ! self.target_builder.nil? end
-  pre 'existing_targets set' do
-      self.target_builder.existing_targets == self.existing_targets
-  end
   def output_template
+    self.target_builder.existing_targets = self.existing_targets
     if ! target_builder.targets_prepared? then
       target_builder.process_targets
     end
@@ -168,15 +166,17 @@ class STodoManager
 
   ###    Initialization
 
-  pre  'config exists' do |config| ! config.nil?  end
+  pre  'global config exists' do ! Configuration.config.nil?  end
+  post 'configuration set' do
+    !self.configuration.nil? && self.configuration == Configuration.config
+  end
   post 'existing_targets set' do ! self.existing_targets.nil? end
-  post 'configuration set' do ! self.configuration.nil? end
-  def initialize config, tgt_builder = nil
-    @data_manager = config.data_manager
+  def initialize tgt_builder = nil
+    @configuration = Configuration.config
+    @data_manager = @configuration.data_manager
     @existing_targets = @data_manager.restored_targets
-    @mailer = Mailer.new config
-    @calendar = CalendarEntry.new config
-    @configuration = config
+    @mailer = Mailer.new @configuration
+    @calendar = CalendarEntry.new @configuration
     init_new_targets tgt_builder
   end
 

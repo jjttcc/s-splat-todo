@@ -104,7 +104,6 @@ class TargetBuilder
   attr_writer :targets, :processing_mode
 
   pre  'collector exists' do |spec_collector| ! spec_collector.nil? end
-  pre  'valid config' do |spec_collector| ! spec_collector.config.nil? end
   post 'targets.nil?' do self.targets.nil? end
   # Set self.processing_mode to CREATE_MODE, unless overridden in descendant.
   # Initialize @spec_collector, @edited_targets, @time_changed_for.

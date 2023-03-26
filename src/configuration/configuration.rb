@@ -4,10 +4,11 @@ require 'fileutils'
 require 'yamlstorebaseddatamanager'
 require 'spectools'
 require 'configtools'
+require 'mediaconfigtools'
 
 # Configuration settings for the current run
 class Configuration
-  include ConfigTools, FileTest, FileUtils
+  include ConfigTools, MediaConfigTools, FileTest, FileUtils
   include Contracts::DSL
 
   public
@@ -33,6 +34,11 @@ class Configuration
   attr_reader :category_prefix
   attr_reader :data_manager
 
+  # Should attachments be "viewed" (not modified) during this run?
+  attr_reader :view_attachment
+  # Should attachments be "edited" (potentially modified) during this run?
+  attr_reader :edit_attachment
+
   # Is this a test run?
   def test_run?
     @test_run
@@ -44,14 +50,25 @@ class Configuration
     LOGPATH = DEFAULT_LOG_PATH
   end
 
+  # 'self' (this Configuration) as a class variable
+  def self.config
+    @@config
+  end
+
   private
 
+  attr_writer :view_attachment, :edit_attachment
+
+  post 'class config set to self' do self.class.config == self end
   def initialize
     setup_config_path
     settings = config_file_settings
     set_config_vars settings
+    set_external_media_tools settings
+    set_internal_vars
     @test_run = ENV[STTESTRUN] != nil
     @data_manager = YamlStoreBasedDataManager.new(data_path, user)
+    @@config = self
   end
 
   def set_config_vars settings
@@ -69,6 +86,18 @@ class Configuration
         :user_path => user_path, :post_init_spec_path => post_init_spec_path})
     validate_paths(labeled_paths(backup_paths))
     validate_exefiles(@calendar_tool)
+  end
+
+  # Set values based on "internal" (not generally directly available to the
+  # user) environment variables.
+  def set_internal_vars
+    self.view_attachment = true
+    self.edit_attachment = false
+    atype_override = ENV[ST_ATTCH_ACTION]
+    if ! atype_override.nil? && atype_override == ATTCH_ACTION_EDIT then
+      self.edit_attachment = true
+      self.view_attachment = false
+    end
   end
 
   def setup_config_path
@@ -96,6 +125,7 @@ class Configuration
     result = {}
     cfgfile = opened_config_file 'r'
     lines = cfgfile.read.split("\n")
+#!!!!Possible bug note: We appear to be including comment lines here:
     result = Hash[lines.map { |l| l.split(/\s*=\s*/, 2) }]
     result
   end

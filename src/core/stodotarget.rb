@@ -453,6 +453,15 @@ class STodoTarget
     end
   end
 
+  pre '"editing" eixsts' do |editing| ! editing.nil? end
+  def process_attachments editing
+    if self.attachments then
+      self.attachments.each do |a|
+        a.process editing
+      end
+    end
+  end
+
   public    ###  Persistence
 
   # Make any needed changes before the persistent attributes are saved.
@@ -657,20 +666,20 @@ $log.warn "[initialize] references: #{self.references.inspect}"
   def assign_attachments spec, append = false
     new_attchmts = []
     if spec.attachments then
-      spec.attachments.split(SPEC_FIELD_DELIMITER).each do |s|
-$log.warn "[assign_attachments] s: #{s}"
-        if s.empty? then
+      spec.attachments.split(SPEC_FIELD_DELIMITER).each do |a|
+$log.warn "[assign_attachments] a: #{a}"
+        if a.empty? then
           $log.warn "empty attachment (in #{spec.attachment})"
         else
-          a = Attachment.new s, spec.config.user_path
-$log.warn "[assign_attachments] a: #{a}"
-          if ! a.is_valid? then
-            $log.warn "#{a.invalidity_reason}"
+          attchmt = Attachment.new a
+$log.warn "[assign_attachments] attchmt: #{attchmt}"
+          if ! attchmt.is_valid? then
+            $log.warn "#{attchmt.invalidity_reason}"
             if ! spec.reject_nonexistent_attachments then
-              new_attchmts << a
+              new_attchmts << attchmt
             end
           else
-              new_attchmts << a
+              new_attchmts << attchmt
           end
         end
       end
@@ -735,10 +744,10 @@ $log.warn valid_refs.join(", ")
   pre 'spec exists' do |spec| ! spec.nil? end
   def remove_me_please___check_attachments spec
 #!!!![clean up:]
-$log.warn "[check_attachments] user_path: #{spec.config.user_path}"
+$log.warn "[check_attachments] user_path: #{Configuration.config.user_path}"
 $log.warn "[check_attachments] checking #{self.handle}'s attachments:"
 $log.warn self.attachments.join(", ")
-    user_path = spec.config.user_path
+    user_path = Configuration.config.user_path
     valid_attachments = self.attachments.select do |a|
 #!!!!!in-progress...:
       if true then

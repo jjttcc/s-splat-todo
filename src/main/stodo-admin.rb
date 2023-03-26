@@ -5,6 +5,9 @@ require 'configuration'
 require 'stodoadministrator'
 
 if ! ARGV.empty? then
-  administrator = STodoAdministrator.new Configuration.new
+  # (Configuration.initialize makes its "self" available via
+  #  class method Configuration.config)
+  Configuration.new
+  administrator = STodoAdministrator.new
   administrator.execute(ARGV)
 end

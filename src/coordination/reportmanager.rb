@@ -106,6 +106,22 @@ class ReportManager
     end
   end
 
+  # "Process" all attachments for the items specified in 'criteria'.
+  def report_attachments(criteria)
+    config = Configuration.config
+    if criteria.null_criteria? then
+      # No criteria specified implies retrieval of all items (targets).
+      targets = targets_for(nil)
+    else
+      targets = targets_for_criteria(criteria)
+    end
+    editing = config.edit_attachment
+    targets.each do |t|
+$log.warn "Will I \"view\" #{t.handle}'s attachments? - #{! editing}"
+      t.process_attachments editing
+    end
+  end
+
   # Report all descendants (child targets, their children, ...) for each
   # target whose handle is in `criteria.handles'.
   def report_emancipated_children criteria
@@ -234,7 +250,6 @@ class ReportManager
 
   # (Note: Returns all targets if 'handles' is nil.)
   def targets_for handles, sorted = true
-    result = manager.existing_targets.values
     if handles != nil && handles.length > 0 then
       result = []
       handles.each do |h|
@@ -242,6 +257,8 @@ class ReportManager
           result << manager.existing_targets[h]
         end
       end
+    else
+      result = manager.existing_targets.values
     end
     if sorted then
       result.sort! do |a, b|

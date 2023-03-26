@@ -47,6 +47,8 @@ module ConfigTools
   USER_TAG             = 'user'
   CATEGORY_PREFIX_TAG  = 'categoryprefix'
   DEFAULT_CAT_PREFIX   = 'cat:'
+  ATTCH_ACTION_EDIT    = 'edit'
+  ATTCH_ACTION_VIEW    = 'view'
 
   # http://stackoverflow.com/questions/2108727/which-in-ruby-checking-if-program-exists-in-path-from-ruby)
   # The path of the executable `cmd', if it is in the user's path -

@@ -5,6 +5,8 @@ require 'configuration'
 require 'stodomanager'
 
 
-config = Configuration.new
-manager = STodoManager.new config
+# (Configuration.initialize makes its "self" available via
+#  class method Configuration.config)
+Configuration.new
+manager = STodoManager.new
 manager.perform_ongoing_processing

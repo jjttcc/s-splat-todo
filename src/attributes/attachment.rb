@@ -1,4 +1,6 @@
 require 'ruby_contracts'
+require 'filecommand'
+require 'mediahandler'
 
 # Abstraction for file attachments (whose 'path' attribute is immutable)
 # that can be added to an (STodoTarget) item
@@ -18,7 +20,7 @@ class Attachment
   ###  Status report
 
   # Is the file associated with 'self.path' valid?
-  # (Does it exist? Is it a file? ...!!!)
+  # (Does it exist? Is it a file? Is it readable? ...)
   post 'no reason' do |res| implies(res, self.invalidity_reason == "") end
   post 'reason' do |res| implies(! res, ! self.invalidity_reason.empty?) end
   def is_valid?
@@ -35,10 +37,36 @@ class Attachment
     result
   end
 
+  # Type of the file identified by 'path'
+  #!!!!This query is probably not needed and if so needs to be removed:
+  def file_type
+    fc = FileCommand.new
+    fc.mime_type self.path
+  end
+
   ###  Invariant
 
   def invariant
     ! self.path.nil? && ! self.invalidity_reason.nil?
+  end
+
+  ###  Basic operations
+
+  # "Process" the attachment by executing an external process (i.e.,
+  # view-video, edit-file, play-audio, etc.).
+  # If 'editing', the external command will be one designated for the
+  # purpose of editing the attachment; otherwise, a command designated
+  # for viewing will be invoked on the attachment.
+  pre '"editing" eixsts' do |editing| ! editing.nil? end
+  def process editing
+    handler = MediaHandler.new self.path
+    if editing then
+$log.warn "I will try to \"edit\" myself (#{self.path})."
+      handler.edit
+    else
+      handler.view
+$log.warn "I will try to \"view\" myself (#{self.path})."
+    end
   end
 
   private
@@ -55,13 +83,35 @@ class Attachment
   # If default_location is empty and 'pth' is not an absolute path, assume
   # 'pth' resides in the current directory.
   pre 'pth valid' do |pth| ! pth.nil? && pth.is_a?(String)  && ! pth.empty? end
+  post 'path set' do |r, pth| self.path.include?(pth) end
+  post 'invalidity_reason set' do self.invalidity_reason == "" end
+  post 'invariant' do invariant end
+  def initialize att_pth
+    default_location = Configuration.config.user_path
+    if att_pth[0] == "/" then
+      self.path = att_pth.clone
+    elsif ! default_location.nil? && ! default_location.empty? then
+      self.path = "#{default_location}/#{att_pth}"
+    else
+      self.path = "#{Dir.pwd}/#{att_pth}"
+    end
+    self.invalidity_reason = ""
+    self.invalidity_reason.freeze
+    self.path.freeze
+  end
+
+  # If specified, default_location is prepended to 'pth' if 'pth' is not an
+  # absolute path (does not start with "/").
+  # If default_location is empty and 'pth' is not an absolute path, assume
+  # 'pth' resides in the current directory.
+  pre 'pth valid' do |pth| ! pth.nil? && pth.is_a?(String)  && ! pth.empty? end
   pre 'default_location is absolute' do |pth, defloc|
     defloc.nil? || defloc.empty? || defloc[0] == "/"
   end
   post 'path set' do |r, pth| self.path.include?(pth) end
   post 'invalidity_reason set' do self.invalidity_reason == "" end
   post 'invariant' do invariant end
-  def initialize pth, default_location = ""
+  def old___initialize att_pth, default_location = ""
     if pth[0] == "/" then
       self.path = pth.clone
     elsif ! default_location.nil? && ! default_location.empty? then

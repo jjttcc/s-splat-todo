@@ -42,6 +42,8 @@ mainhelp() {
     echo -e "  temp [<type> ...]  output a to-do item template \c"
     echo -e "(for target type <type>)"
     echo -e "  backup [opts] ${gap} back up data files"
+    echo -e "  proca <h>...       Process attachments for items with \c"
+    echo -e "handles <h>..."
 }
 
 indepth_help() {
@@ -54,6 +56,7 @@ indepth_help() {
     sta*) state_help ;;
     admin) admin_help ;;
     back*) backup_help ;;
+    proca*) process_attachment_help ;;
   esac
 }
 
@@ -216,6 +219,22 @@ make_template() {
   fi
 }
 
+# Pre-process "proca" arguments/options
+# (Set the specified handles to $proca_handles and set/export
+# ST_ATTCH_ACTION as 'view' [i.e., default] unless the '-e' option is
+# present, in which case set/export ST_ATTCH_ACTION as 'edit'.
+pre_process_attachments() {
+  export ST_ATTCH_ACTION=view
+  proca_handles=
+  for arg; do
+    case $arg in
+      -v*) ;;
+      -e*) ST_ATTCH_ACTION=edit ;;
+      *) proca_handles="$proca_handles $arg" ;;
+    esac
+  done
+}
+
 report_help() {
   local s='        '
   local long_s="$s$s      "
@@ -372,6 +391,15 @@ state_help() {
   echo -e "  'suspended'    | cancel       | 'canceled'"
 }
 
+process_attachment_help() {
+  local s='     '
+  local ls='                    '
+  echo -e "Usage: $progname proca <handle> [...] [options]"
+  echo -e "\nOptions:"
+  echo -e "  -v $s \"view\" the attachment (i.e., read-only)"
+  echo -e "  -e $s \"edit\" (modify) the attachment"
+}
+
 case $1 in
   new|init) process_new_items
     ;;
@@ -421,6 +449,11 @@ case $1 in
   temp*) shift; make_template "$@"
     ;;
   back*) shift; do_backup $*
+    ;;
+  proca*)
+    shift;
+    pre_process_attachments $*
+    do_report attach $proca_handles
     ;;
   read*)
     shift;

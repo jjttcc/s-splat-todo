@@ -29,10 +29,9 @@ class STodoAdministrator
 
   private
 
-  def initialize config = nil
-    if config != nil then
-      @config = config
-    end
+  pre  'global config exists' do ! Configuration.config.nil?  end
+  def initialize
+    @config = Configuration.config
     initialize_method_map
   end
 

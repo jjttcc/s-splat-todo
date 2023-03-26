@@ -36,10 +36,13 @@ class FileBasedSpecGatherer
 
   private
 
-  pre 'config exists' do |config| ! config.nil? end
-  def initialize config, new_specs = true
+  pre  'global config exists' do ! Configuration.config.nil?  end
+  post 'self.config set' do
+    ! self.config.nil? && self.config == Configuration.config
+  end
+  def initialize new_specs = true
     @specs = []
-    @config = config
+    @config = Configuration.config
     path = new_specs ? @config.spec_path : @config.post_init_spec_path
     process_specs path
     if ENV[STDEBUG] then

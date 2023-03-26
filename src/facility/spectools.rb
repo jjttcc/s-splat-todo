@@ -32,6 +32,7 @@ module SpecTools
   STODO_PATH            = 'STODO_PATH'
   ST_REJECT_BADREFS     = 'STODO_REJECT_BADREFS'
   ST_REJECT_BADATTCHMTS = 'STODO_REJECT_BADATTCHMTS'
+  ST_ATTCH_ACTION       = 'ST_ATTCH_ACTION'
 
   # tags/patterns from spec with special meaning
   INITIAL_EMAIL_PTRN = Regexp.new('\[initial\]')

@@ -3,13 +3,18 @@
 
 require 'configuration'
 require 'stodomanager'
+require 'stubbedspec'
+require 'templatetargetbuilder'
 
 def two_arg_warning command
   $log.warn "Wrong number of arguments - usage: #{command} <arg1> <arg2>"
 end
 
 if ARGV.length > 1 then
-  manager = STodoManager.new Configuration.new
+  Configuration.new
+  # (Configuration.initialize makes its "self" available via
+  #  class method Configuration.config)
+  manager = STodoManager.new
   command = ARGV[0]; arguments = ARGV[1..-1]
   case command
   when /ch.*par/, /clone/, /remove_d/, /ch.*han/  # two+-arg commands
@@ -24,14 +29,12 @@ if ARGV.length > 1 then
     require 'templatetargetbuilder'
     require 'templateoptions'
     options = TemplateOptions.new(arguments, true)
-    options.config = manager.configuration
     target_builder = TemplateTargetBuilder.new(options,
                                                manager.existing_targets)
     target_builder.set_processing_mode TemplateTargetBuilder::CREATE_MODE
     manager.target_builder = target_builder
     manager.add_new_targets
   when /change*/
-    require 'targeteditor'
     require 'templateoptions'
     handle = arguments[0]
     $log.debug "arguments: #{arguments}, handle: #{handle}"
@@ -40,7 +43,6 @@ if ARGV.length > 1 then
     arguments.unshift SpecTools::EDIT   # (the 'type' argument)
     $log.debug "arguments: #{arguments}"
     options = TemplateOptions.new(arguments, true)
-    options.config = manager.configuration
     spec = StubbedSpec.new(options, false)  # false => don't use defaults
     target_editor = TemplateTargetBuilder.new(options,
                                               manager.existing_targets, spec)

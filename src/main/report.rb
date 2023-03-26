@@ -1,5 +1,10 @@
 #!/usr/bin/env ruby
 # Display a report of existing s*todo items.
+# (Note: If attachments are to be processed, the "processing" could involve
+# editing/modifying attachments, which contradicts the notion of reporting.
+# However, attachments are considered to be outside the "jurisdiction" of
+# this application, which can perhaps allow this action to be "fitted" into
+# the category of reporting.)
 
 require 'errortools'
 require 'configuration'
@@ -70,6 +75,10 @@ class ReportUtil
       when /^due/
         result = Proc.new {
           reporter.report_due(criteria)
+        }
+      when /^attach/
+        result = Proc.new {
+          reporter.report_attachments(criteria)
         }
       end
     end
@@ -214,7 +223,9 @@ class ReportUtil
 
 end
 
-config = Configuration.new
-manager = STodoManager.new config
+# (Configuration.initialize makes its "self" available via
+#  class method Configuration.config)
+Configuration.new
+manager = STodoManager.new
 reporter = ReportManager.new manager
 ReportUtil::execute(reporter).call
