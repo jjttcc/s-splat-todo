@@ -43,7 +43,6 @@ class TemplateTargetBuilder < TargetBuilder
     else
       self.spec = the_spec
     end
-$log.warn "options: #{options}"
     super options
     # (override creation-mode setting in parent:)
     self.processing_mode = EDIT_MODE

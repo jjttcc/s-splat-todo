@@ -1,4 +1,5 @@
 require 'ruby_contracts'
+require 'singleton'
 require 'logger'
 require 'fileutils'
 require 'yamlstorebaseddatamanager'
@@ -8,6 +9,7 @@ require 'mediaconfigtools'
 
 # Configuration settings for the current run
 class Configuration
+  include Singleton
   include ConfigTools, MediaConfigTools, FileTest, FileUtils
   include Contracts::DSL
 
@@ -24,6 +26,8 @@ class Configuration
   attr_reader :data_path
   # path for user files
   attr_reader :user_path
+  # default/backup email address
+  attr_reader :default_email
   # path(s) for backups of data files
   attr_reader :backup_paths
   # command to use to send email
@@ -50,16 +54,10 @@ class Configuration
     LOGPATH = DEFAULT_LOG_PATH
   end
 
-  # 'self' (this Configuration) as a class variable
-  def self.config
-    @@config
-  end
-
   private
 
   attr_writer :view_attachment, :edit_attachment
 
-  post 'class config set to self' do self.class.config == self end
   def initialize
     setup_config_path
     settings = config_file_settings
@@ -68,7 +66,6 @@ class Configuration
     set_internal_vars
     @test_run = ENV[STTESTRUN] != nil
     @data_manager = YamlStoreBasedDataManager.new(data_path, user)
-    @@config = self
   end
 
   def set_config_vars settings
@@ -77,6 +74,7 @@ class Configuration
     @spec_path = settings[SPEC_PATH_TAG]
     @data_path = settings[DATA_PATH_TAG]
     @user_path = settings[USER_PATH_TAG]
+    @default_email = settings[DEFAULT_EMAIL_TAG]
     @post_init_spec_path =
       ConfigTools::constructed_path([data_path, OLD_SPECS_TAG])
     @templated_email_command = settings[EMAIL_TEMPLATE_TAG]

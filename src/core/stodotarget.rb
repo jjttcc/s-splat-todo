@@ -517,11 +517,6 @@ class STodoTarget
           "be ignored (#{rems})"
       end
     end
-#!!!!!Clean up:
-$log.warn "[initialize] attachments count: #{self.attachments.count}"
-$log.warn "[initialize] attachments: #{self.attachments.inspect}"
-$log.warn "[initialize] references count: #{self.references.count}"
-$log.warn "[initialize] references: #{self.references.inspect}"
   end
 
   def set_fields spec
@@ -647,10 +642,7 @@ $log.warn "[initialize] references: #{self.references.inspect}"
   ###  Initialization/modification utilities
 
   # Assign categories from 'spec' to self.categories.
-  # If 'append', append to self.categories; otherwise, replace its contents
-  # with what is in 'spec'.
-#!!!!rethink:  pre 'categories exists' do ! self.categories.nil? end
-  def assign_categories spec, append = false
+  def assign_categories spec
     if spec.categories then
       @categories = spec.categories.split(SPEC_FIELD_DELIMITER)
     end
@@ -667,12 +659,10 @@ $log.warn "[initialize] references: #{self.references.inspect}"
     new_attchmts = []
     if spec.attachments then
       spec.attachments.split(SPEC_FIELD_DELIMITER).each do |a|
-$log.warn "[assign_attachments] a: #{a}"
         if a.empty? then
           $log.warn "empty attachment (in #{spec.attachment})"
         else
           attchmt = Attachment.new a
-$log.warn "[assign_attachments] attchmt: #{attchmt}"
           if ! attchmt.is_valid? then
             $log.warn "#{attchmt.invalidity_reason}"
             if ! spec.reject_nonexistent_attachments then
@@ -686,7 +676,6 @@ $log.warn "[assign_attachments] attchmt: #{attchmt}"
     else
       $log.warn "no attachments specified"
     end
-$log.warn "[assign_attachments] new_attchmts: #{new_attchmts.inspect}"
     if append then
       self.attachments.concat(new_attchmts)
     else  # replace
@@ -695,11 +684,8 @@ $log.warn "[assign_attachments] new_attchmts: #{new_attchmts.inspect}"
   end
 
   # Assign references from 'spec' to self.references.
-  # If 'append', append to self.references; otherwise, replace its contents
-  # with what is in 'spec'.
-#!!!!rethink:  pre 'references exists' do ! self.references.nil? end
   pre 'spec-targets-exist' do |spec| ! spec.existing_targets.nil? end
-  def assign_references spec, append = false
+  def assign_references spec
     if spec.references then
       @references = spec.references.split(SPEC_FIELD_DELIMITER)
       check_references spec
@@ -720,9 +706,6 @@ $log.warn "[assign_attachments] new_attchmts: #{new_attchmts.inspect}"
   def check_references spec
     ex_targets = spec.existing_targets
     myhandle = self.handle
-#!!!![clean up:]
-$log.warn "checking #{self.handle}'s references:"
-$log.warn self.references.join(", ")
     valid_refs = self.references.select do |r|
       if ex_targets.has_key?(r) then
         true
@@ -734,44 +717,6 @@ $log.warn self.references.join(", ")
     if spec.reject_false_references then
       self.references = valid_refs
     end
-$log.warn "After checking #{self.handle}'s references:"
-$log.warn self.references.join(", ")
-$log.warn "valid references:"
-$log.warn valid_refs.join(", ")
-  end
-
-  pre 'attachments exist' do ! self.attachments.nil? end
-  pre 'spec exists' do |spec| ! spec.nil? end
-  def remove_me_please___check_attachments spec
-#!!!![clean up:]
-$log.warn "[check_attachments] user_path: #{Configuration.config.user_path}"
-$log.warn "[check_attachments] checking #{self.handle}'s attachments:"
-$log.warn self.attachments.join(", ")
-    user_path = Configuration.config.user_path
-    valid_attachments = self.attachments.select do |a|
-#!!!!!in-progress...:
-      if true then
-        true
-      else
-        $log.warn "candidate attachment #{a} is invalid: #{a}"
-        false
-      end
-=begin
-      if a.path is absolete and exists || is in user_path then
-        true
-      else
-        $log.warn "candidate attachment #{a} is invalid: #{a}"
-        false
-      end
-=end
-    end
-    if spec.reject_nonexistent_attachments then
-      self.attachments = valid_attachments
-    end
-$log.warn "After checking #{self.handle}'s attachments:"
-$log.warn self.attachments.join(", ")
-$log.warn "valid attachments:"
-$log.warn valid_attachments.join(", ")
   end
 
   ### Implementation

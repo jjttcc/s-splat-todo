@@ -30,11 +30,6 @@ class STodoManager
 
   def target_builder=(t)
     @target_builder = t
-    if ! self.target_builder.nil? then
-      self.target_builder.specs.each do |s|
-        s.config = self.configuration
-      end
-    end
   end
 
   ###  Basic operations
@@ -104,7 +99,7 @@ class STodoManager
           puts (cand_parents.map {|t| t.handle }).join(', ')
         end
       end
-      puts "#spec-path: #{self.configuration.spec_path}"
+      puts "#spec-path: #{Configuration.instance.spec_path}"
     end
   end
 
@@ -166,13 +161,10 @@ class STodoManager
 
   ###    Initialization
 
-  pre  'global config exists' do ! Configuration.config.nil?  end
-  post 'configuration set' do
-    !self.configuration.nil? && self.configuration == Configuration.config
-  end
   post 'existing_targets set' do ! self.existing_targets.nil? end
+  post 'configuration set' do !self.configuration.nil? end
   def initialize tgt_builder = nil
-    @configuration = Configuration.config
+    @configuration = Configuration.instance
     @data_manager = @configuration.data_manager
     @existing_targets = @data_manager.restored_targets
     @mailer = Mailer.new @configuration

@@ -87,14 +87,12 @@ module SpecTools
   # Should proposed references to non-existent "STodoTarget"s be rejected?
   def reject_false_references
     answer = ENV[ST_REJECT_BADREFS]
-$log.warn "[reject_false_references] ret: #{! answer.nil? && ! answer.empty?}"
     ! answer.nil? && ! answer.empty?
   end
 
   # Should proposed attachments referring to non-existent files be rejected?
   def reject_nonexistent_attachments
     answer = ENV[ST_REJECT_BADATTCHMTS]
-$log.warn "[reject_nonexistent_attachments] ret: #{! answer.nil? && ! answer.empty?}"
     ! answer.nil? && ! answer.empty?
   end
 

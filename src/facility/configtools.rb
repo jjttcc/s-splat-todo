@@ -43,6 +43,7 @@ module ConfigTools
   BACKUP_PATH_TAG      = 'backuppath'
   OLD_SPECS_TAG        = 'processed_specs'
   EMAIL_TEMPLATE_TAG   = 'emailtemplate'
+  DEFAULT_EMAIL_TAG    = 'default_email'
   CALENDAR_COMMAND_TAG = 'calendarcmd'
   USER_TAG             = 'user'
   CATEGORY_PREFIX_TAG  = 'categoryprefix'

@@ -1,5 +1,6 @@
 require 'ruby_contracts'
 require 'filetypetools'
+require 'externalcommand'
 
 # Abstraction for handlers of files of different media types, for "handling" -
 # viewing (video), playing (audio), viewing (document), editing (document),
@@ -20,19 +21,26 @@ class MediaHandler
   def edit
     type = filecommand.mime_type self.path
     stodo_type = file_type_for type
-    editor = config.media_editor_for stodo_type
-#!!!!Need an 'execute' method    editor.execute self.path
-$log.warn "I (#{self.class}) will try to edit #{self.path} for:"
-$log.warn "type: #{type}, stodo-type: #{stodo_type}, editor: #{editor}"
+    external_editor_spec = config.media_editor_for stodo_type
+    cmd_with_args = string_as_argument_array external_editor_spec
+    begin
+      ExternalCommand.execute(*cmd_with_args, self.path)
+    rescue Exception => e
+      $log.warn "error editing #{self.path}: #{e}"
+    end
   end
 
   # Invoke the appropriate command to view the file at self.path.
   def view
     type = filecommand.mime_type self.path
     stodo_type = file_type_for type
-    viewer = config.media_viewer_for stodo_type
-$log.warn "I (#{self.class}) will try to view #{self.path} for:"
-$log.warn "type: #{type}, stodo-type: #{stodo_type}, viewer: #{viewer}"
+    external_viewer_spec = config.media_viewer_for stodo_type
+    cmd_with_args = string_as_argument_array external_viewer_spec
+    begin
+      ExternalCommand.execute(*cmd_with_args, self.path)
+    rescue Exception => e
+      $log.warn "error viewing #{self.path}: #{e}"
+    end
   end
 
   private
@@ -43,8 +51,14 @@ $log.warn "type: #{type}, stodo-type: #{stodo_type}, viewer: #{viewer}"
   pre 'pth nonempty string' do |pth| ! pth.nil? && ! pth.empty? end
   def initialize pth
     self.path = pth
-    self.config = Configuration.config
+    self.config = Configuration.instance
     self.filecommand = FileCommand.new
+  end
+
+  def string_as_argument_array s
+    result =
+      s.scan(/(?:["']([^"]*)["']|([^ ]+))/).flatten.select {|e| !e.nil? }
+    result
   end
 
 end

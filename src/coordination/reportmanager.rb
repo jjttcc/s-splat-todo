@@ -108,7 +108,7 @@ class ReportManager
 
   # "Process" all attachments for the items specified in 'criteria'.
   def report_attachments(criteria)
-    config = Configuration.config
+    config = Configuration.instance
     if criteria.null_criteria? then
       # No criteria specified implies retrieval of all items (targets).
       targets = targets_for(nil)
@@ -117,7 +117,6 @@ class ReportManager
     end
     editing = config.edit_attachment
     targets.each do |t|
-$log.warn "Will I \"view\" #{t.handle}'s attachments? - #{! editing}"
       t.process_attachments editing
     end
   end

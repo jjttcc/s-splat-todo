@@ -37,13 +37,6 @@ class Attachment
     result
   end
 
-  # Type of the file identified by 'path'
-  #!!!!This query is probably not needed and if so needs to be removed:
-  def file_type
-    fc = FileCommand.new
-    fc.mime_type self.path
-  end
-
   ###  Invariant
 
   def invariant
@@ -61,11 +54,9 @@ class Attachment
   def process editing
     handler = MediaHandler.new self.path
     if editing then
-$log.warn "I will try to \"edit\" myself (#{self.path})."
       handler.edit
     else
       handler.view
-$log.warn "I will try to \"view\" myself (#{self.path})."
     end
   end
 
@@ -87,7 +78,7 @@ $log.warn "I will try to \"view\" myself (#{self.path})."
   post 'invalidity_reason set' do self.invalidity_reason == "" end
   post 'invariant' do invariant end
   def initialize att_pth
-    default_location = Configuration.config.user_path
+    default_location = Configuration.instance.user_path
     if att_pth[0] == "/" then
       self.path = att_pth.clone
     elsif ! default_location.nil? && ! default_location.empty? then

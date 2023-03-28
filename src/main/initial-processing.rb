@@ -8,9 +8,6 @@ require 'targetbuilder'
 require 'stodomanager'
 
 
-Configuration.new
-# (Configuration.initialize makes its "self" available via
-#  class method Configuration.config)
 # Gather the new specs.
 spec_collector = FileBasedSpecGatherer.new
 # Build the s*todo targets.

@@ -165,6 +165,11 @@ class TemplateOptions
     end
     if emails then
       @email = emails.join(SPEC_FIELD_JOINER)
+    else
+      emails = Configuration.instance.default_email
+      if emails && ! emails.empty? then
+        @email = emails
+      end
     end
   end
 

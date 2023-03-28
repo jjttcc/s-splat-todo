@@ -12,7 +12,7 @@ class STodoSpec
 
   attr_reader   :input_file_path
   # All current, stored STodoTarget objects
-  attr_accessor :existing_targets, :config
+  attr_accessor :existing_targets
 
   public
 
@@ -46,11 +46,9 @@ class STodoSpec
   private
 
   pre 'input exists' do |input_filepath| ! input_filepath.nil? end
-  pre 'config exists' do |config| ! config.nil? end
-  def initialize input_filepath, config
+  def initialize input_filepath
     spec_string = File.read input_filepath
     @input_file_path = input_filepath
-    @config = config
     scan_spec spec_string
   end
 
@@ -94,7 +92,6 @@ class STodoSpec
   # Extract the settings implied in `spec_string' and use them to set
   # "self"'s fields.
   def extract_settings spec_string
-$log.warn "[extract_settings] spec_string: '#{spec_string}'"
     split_expr = '('
     for key in [TYPE_KEY, TITLE_KEY, DESCRIPTION_KEY, HANDLE_KEY, PRIORITY_KEY,
         DUE_DATE_KEY, GOAL_KEY, EMAIL_KEY, CALENDAR_IDS_KEY, COMMENT_KEY,
@@ -120,7 +117,6 @@ $log.warn "[extract_settings] spec_string: '#{spec_string}'"
       end
     end
     standardize_values
-$log.warn "[extract_settings] @setting_for: #{@setting_for.inspect}"
   end
 
   # `s' stripped of lines starthing with '#'

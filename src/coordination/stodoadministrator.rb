@@ -29,9 +29,7 @@ class STodoAdministrator
 
   private
 
-  pre  'global config exists' do ! Configuration.config.nil?  end
   def initialize
-    @config = Configuration.config
     initialize_method_map
   end
 
@@ -61,15 +59,16 @@ class STodoAdministrator
       require basename
     end
     if temporary then
-      @config.data_manager.perform_temporary_backup
-      tmp_path = @config.data_manager.last_temp_backup_path
+      config = Configuration.instance
+      config.data_manager.perform_temporary_backup
+      tmp_path = config.data_manager.last_temp_backup_path
       if ! tmp_path.empty? then
         msg = "backup file:\n#{tmp_path}"
         $log.warn msg
         puts msg
       end
     else
-      @config.data_manager.backup_database(@config.backup_paths)
+      config.data_manager.backup_database(config.backup_paths)
     end
   end
 

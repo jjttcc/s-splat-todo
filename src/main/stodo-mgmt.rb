@@ -11,9 +11,6 @@ def two_arg_warning command
 end
 
 if ARGV.length > 1 then
-  Configuration.new
-  # (Configuration.initialize makes its "self" available via
-  #  class method Configuration.config)
   manager = STodoManager.new
   command = ARGV[0]; arguments = ARGV[1..-1]
   case command

@@ -3,6 +3,8 @@ specpath = /home/mylogin/.stodo/specs
 datapath = /home/mylogin/.stodo/data
 # Default path for user files, such as attachments:
 userpath = /home/mylogin/.stodo/user
+# Default email address to use if not specified elsewhere:
+default_email = defaultuser@default.org
 # comma-separated list of one or more backup paths:
 backuppath = /home2/backups/mylogin/stodo,/home3/backups/misc/mylogin/stodo/
 emailtemplate = mutt -s <subject> <addrs>

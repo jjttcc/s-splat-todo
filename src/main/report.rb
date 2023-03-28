@@ -223,9 +223,6 @@ class ReportUtil
 
 end
 
-# (Configuration.initialize makes its "self" available via
-#  class method Configuration.config)
-Configuration.new
 manager = STodoManager.new
 reporter = ReportManager.new manager
 ReportUtil::execute(reporter).call

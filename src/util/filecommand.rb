@@ -8,7 +8,7 @@ class FileCommand
 
   public
 
-  # Exeucte the 'file' command, with the '--mime' option, and return the
+  # Execute the 'file' command, with the '--mime' option, and return the
   # result.
   pre  'path exists' do |path| ! path.nil? && ! path.empty? end
   post 'result exists' do |result| ! result.nil? && ! result.empty? end

@@ -56,7 +56,6 @@ class TargetBuilder
   # existing one that corresponds to the specification.
   pre '"existing_targets" set' do ! self.existing_targets.nil? end
   pre 'specs exist' do ! self.specs.nil? end
-  pre 'specs have config' do self.specs.all? { |s| ! s.config.nil? } end
   post 'targets exist' do ! self.targets.nil? end
   def process_targets
     if ! targets_prepared? then
@@ -109,8 +108,6 @@ class TargetBuilder
   # Initialize @spec_collector, @edited_targets, @time_changed_for.
   # Initialize @target_factory_for ("target factory" hash table).
   def initialize spec_collector
-$log.warn "[TB.initialize] spec_collector: #{spec_collector}"
-$log.warn "[TB.initialize] spec_collector.class: #{spec_collector.class}"
     @spec_collector = spec_collector
     @edited_targets = []
     @time_changed_for = {}

@@ -12,21 +12,18 @@ module MediaConfigTools
   attr_reader :media_tool_paths
 
 
-  # The external editor for 'stodo_type'
+  # The path of the external editor for 'stodo_type'
   pre 'type arg valie' do
     |stype| ! stype.nil? && BASIC_FILE_TYPES.include?(stype)
   end
   def media_editor_for stodo_type
-#!!!Temporary - the path needs to be used to create an Executable:
     path = self.media_tool_paths[edit_tag(stodo_type)]
-$log.warn "[media_editor_for] path: #{path}"
     path
   end
 
+  # The path of the external viewer for 'stodo_type'
   def media_viewer_for stodo_type
-#!!!Temporary - the path needs to be used to create an Executable:
     path = self.media_tool_paths[view_tag(stodo_type)]
-$log.warn "[media_viewer_for] path: #{path}"
     path
   end
 
@@ -73,14 +70,10 @@ $log.warn "[media_viewer_for] path: #{path}"
     ! settings.nil? && settings.is_a?(Hash)
   end
   def set_external_media_tools settings
-$log.warn "[set_external_media_tools] settings: #{settings}"
-$log.warn "(BASIC_FILE_TYPE_TAGS: #{BASIC_FILE_TYPE_TAGS})"
     @media_tool_paths = {}
     BASIC_FILE_TYPE_TAGS.values.each do |v|
-$log.warn "settings[#{v}]: #{settings[v]}"
       @media_tool_paths[v] = settings[v]
     end
-$log.warn "[set_external_media_tools] mtoolpths: #{media_tool_paths}"
   end
 
   # 'edit_' + stodo_type.to_s

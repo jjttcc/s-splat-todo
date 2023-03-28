@@ -11,8 +11,6 @@ class FileBasedSpecGatherer
 
   # the gathered specs, one object per file
   attr_reader :specs
-  # the current app configuration
-  attr_reader :config
 
   public
 
@@ -36,14 +34,10 @@ class FileBasedSpecGatherer
 
   private
 
-  pre  'global config exists' do ! Configuration.config.nil?  end
-  post 'self.config set' do
-    ! self.config.nil? && self.config == Configuration.config
-  end
   def initialize new_specs = true
     @specs = []
-    @config = Configuration.config
-    path = new_specs ? @config.spec_path : @config.post_init_spec_path
+    config = Configuration.instance
+    path = new_specs ? config.spec_path : config.post_init_spec_path
     process_specs path
     if ENV[STDEBUG] then
       display_specs
@@ -70,12 +64,12 @@ class FileBasedSpecGatherer
   end
 
   def new_spec_for path
-    STodoSpec.new(path, @config)
+    STodoSpec.new(path)
   end
 
   def archive_spec_file source_path
-    base_target_path = @config.post_init_spec_path + File::SEPARATOR +
-      File.basename(source_path)
+    base_target_path = Configuration.instance.post_init_spec_path +
+      File::SEPARATOR + File.basename(source_path)
     if File.exist?(base_target_path) then
       target_path = "#{base_target_path}" + (rand).to_s[1..-1]
       while File.exist?(target_path) do

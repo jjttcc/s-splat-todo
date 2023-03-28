@@ -1,7 +1,8 @@
 require 'ruby_contracts'
 require 'mediaconfigtools'
 
-# Supporting structure and facilities for FileType objects
+# Facilities for working with file types, based on the model implied by the
+# UNIX 'file' command
 module FileTypeTools
   include Contracts::DSL
   include MediaConfigTools
