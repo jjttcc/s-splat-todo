@@ -57,6 +57,9 @@ class FileCommand
   def_delegator :FileCommand, :mime_file_command_args
   def_delegator :FileCommand, :trad_file_command_args
   def_delegator :FileCommand, :file_command_path
+  def_delegator :FileCommand, :set_command_path
+  def_delegator :FileCommand, :valid_executable
+  def_delegator :FileCommand, :invalidity_reason
 
   def initialize binpath = nil
     set_command_path binpath
@@ -75,7 +78,7 @@ class FileCommand
   ###  Implementation
 
   # Set '@@file_command_path' to a valid file-command location.
-  def set_command_path binpath = nil
+  def self.set_command_path binpath = nil
     if binpath.nil? then
       @@file_command_path = '/bin/file'
       if ! valid_executable @@file_command_path then
@@ -90,13 +93,13 @@ class FileCommand
   end
 
   # Is 'path' the path of a valid - readable and executable - file?
-  def valid_executable path
+  def self.valid_executable path
       File.file?(path) && File.readable?(path) && File.executable?(path)
   end
 
   # Reason that 'path' is not the path of a valid executable
   pre 'path is not valid' do ! valid_executable path end
-  def invalidity_reason path
+  def self.invalidity_reason path
     result = ""
     reasons = {
       :file?        => "file does not exist.",

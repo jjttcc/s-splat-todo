@@ -21,25 +21,33 @@ class MediaHandler
   def edit
     type = filecommand.mime_type self.path
     stodo_type = file_type_for type
-    external_editor_spec = config.media_editor_for stodo_type
-    cmd_with_args = string_as_argument_array external_editor_spec
-    begin
-      ExternalCommand.execute(*cmd_with_args, self.path)
-    rescue Exception => e
-      $log.warn "error editing #{self.path}: #{e}"
+    if ! BASIC_FILE_TYPES.include?(stodo_type) then
+      $log.error "file type - #{type} - is not configured"
+    else
+      external_editor_spec = config.media_editor_for stodo_type
+      cmd_with_args = string_as_argument_array external_editor_spec
+      begin
+        ExternalCommand.execute(*cmd_with_args, self.path)
+      rescue Exception => e
+        $log.error "error editing #{self.path}: #{e}"
+      end
     end
   end
 
   # Invoke the appropriate command to view the file at self.path.
   def view
-    type = filecommand.mime_type self.path
+    type = FileCommand::mime_type self.path
     stodo_type = file_type_for type
-    external_viewer_spec = config.media_viewer_for stodo_type
-    cmd_with_args = string_as_argument_array external_viewer_spec
-    begin
-      ExternalCommand.execute(*cmd_with_args, self.path)
-    rescue Exception => e
-      $log.warn "error viewing #{self.path}: #{e}"
+    if ! BASIC_FILE_TYPES.include?(stodo_type) then
+      $log.error "file type - #{type} - is not configured"
+    else
+      external_viewer_spec = config.media_viewer_for stodo_type
+      cmd_with_args = string_as_argument_array external_viewer_spec
+      begin
+        ExternalCommand.execute(*cmd_with_args, self.path)
+      rescue Exception => e
+        $log.error "error viewing #{self.path}: #{e}"
+      end
     end
   end
 

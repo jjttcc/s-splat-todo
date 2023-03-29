@@ -43,3 +43,5 @@ edit_code = /bin/gvim
 # (view here means "play/listen", of course:)
 view_audio = mpv --no-video
 edit_audio = /bin/audacity
+view_directory = /bin/gview
+edit_directory = /bin/gvim

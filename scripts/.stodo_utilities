@@ -52,6 +52,8 @@ alias sus='stodo stat suspend'
 alias can='stodo stat cancel'
 alias fin='stodo stat finish'
 alias res='stodo stat resume'
+alias vatt='view-attachments'
+alias vat=vatt
 
 # complete report:
 comp() {
@@ -555,6 +557,14 @@ view-tabbed-todos() {
     $tabbed_viewer $files
     result=$?
     return $result
+}
+
+view-attachments() {
+    stodo proca "$@" -view
+}
+
+edit-attachments() {
+    stodo proca "$@" -edit
 }
 
 alias vttod='view-tabbed-todos'

@@ -91,28 +91,4 @@ class Attachment
     self.path.freeze
   end
 
-  # If specified, default_location is prepended to 'pth' if 'pth' is not an
-  # absolute path (does not start with "/").
-  # If default_location is empty and 'pth' is not an absolute path, assume
-  # 'pth' resides in the current directory.
-  pre 'pth valid' do |pth| ! pth.nil? && pth.is_a?(String)  && ! pth.empty? end
-  pre 'default_location is absolute' do |pth, defloc|
-    defloc.nil? || defloc.empty? || defloc[0] == "/"
-  end
-  post 'path set' do |r, pth| self.path.include?(pth) end
-  post 'invalidity_reason set' do self.invalidity_reason == "" end
-  post 'invariant' do invariant end
-  def old___initialize att_pth, default_location = ""
-    if pth[0] == "/" then
-      self.path = pth.clone
-    elsif ! default_location.nil? && ! default_location.empty? then
-      self.path = "#{default_location}/#{pth}"
-    else
-      self.path = "#{Dir.pwd}/#{pth}"
-    end
-    self.invalidity_reason = ""
-    self.invalidity_reason.freeze
-    self.path.freeze
-  end
-
 end

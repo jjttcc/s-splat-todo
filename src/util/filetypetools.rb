@@ -44,6 +44,10 @@ module FileTypeTools
     ##### [need to fill in remaining audio exprs] ####
       Regexp.new("audio/mpeg"),
       Regexp.new("audio/ogg"),
+      Regexp.new("audio/x-m4a"),
+    ],
+    DIRECTORY  => [
+      Regexp.new("inode/directory"),
     ],
   }
 

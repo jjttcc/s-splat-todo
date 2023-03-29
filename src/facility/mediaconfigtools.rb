@@ -11,9 +11,8 @@ module MediaConfigTools
   # paths of media viewing/editing executables
   attr_reader :media_tool_paths
 
-
   # The path of the external editor for 'stodo_type'
-  pre 'type arg valie' do
+  pre 'type arg valid' do
     |stype| ! stype.nil? && BASIC_FILE_TYPES.include?(stype)
   end
   def media_editor_for stodo_type
@@ -22,6 +21,10 @@ module MediaConfigTools
   end
 
   # The path of the external viewer for 'stodo_type'
+  pre  'type arg valid' do
+    |stype| ! stype.nil? && BASIC_FILE_TYPES.include?(stype)
+  end
+  post 'result not empty' do |result| ! result.nil? && ! result.empty? end
   def media_viewer_for stodo_type
     path = self.media_tool_paths[view_tag(stodo_type)]
     path
@@ -45,6 +48,7 @@ module MediaConfigTools
     VIDEO       =  :video,
     CODE        =  :code,
     AUDIO       =  :audio,
+    DIRECTORY   =  :directory,
   ]
 
   BASIC_FILE_TYPE_TAGS = {}
