@@ -4,7 +4,7 @@ require 'externalcommand'
 
 # Abstraction for handlers of files of different media types, for "handling" -
 # viewing (video), playing (audio), viewing (document), editing (document),
-# processing (e.g., executing a program or script), etc. - of the files
+# processing (e.g., executing a program or script), etc. - the files
 class MediaHandler
   include Contracts::DSL
   include FileTypeTools

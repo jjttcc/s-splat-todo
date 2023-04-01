@@ -648,21 +648,32 @@ class STodoTarget
     end
   end
 
-  # Assign attachments from 'spec' to self.attachments.
-  # If 'append', append to self.attachments; otherwise, replace its contents
-  # with what is specified in 'spec'.
+  # For each path, p, in 'spec.attachments' (a list of paths), create an
+  # Attachment object whose path is p.
+  # If 'append', append each new attachment to self.attachments; otherwise,
+  # replace self.attachments with a new list created from the paths in
+  # 'spec.attachments'.
+  # Note: The attachments are processed in the order in which they occur in
+  # 'spec.attachments'.  If a particular attachment, 'att', holds the path
+  # of a directory, that path is used - for any 
   pre '"attachments" exists' do
     ! self.attachments.nil? && self.attachments.is_a?(Array)
   end
   post '"attachments" still exists' do ! self.attachments.nil? end
   def assign_attachments spec, append = false
     new_attchmts = []
+    last_attachment_path = nil
     if spec.attachments then
       spec.attachments.split(SPEC_FIELD_DELIMITER).each do |a|
         if a.empty? then
           $log.warn "empty attachment (in #{spec.attachment})"
         else
-          attchmt = Attachment.new a
+          attchmt = Attachment.new a, last_attachment_path
+          if attchmt.is_directory? then
+            # (I.e., attchmt.path is to be used as the last candidate path
+            # for the remaining attachments specified in 'spec'.)
+            last_attachment_path = attchmt.path
+          end
           if ! attchmt.is_valid? then
             $log.warn "#{attchmt.invalidity_reason}"
             if ! spec.reject_nonexistent_attachments then
