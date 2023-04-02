@@ -900,7 +900,7 @@ class STodoTarget
       final_reminder.addendum = "Final "
     end
     old_date_for = {}
-    rems.each { |r| old_date_for[r] = r.date_time; r.trigger }
+    rems.each { |r| old_date_for[r] = r.date_time.getlocal; r.trigger }
     rems.each do |r|
       if ! @ongoing_email_addrs.empty? then
         # Set notification components to be used by the 'notifiers'.

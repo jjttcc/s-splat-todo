@@ -44,10 +44,12 @@ class OneTimeReminder < Reminder
 
   private
 
-  # precondition: datetime != nil
+  # Note: self.date_time is set to 'datetime.clone.utc' - i.e., it
+  # is initialized to UTC without changing the object 'datetime'
+  # references.
   pre 'datetime set' do |datetime| ! datetime.nil? end
   def initialize(datetime, time_tolerance = DEFAULT_TOLERANCE)
-    @date_time = datetime
+    @date_time = datetime.clone.utc
     @time_tolerance = time_tolerance
     @addendum = ""
   end

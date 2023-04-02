@@ -77,6 +77,10 @@ class PeriodicReminder < Reminder
 
   private
 
+  # Note: self.date_time is set to 'first_date_time.clone.utc' - i.e., it
+  # is initialized to UTC without changing the object 'first_date_time'
+  # references. Ditto for self.ending_date_time with respect to
+  # 'ending_date_time'.
   pre 'valid first and end date/times' do |first_dt, ending_dt|
         first_dt.is_a?(Time) && ending_dt.is_a?(Time)
   end
@@ -85,8 +89,8 @@ class PeriodicReminder < Reminder
   end
   def initialize(first_date_time, ending_date_time, period_type,
                  period_count, time_tolerance = DEFAULT_TOLERANCE)
-    @date_time = first_date_time
-    @ending_date_time = ending_date_time
+    @date_time = first_date_time.clone.utc
+    @ending_date_time = ending_date_time.clone.utc
     @period_type = normalized_period_type(period_type)
     @period_count = period_count
     @time_tolerance = time_tolerance
