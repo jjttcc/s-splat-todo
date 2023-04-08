@@ -1,6 +1,7 @@
 #!/bin/bash
 # (define env. var. STODO_KEEP_ARTIFACTS to force any new items to NOT
 # be deleted.)
+# vim: expandtab ts=2 sw=2
 
 parse_args() {
   for arg; do
@@ -13,6 +14,7 @@ parse_args() {
 }
 
 create_test() {
+  local result=0
   create $testhndl
   if report $testhndl|awk 'BEGIN { hitcount = 0; EXPCOUNT = 5 }
     /handle: *'$testhndl'/ {  ++hitcount }
@@ -31,12 +33,14 @@ create_test() {
   then
     echo "creation test SUCCEEDED"
   else
-    echo "creation test failed"
+    echo "creation test FAILED"
     exit 99
   fi
+  return $result
 }
 
 modify_test() {
+  local result=0
   modify $testhndl
   if report $testhndl|awk 'BEGIN { hitcount = 0; EXPCOUNT = 6 }
     /handle: *'$testhndl'/ {  ++hitcount }
@@ -56,23 +60,26 @@ modify_test() {
   then
     echo "modification test SUCCEEDED"
   else
-    echo "modification test failed"
-    exit 98
+    echo "modification test FAILED"
+    result=98
   fi
+  return $result
 }
 
 delete_test() {
+  local result=0
   if ! [ "$STODO_KEEP_ARTIFACTS" ]; then
     delete $testhndl
     if report $testhndl|grep -q "$testhndl"; then
-      echo "deletion test failed in deletion of $testhndl"
-      exit 97
+      echo "deletion test FAILED in deletion of $testhndl"
+      result=97
     else
       echo "deletion test SUCCEEDED"
     fi
   else
       echo "deletion test bypassed (keeping new item with handle: $testhndl"
   fi
+  return $result
 }
 
 # Set "vars" for origination/creation.
@@ -117,9 +124,18 @@ newttl="This is title number $$.  It is long."
 newttlregex="This.is.title.number.*It.is.long"
 newprio=3
 
+testcount=0
+successcount=0
 parse_args $@
 set_ovars
-create_test
+if create_test; then ((++successcount)); fi
+((++testcount))
 set_nvars
-modify_test
-delete_test
+if modify_test; then ((++successcount)); fi
+((++testcount))
+if delete_test; then ((++successcount)); fi
+((++testcount))
+[ $successcount = $testcount ]
+allgood=$?
+testreport $testcount $successcount
+exit $allgood

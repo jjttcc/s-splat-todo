@@ -43,6 +43,18 @@ class Configuration
   # Should attachments be "edited" (potentially modified) during this run?
   attr_reader :edit_attachment
 
+  VERSION =  '1.0.1'
+  PROGNAME = 'stodo'
+
+  # stodo version identifier
+  def version
+    VERSION
+  end
+
+  def name
+    PROGNAME
+  end
+
   # Is this a test run?
   def test_run?
     @test_run

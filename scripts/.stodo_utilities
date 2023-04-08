@@ -54,10 +54,12 @@ alias fin='stodo stat finish'
 alias res='stodo stat resume'
 alias vatt='view-attachments'
 alias vat=vatt
+alias curhdl='echo $STODO_HDL'
+alias comphdl='comp $STODO_HDL'
 
 # complete report:
 comp() {
-    stodo rep comp $*|more
+    stodo rep comp $*|pager
 }
 
 # complete report for item <n>:
@@ -89,7 +91,7 @@ comptree() {
             echo "$sepline"
         fi
         ((++i))
-    done|more
+    done|pager
 }
 
 emails() {

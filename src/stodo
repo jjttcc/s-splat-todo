@@ -39,11 +39,12 @@ mainhelp() {
     echo -e "as a new item with handle <nh>"
     echo -e "  stat <x> <h>...${gap}change status of handles <h>, ... to \c"
     echo -e "state-change <x>"
-    echo -e "  temp [<type> ...]  output a to-do item template \c"
+    echo -e "  temp [<type> ...]  output a to-do item Template \c"
     echo -e "(for target type <type>)"
     echo -e "  backup [opts] ${gap} back up data files"
     echo -e "  proca <h>...       Process attachments for items with \c"
     echo -e "handles <h>..."
+    echo -e "  version            print Version number and exit"
 }
 
 indepth_help() {
@@ -171,6 +172,11 @@ do_quoted_edit() {
 do_backup() {
   checkpath $admin
   run $admin backup $*
+}
+
+print_version() {
+  checkpath $admin
+  run $admin version
 }
 
 install_specfile() {
@@ -462,6 +468,9 @@ case $1 in
   desc_cl*)
     shift;
     do_edit remove_false_children $*
+    ;;
+  vers*)
+    print_version
     ;;
   *) shift; help $*
     ;;

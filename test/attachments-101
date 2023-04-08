@@ -14,9 +14,9 @@ parse_args() {
 
 # Create an item that with attachments.
 create_item_with_attachments() {
+  local result=0
   create
   hndl=$ST_HANDLE
-echo "attchsexpr: '$attchsexpr'" >&2
   if report $hndl|awk 'BEGIN { hitcount = 0; EXPCOUNT = 6 }
     /handle: *'$hndl'/ {  ++hitcount }
     /title: *'"$mainttl"'/ {  ++hitcount }
@@ -35,47 +35,26 @@ echo "attchsexpr: '$attchsexpr'" >&2
   then
     echo "creation of $hndl SUCCEEDED"
   else
-    echo "creation of $hndl failed"
-    exit 99
+    echo "creation of $hndl FAILED"
+    result=99
   fi
-}
-
-modify_test() {
-  modify $testhndl
-  if report $testhndl|awk 'BEGIN { hitcount = 0; EXPCOUNT = 6 }
-    /handle: *'$testhndl'/ {  ++hitcount }
-    /title: *'"$newttlregex"'/ {  ++hitcount }
-    /email: *'$email'/ {  if (! emailset) { ++hitcount}; ++emailset }
-    /description: *'"$desc"'/ {  ++hitcount }
-    /type: *'$testtype'/ {  ++hitcount }
-    END {
-      if (hitcount != EXPCOUNT) {
-        print "(expected " EXPCOUNT " matches, got: " hitcount ")"
-        exit 1
-      } else {
-        exit 0
-      }
-    }'
-  then
-    echo "modification test SUCCEEDED"
-  else
-    echo "modification test failed"
-    exit 98
-  fi
+  return $result
 }
 
 delete_test() {
+  local result=0
   if ! [ "$STODO_KEEP_ARTIFACTS" ]; then
     delete $testhndl
     if report $testhndl|grep -q "$testhndl"; then
-      echo "deletion test failed in deletion of $testhndl"
-      exit 97
+      echo "deletion test FAILED in deletion of $testhndl"
+      result=97
     else
       echo "deletion test SUCCEEDED"
     fi
   else
       echo "deletion test bypassed (keeping new item with handle: $testhndl"
   fi
+  return $result
 }
 
 # Set "vars" for origination/creation.
@@ -118,7 +97,15 @@ attchs="$att1,$att2, $att3"
 attchsexpr=".*$att1.*$att2.*$att3"
 maindesc='task with attachments'
 
+testcount=0
+successcount=0
 parse_args $@
 set_main_vars
-create_item_with_attachments
-delete_test
+if create_item_with_attachments; then ((++successcount)); fi
+((++testcount))
+if delete_test; then ((++successcount)); fi
+((++testcount))
+[ $successcount = $testcount ]
+status=$?
+testreport $testcount $successcount
+exit $status

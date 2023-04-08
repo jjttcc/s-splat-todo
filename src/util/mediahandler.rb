@@ -17,13 +17,18 @@ class MediaHandler
 
   ###  Basic operations
 
-  # Invoke the appropriate command to edit the file at self.path.
+  # Invoke the appropriate command, cmd, to edit the file at self.path.
+  # If self.path is a directory, call 'Dir.chdir self.path' before invoking
+  # cmd on self.path.
   def edit
     type = filecommand.mime_type self.path
     stodo_type = file_type_for type
     if ! BASIC_FILE_TYPES.include?(stodo_type) then
       $log.error "file type - #{type} - is not configured"
     else
+      if is_directory stodo_type then
+        Dir.chdir self.path
+      end
       external_editor_spec = config.media_editor_for stodo_type
       cmd_with_args = string_as_argument_array external_editor_spec
       begin
@@ -34,13 +39,18 @@ class MediaHandler
     end
   end
 
-  # Invoke the appropriate command to view the file at self.path.
+  # Invoke the appropriate command, cmd, to view the file at self.path.
+  # If self.path is a directory, call 'Dir.chdir self.path' before invoking
+  # cmd on self.path.
   def view
     type = FileCommand::mime_type self.path
     stodo_type = file_type_for type
     if ! BASIC_FILE_TYPES.include?(stodo_type) then
       $log.error "file type - #{type} - is not configured"
     else
+      if is_directory stodo_type then
+        Dir.chdir self.path
+      end
       external_viewer_spec = config.media_viewer_for stodo_type
       cmd_with_args = string_as_argument_array external_viewer_spec
       begin
@@ -48,6 +58,20 @@ class MediaHandler
       rescue Exception => e
         $log.error "error viewing #{self.path}: #{e}"
       end
+    end
+  end
+
+  # Assume 'path' is a directory: If a "stodo shell file" exists in 'path',
+  # execute it.
+  def execute_shell
+    shellfile = config.stodo_shell path
+    if ! shellfile.nil? then
+        if ExternalCommand.valid_executable shellfile then
+          ExternalCommand.execute(shellfile, self.path)
+        else
+          $log.warn "stodo shell file is not executable or not readable: "\
+            "#{shellfile}"
+        end
     end
   end
 

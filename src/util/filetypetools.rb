@@ -76,6 +76,12 @@ module FileTypeTools
     result
   end
 
+  # Is file-type 'type' that of a directory?
+  pre 'type is valid' do |type| ! type.nil? && type.is_a?(Symbol) end
+  def is_directory(type)
+    type == DIRECTORY
+  end
+
 =begin
 # some different media types, according to 'file -i':
 application/vnd.oasis.opendocument.spreadsheet; charset=binary

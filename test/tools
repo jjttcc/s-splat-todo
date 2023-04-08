@@ -105,3 +105,14 @@ delete() {
   local handle=$1
   eval stodo delete $handle
 }
+
+testreport() {
+  local tcount=$1
+  local succcount=$2
+  if [ $tcount = $succcount ]; then
+    echo "All ($tcount) tests SUCCEEDED." >&2
+  else
+    echo -e "$tcount tests:\n   SUCCESSFUL tests: $succcount" >&2
+    echo -e "   FAILED tests: $(expr $tcount - $succcount)" >&2
+  fi
+}

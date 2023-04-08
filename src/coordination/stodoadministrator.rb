@@ -36,6 +36,7 @@ class STodoAdministrator
   def initialize_method_map
     @method_for = {
       'backup' => :perform_data_backup,
+      'version' => :print_version,
     }
   end
 
@@ -44,6 +45,7 @@ class STodoAdministrator
   # Backup the persistent data file.
   pre 'args != nil' do |args| ! args.nil? end
   def perform_data_backup args
+    config = Configuration.instance
     temporary = false
     if ! args.empty? then
       if args[0] =~ /#{TMPEXPR}/i then
@@ -59,7 +61,6 @@ class STodoAdministrator
       require basename
     end
     if temporary then
-      config = Configuration.instance
       config.data_manager.perform_temporary_backup
       tmp_path = config.data_manager.last_temp_backup_path
       if ! tmp_path.empty? then
@@ -70,6 +71,12 @@ class STodoAdministrator
     else
       config.data_manager.backup_database(config.backup_paths)
     end
+  end
+
+  # Print application version information.
+  def print_version *dummy
+    config = Configuration.instance
+    puts "#{config.name} #{config.version}"
   end
 
 end

@@ -65,6 +65,10 @@ class Attachment
     else
       handler.view
     end
+    if is_directory? then
+      handler.execute_shell
+    else
+    end
   end
 
   private

@@ -36,6 +36,8 @@ class STodoTarget
   attr_writer :parent_handle
   attr_writer :handle         # Needed for cloning
 
+  ST_CURRENT_HANDLE = 'STODO_HDL'
+
   public    ###  Access
 
   def type
@@ -455,6 +457,8 @@ class STodoTarget
 
   pre '"editing" eixsts' do |editing| ! editing.nil? end
   def process_attachments editing
+    # Make self.handle available to child processes:
+    ENV[ST_CURRENT_HANDLE] = self.handle
     if self.attachments then
       self.attachments.each do |a|
         a.process editing
@@ -656,12 +660,14 @@ class STodoTarget
   # Note: The attachments are processed in the order in which they occur in
   # 'spec.attachments'.  If a particular attachment, 'att', holds the path
   # of a directory, that path is used - for any 
-  pre '"attachments" exists' do
+  post '"attachments" exists' do
     ! self.attachments.nil? && self.attachments.is_a?(Array)
   end
-  post '"attachments" still exists' do ! self.attachments.nil? end
   def assign_attachments spec, append = false
     new_attchmts = []
+    if self.attachments.nil? then
+      self.attachments = []
+    end
     last_attachment_path = nil
     if spec.attachments then
       spec.attachments.split(SPEC_FIELD_DELIMITER).each do |a|

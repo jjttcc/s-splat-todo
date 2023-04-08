@@ -1,6 +1,7 @@
 #!/bin/bash
 # (define env. var. STODO_KEEP_ARTIFACTS to force any new items to NOT
 # be deleted.)
+# vim: expandtab ts=2 sw=2
 
 parse_args() {
   for arg; do
@@ -29,14 +30,14 @@ create_ref() {
   then
     echo "creation of ref $hndl SUCCEEDED"
   else
-    echo "creation of ref $hndl failed"
+    echo "creation of ref $hndl FAILED"
     return 98
   fi
 }
 
 # Create an item that refers to the "references".
 # If an argument is supplied that evaluates to 'true', lie about failure
-# status - i.e., report: 'creation of $hndl "succeeded"' and return with
+# status - i.e., report: 'creation of $hndl "SUCCEEDED"' and return with
 # status value of $lie_retval.
 create_item_with_refs() {
   local lie=false
@@ -45,7 +46,6 @@ create_item_with_refs() {
   fi
   create
   hndl=$ST_HANDLE
-echo "refsexpr: '$refsexpr'" >&2
   if report $hndl|awk 'BEGIN { hitcount = 0; EXPCOUNT = 6 }
     /handle: *'$hndl'/ {  ++hitcount }
     /title: *'"$mainttl"'/ {  ++hitcount }
@@ -69,10 +69,10 @@ echo "refsexpr: '$refsexpr'" >&2
     echo "creation of $hndl SUCCEEDED$tail"
   else
     if eval $lie; then
-      echo "creation of $hndl \"succeeded\""
+      echo "creation of $hndl \"SUCCEEDED\""
       return $lie_retval
     else
-      echo "creation of $hndl failed"
+      echo "creation of $hndl FAILED"
       return 99
     fi
   fi
@@ -90,7 +90,7 @@ delete_test() {
   if ! [ "$STODO_KEEP_ARTIFACTS" ]; then
     delete $hndl$2
     if report $hndl|grep -q "$hndl"; then
-      echo "deletion of $hndl failed"
+      echo "deletion of $hndl FAILED"
       return 97
     else
       echo "deletion of $hndl SUCCEEDED"
@@ -171,6 +171,8 @@ badrefsexpr="$ref1[, ]*non-existence$$[, ]*$ref3"
 maindesc='task with references'
 lie_retval=42
 
+testcount=0
+successcount=0
 failures=0
 parse_args $@
 for handle in $ref1 $ref2 $ref3; do
@@ -178,37 +180,52 @@ for handle in $ref1 $ref2 $ref3; do
   create_ref
   stat=$?
   if [ $stat != 0 ]; then
-    echo "creation of item for $handle failed - cannot continue" >&2
+    echo "creation of item for $handle FAILED - cannot continue" >&2
     exit $stat
   fi
 done
 set_main_vars
+((++testcount))
 create_item_with_refs
 if [ $? != 0 ]; then
   ((++failures))
+else
+  ((++successcount))
 fi
 set_badref_vars
+((++testcount))
 STODO_REJECT_BADREFS=1 create_item_with_refs true
 stat=$?
 if [ $stat != $lie_retval ]; then
   echo "creation of item for $handle (with bad references) FAILED" >&2
   ((++failures))
 else
+  ((++successcount))
   echo "creation of $hndl [with bad/checked references] SUCCEEDED"
 fi
 for h in $ref1 $ref2 $ref3; do
+  ((++testcount))
   if ! delete_test $h; then
     ((++failures))
+  else
+    ((++successcount))
   fi
 done
+((++testcount))
 delete_test $testhndl
 if [ $? != 0 ]; then
   ((++failures))
+else
+  ((++successcount))
 fi
+((++testcount))
 delete_test $bad_testhndl
 if [ $? != 0 ]; then
   ((++failures))
+else
+  ((++successcount))
 fi
+testreport $testcount $successcount
 if [ $failures -gt 0 ]; then
   echo "$failures tests FAILED." >&2
   exit $failures
