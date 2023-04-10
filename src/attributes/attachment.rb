@@ -58,7 +58,8 @@ class Attachment
   # purpose of editing the attachment; otherwise, a command designated
   # for viewing will be invoked on the attachment.
   pre '"editing" eixsts' do |editing| ! editing.nil? end
-  def process editing
+  pre 'attchs valid' do |e, attchs| ! attchs.nil? && attchs.is_a?(Array) end
+  def process editing, attachment_list
     handler = MediaHandler.new path
     if editing then
       handler.edit
@@ -66,7 +67,7 @@ class Attachment
       handler.view
     end
     if is_directory? then
-      handler.execute_shell
+      handler.execute_shell attachment_list
     else
     end
   end

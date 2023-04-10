@@ -63,11 +63,13 @@ class MediaHandler
 
   # Assume 'path' is a directory: If a "stodo shell file" exists in 'path',
   # execute it.
-  def execute_shell
+  pre 'attlist valid' do |attlist| ! attlist.nil? && attlist.is_a?(Array) end
+  def execute_shell attachment_list
     shellfile = config.stodo_shell path
+    apaths = attachment_list.map do |a| a.path end
     if ! shellfile.nil? then
         if ExternalCommand.valid_executable shellfile then
-          ExternalCommand.execute(shellfile, self.path)
+          ExternalCommand.execute(shellfile, *apaths)
         else
           $log.warn "stodo shell file is not executable or not readable: "\
             "#{shellfile}"

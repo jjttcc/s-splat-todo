@@ -51,6 +51,7 @@ indepth_help() {
   case "$1" in
     rep*) report_help ;;
     add*) add_help ;;
+    del*) delete_help ;;
     change*) change_help ;;
     clear*) clear_d_help ;;
     temp*) template_help ;;
@@ -179,6 +180,11 @@ print_version() {
   run $admin version
 }
 
+print_settings() {
+  checkpath $admin
+  run $admin settings
+}
+
 install_specfile() {
   file=$1
   specpath=$(awk "/$specpath_expr/"'{print $NF}' $file)
@@ -303,6 +309,13 @@ add_help() {
     "line of \"references\"\n${ls}   (handles) to existing items"
 }
 
+delete_help() {
+  local s='        '
+  echo -e "Usage: $progname del [options]"
+  echo -e "\nOptions:"
+  echo -e "  -r                Recursive: delete all descendants as well"
+}
+
 admin_help() {
   local gap="    "
   local lgap="$gap${gap}${gap}${gap}${gap} "
@@ -313,6 +326,7 @@ admin_help() {
 "one of i's children. Perform\n${lgap}this same operation recursively on all "\
 "of i's children."
   echo -e "stodo administration commands:"
+  echo -e "  settings           show configured settings"
   echo -e "  readopt <h>... ${gap}re-\"adopt\" emancipated descendants \c"
   echo -e "of the items with\n${lgap}handles <h>..."
   echo -e "  desc_clean <h>...  $desc_clean_help"
@@ -460,6 +474,10 @@ case $1 in
     shift;
     pre_process_attachments $*
     do_report attach $proca_handles
+    ;;
+  set*)
+    shift;
+    print_settings
     ;;
   read*)
     shift;

@@ -37,6 +37,7 @@ class STodoAdministrator
     @method_for = {
       'backup' => :perform_data_backup,
       'version' => :print_version,
+      'settings' => :print_settings,
     }
   end
 
@@ -77,6 +78,14 @@ class STodoAdministrator
   def print_version *dummy
     config = Configuration.instance
     puts "#{config.name} #{config.version}"
+  end
+
+  # Print application settings - configuration - information.
+  def print_settings *dummy
+    config = Configuration.instance
+    config.settings.sort.each do |set|
+      printf("%-26s%s\n", "#{set[0]}:", set[1]);
+    end
   end
 
 end

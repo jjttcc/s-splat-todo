@@ -55,6 +55,22 @@ class Configuration
     PROGNAME
   end
 
+  # stodo configuration/settings
+  def settings
+    result = {
+      'config file path'        => CONFIG_FILE_PATH,
+      "user"                    => user,
+      "user_path"               => user_path,
+      "spec_path"               => spec_path,
+      "data_path"               => data_path,
+      "backup_paths"            => backup_paths,
+      "post_init_spec_path"     => post_init_spec_path,
+      "default_email"           => default_email,
+      "templated_email_command" => templated_email_command,
+    }
+    result
+  end
+
   # Is this a test run?
   def test_run?
     @test_run

@@ -91,8 +91,8 @@ class STodoTarget
     result += email_info(template)
     result += "#{CALENDAR_IDS_KEY}: #{calendar_ids.join(', ')}\n"
     result += "#{CATEGORIES_KEY}: #{categories.join(', ')}\n"
-    if self.attachments then
-      result += "#{ATTACHMENTS_KEY}: #{self.attachments.join(", ")}\n"
+    if attachments then
+      result += "#{ATTACHMENTS_KEY}: #{attachments.join(", ")}\n"
     end
     if self.references then
       result += "#{REFERENCES_KEY}: #{self.references.join(", ")}\n"
@@ -459,9 +459,9 @@ class STodoTarget
   def process_attachments editing
     # Make self.handle available to child processes:
     ENV[ST_CURRENT_HANDLE] = self.handle
-    if self.attachments then
-      self.attachments.each do |a|
-        a.process editing
+    if attachments then
+      attachments.each do |a|
+        a.process editing, attachments
       end
     end
   end
@@ -661,11 +661,11 @@ class STodoTarget
   # 'spec.attachments'.  If a particular attachment, 'att', holds the path
   # of a directory, that path is used - for any 
   post '"attachments" exists' do
-    ! self.attachments.nil? && self.attachments.is_a?(Array)
+    ! attachments.nil? && attachments.is_a?(Array)
   end
   def assign_attachments spec, append = false
     new_attchmts = []
-    if self.attachments.nil? then
+    if attachments.nil? then
       self.attachments = []
     end
     last_attachment_path = nil

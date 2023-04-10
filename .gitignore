@@ -30,3 +30,6 @@ prototyping/
 .env.*
 test/.env
 src/util/external-date-examples
+test/config
+test/data
+test/user

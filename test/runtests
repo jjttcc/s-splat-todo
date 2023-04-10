@@ -1,0 +1,26 @@
+#!/bin/env bash
+# vim: expandtab ts=2 sw=2
+
+tests='test/add-change-delete-etc-101 test/add-change-delete-etc-102 test/attachments-101 test/references-101'
+
+status=0
+testcount=0
+failures=0
+for f in $tests; do
+  echo "=============== Executing $f ==============="
+  if $f; then
+    echo "$f Succeeded."
+  else
+    echo "$f FAILED."
+    status=99
+    ((++failures))
+  fi
+  ((++testcount))
+  echo "============== (Completed $f) =============="
+done
+if [ $status = 0 ]; then
+  echo "All tests SUCCEEDED."
+else
+  echo "$failures (out of $testcount) tests FAILED."
+fi
+exit $status
