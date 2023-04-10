@@ -47,8 +47,14 @@ if ARGV.length > 1 then
     manager.update_targets
   else
     # Iterate over item handles:
-    arguments.each do |h|
-      manager.edit_target(h, command)
+    opts = arguments.select do |a| a[0] == '-' end
+    handles = arguments.select do |a| a[0] != '-' end
+    handles.each do |h|
+      if ! opts.empty? then
+        manager.edit_target(h, command, opts)
+      else
+        manager.edit_target(h, command)
+      end
     end
   end
 end

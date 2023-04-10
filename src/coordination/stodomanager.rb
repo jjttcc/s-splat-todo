@@ -107,8 +107,13 @@ class STodoManager
   pre 'args valid' do |handle, command|
     ! handle.nil? && ! command.nil? && ! handle.empty? && ! command.empty?
   end
-  def edit_target(handle, command)
-    editor.apply_command(handle, command)
+  pre 'opts valid' do |h, c, opts| opts.nil? || opts.is_a?(Array) end
+  def edit_target(handle, command, options = nil)
+    cmdarg = command
+    if ! options.nil? then
+      cmdarg = [command] + options
+    end
+    editor.apply_command(handle, cmdarg)
     if editor.last_command_failed then
       $log.error editor.last_failure_message
     else

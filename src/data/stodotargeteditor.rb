@@ -12,7 +12,7 @@ class STodoTargetEditor
     # requires a database update?:
     :change_occurred
 
-  def apply_command(handle, parameters)
+  def apply_command(handle, parameters, options = nil)
     @last_command_failed = false
     self.change_occurred = false
     clean_handle = handle.split(/#{DEFAULT_COMPONENT_SEPARATOR}/)[0]
@@ -45,7 +45,8 @@ class STodoTargetEditor
   attr_writer :change_occurred
 
   DEFAULT_COMPONENT_SEPARATOR, NO_PARENT = ":", '{none}'
-  private_constant :DEFAULT_COMPONENT_SEPARATOR, :NO_PARENT
+  RECURSIVE_OPT = "-r"
+  private_constant :DEFAULT_COMPONENT_SEPARATOR, :NO_PARENT, :RECURSIVE_OPT
 
   def initialize(target_map)
     @target_for = target_map
@@ -87,24 +88,33 @@ class STodoTargetEditor
 
   # Delete the target IDd by 'handle'.
   pre "handle exists" do |handle| ! handle.nil? end
-  pre "No data change yet" do self.change_occurred == false end
+  pre "No data change yet" do change_occurred == false end
   pre "target for 'handle' exists" do |handle|
-    ! self.target_for[handle].nil?
+    ! target_for[handle].nil?
   end
-  def delete_target handle
-    t = self.target_for[handle]
+  def delete_target handle, options = nil
+    recursive = ! options.nil? && options[0..1] == RECURSIVE_OPT
+    t = target_for[handle]
+    if recursive then
+      t.children.each do |c|
+        self.change_occurred = false  # (ensure precondition)
+        delete_target c.handle, options
+      end
+    end
     if t.parent_handle != nil then
       # "disown" the parent.
-      parent = self.target_for[t.parent_handle]
+      parent = target_for[t.parent_handle]
       if parent and parent.can_have_children? then
         parent.remove_child(t)
       end
     end
-    t.children.each do |c|
-      # Make c into an orphan.
-      c.parent_handle = nil
+    if ! recursive then
+      t.children.each do |c|
+        # Make c into an orphan.
+        c.parent_handle = nil
+      end
     end
-    self.target_for.delete(t.handle)
+    target_for.delete(t.handle)
     self.change_occurred = true
   end
 

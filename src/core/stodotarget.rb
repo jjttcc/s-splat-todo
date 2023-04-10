@@ -361,13 +361,16 @@ class STodoTarget
     orig.reminders.each do |o|
       @reminders << o.dup
     end
-    orig.categories.each do |o|
+    ! orig.categories.nil? && orig.categories.each do |o|
       @categories << o.dup
     end
-    orig.attachments.each do |o|
-      @attachments << o.dup
+    @attachments = []
+    if ! orig.attachments.nil? then
+      orig.attachments.each do |o|
+        @attachments << Attachment.new(o.path)
+      end
     end
-    orig.references.each do |o|
+    ! orig.references.nil? && orig.references.each do |o|
       @references << o.dup
     end
     orig.notifiers.each do |o|
