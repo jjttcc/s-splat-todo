@@ -1,4 +1,6 @@
+require 'fileutils'
 require 'ruby_contracts'
+require 'stodogit'
 
 # Editors of "STodoTarget"s
 class STodoTargetEditor
@@ -12,7 +14,9 @@ class STodoTargetEditor
     # requires a database update?:
     :change_occurred
 
+##!!!!to-do: Delete 'options' param, or use it!!!!!
   def apply_command(handle, parameters, options = nil)
+$log.warn "[#{File.basename(__FILE__)}:#{__LINE__}] h, ps: #{handle}, #{parameters}"
     @last_command_failed = false
     self.change_occurred = false
     clean_handle = handle.split(/#{DEFAULT_COMPONENT_SEPARATOR}/)[0]
@@ -22,9 +26,11 @@ class STodoTargetEditor
     else
       if parameters.is_a?(Enumerable) then
         command, args = parameters[0], [handle, parameters[1..-1]].flatten
+$log.warn "[#{File.basename(__FILE__)}:#{__LINE__}] c, a: #{command}, #{args}"
       else
         components = cmd_and_args_for(handle, parameters)
         command, args = components[0], components[1..-1]
+$log.warn "[#{File.basename(__FILE__)}:#{__LINE__}] c, a: #{command}, #{args}"
       end
       method = @method_for[command]
       if method == nil then
@@ -62,6 +68,7 @@ class STodoTargetEditor
       'state'                 => :modify_state,
       'clear_descendants'     => :clear_descendants,
       'clone'                 => :make_clone,
+      'git-add'               => :git_add,
       're_adopt_descendants'  => :re_adopt_descendants,
       'remove_false_children' => :remove_false_children,
     }
@@ -116,6 +123,75 @@ class STodoTargetEditor
     end
     target_for.delete(t.handle)
     self.change_occurred = true
+  end
+
+  # Delete the target IDd by 'handle'.
+  pre "handle exists" do |handle| ! handle.nil? end
+  pre "No data change yet" do change_occurred == false end
+  pre "target for 'handle' exists" do |handle|
+    ! target_for[handle].nil?
+  end
+  post 'no database change' do change_occurred == false end
+  def git_add handle, *options
+$log.warn "[#{File.basename(__FILE__)}:#{__LINE__}] h, o: #{handle}, #{options}"
+    recursive = false
+    if ! options.nil? && ! options.empty? then
+      recursive = options[0][0..1] == RECURSIVE_OPT
+$log.warn "[#{File.basename(__FILE__)}:#{__LINE__}] recursive!"
+    end
+$log.warn "[#{File.basename(__FILE__)}:#{__LINE__}] recursive: #{recursive}"
+    commit_msg = "" # !!!!to-do: get commit_msg from 'options'.
+###!!!to-do: Look for "-m" option.
+    tgt = target_for[handle]
+    targets = [tgt]
+    if recursive then
+      targets.concat(tgt.descendants)
+    end
+$log.warn "targets - handles:"
+targets.each do |t|
+  $log.warn t.class
+end
+    gitpath = Configuration.instance.git_path
+    if ! Dir.exist? gitpath then
+      FileUtils.mkdir_p gitpath
+    end
+    Dir.chdir gitpath
+    repo = STodoGit.new
+    targets.each do |t|
+      repo.update_file t.handle, t
+    end
+    repo.commit commit_msg
+    # ('git-add' will not change any STodoTarget items.)
+    self.change_occurred = false
+  end
+
+  # Delete the target IDd by 'handle'.
+  pre "handle exists" do |handle| ! handle.nil? end
+  pre "No data change yet" do change_occurred == false end
+  pre "target for 'handle' exists" do |handle|
+    ! target_for[handle].nil?
+  end
+  def version1__git_add handle, options = nil
+$log.warn "[#{File.basename(__FILE__)}:#{__LINE__}] h, o: #{handle}, #{options}"
+#(1st version: when recursive, add/commit each item one at a time.)
+    recursive = ! options.nil? && options[0..1] == RECURSIVE_OPT
+###!!!to-do: Look for "-m" option.
+    t = target_for[handle]
+    if recursive then
+      t.children.each do |c|
+#!!!        self.change_occurred = false  # (ensure precondition)
+        git_add c.handle, options
+      end
+    end
+    gitpath = Configuration.instance.git_path
+    if ! Dir.exist? gitpath then
+      FileUtils.mkdir_p gitpath
+    end
+    Dir.chdir gitpath
+    repo = STodoGit.new
+    repo.update_file handle, t.to_s
+    # ('git-add' will not change any STodoTarget items.) #!!!!Check!!!!
+    self.change_occurred = false
   end
 
   # Change parent of item with handle 'handle' to item with handle 'phandle'.

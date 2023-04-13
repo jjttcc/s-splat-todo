@@ -30,7 +30,7 @@ mainhelp() {
     echo -e "to <nh>"
     echo -e "  change <h>         change attribute(s) of item with handle <h>"
     echo -e "  add       ${gap}     add a new item"
-    echo -e "  del <h>...${gap}     delete items with handles <h>, ..."
+    echo -e "  del       ${gap}     delete the specified items"
     echo -e "  clear_d <h>...${gap} clear descendants of items with \c"
     echo -e "handle specs <h>, ..."
     echo -e "  remove_d <h> <dh>  find descendant (handle <dh>) \c"
@@ -42,8 +42,10 @@ mainhelp() {
     echo -e "  temp [<type> ...]  output a to-do item Template \c"
     echo -e "(for target type <type>)"
     echo -e "  backup [opts] ${gap} back up data files"
-    echo -e "  proca <h>...       Process attachments for items with \c"
+    echo -e "  proca <h>...       process attachments for items with \c"
     echo -e "handles <h>..."
+    echo -e "  git-<cmd>          perform the specified 'git' operation: \c"
+    echo -e "<cmd>"
     echo -e "  version            print Version number and exit"
 }
 
@@ -52,6 +54,7 @@ indepth_help() {
     rep*) report_help ;;
     add*) add_help ;;
     del*) delete_help ;;
+    git*) git_help ;;
     change*) change_help ;;
     clear*) clear_d_help ;;
     temp*) template_help ;;
@@ -311,9 +314,26 @@ add_help() {
 
 delete_help() {
   local s='        '
-  echo -e "Usage: $progname del [options]"
+  echo -e "Usage: $progname del <handle>... [options]"
   echo -e "\nOptions:"
   echo -e "  -r                Recursive: delete all descendants as well"
+}
+
+git_help() {
+  local s='      '
+  local ms="$s$s$s  "
+  local ls="$s$s$s$s"
+  echo -e "Usage: $progname git-<cmd> <h>... [options]"
+  echo -e "\nCommand (git-<cmd>):"
+  echo -e "  git-add <h>... $s Add/update and commit the items with handles\c"
+      echo -e " <h>...\n${ls}to/in the git repository"
+  echo -e "  git-ret <dt> <h>...   Retrieve the specified version, \c"
+  echo -e "according to <dt>\n$ls(date-time), of the \c"
+  echo -e "specified items (<h>...) from the\n${ls}git repository \c"
+  echo -e "and print them to stdout"
+  echo -e "Options:"
+  echo -e "  -r${ms}Recursive: apply <cmd> to all descendants as well"
+  echo -e "  -m:<msg> $s$s use <msg> as the commit Message"
 }
 
 admin_help() {
@@ -434,6 +454,7 @@ case $1 in
     do_edit delete $*
     ;;
   add*)
+echo "You called 'add*)'" >&2
     shift;
     do_quoted_edit add "$@"
     ;;
@@ -474,6 +495,10 @@ case $1 in
     shift;
     pre_process_attachments $*
     do_report attach $proca_handles
+    ;;
+  git-add)
+    shift
+    do_quoted_edit git-add "$@"
     ;;
   set*)
     shift;

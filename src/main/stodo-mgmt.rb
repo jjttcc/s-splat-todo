@@ -14,7 +14,7 @@ if ARGV.length > 1 then
   manager = STodoManager.new
   command = ARGV[0]; arguments = ARGV[1..-1]
   case command
-  when /ch.*par/, /clone/, /remove_d/, /ch.*han/  # two+-arg commands
+  when /^ch.*par/, /^clone/, /^remove_d/, /^ch.*han/  # two+-arg commands
     handle = arguments[0]
     command_and_args = [command, arguments[1..-1]].flatten
     if command_and_args.count < 2 then
@@ -22,7 +22,7 @@ if ARGV.length > 1 then
     else
       manager.edit_target(handle, command_and_args)
     end
-  when /add/
+  when /^add/
     require 'templatetargetbuilder'
     require 'templateoptions'
     options = TemplateOptions.new(arguments, true)
@@ -31,7 +31,7 @@ if ARGV.length > 1 then
     target_builder.set_processing_mode TemplateTargetBuilder::CREATE_MODE
     manager.target_builder = target_builder
     manager.add_new_targets
-  when /change*/
+  when /^change*/
     require 'templateoptions'
     handle = arguments[0]
     $log.debug "arguments: #{arguments}, handle: #{handle}"
@@ -49,6 +49,8 @@ if ARGV.length > 1 then
     # Iterate over item handles:
     opts = arguments.select do |a| a[0] == '-' end
     handles = arguments.select do |a| a[0] != '-' end
+$log.warn "[#{File.basename(__FILE__)}:#{__LINE__}] hs, c, o: #{handles}, "\
+"#{command}, #{opts}"
     handles.each do |h|
       if ! opts.empty? then
         manager.edit_target(h, command, opts)

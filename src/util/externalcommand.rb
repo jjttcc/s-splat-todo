@@ -45,6 +45,20 @@ class ExternalCommand
     pid
   end
 
+  # Execute 'command' (a path to an executable file) and wait for it to
+  # finish, passing it 0 or more arguments.
+  def self.execute_and_block *command_with_args
+    pid = -1
+    command  = command_with_args[0]
+    if ! valid_executable command then
+      raise "#{command} is not valid: #{invalidity_reason command}"
+    else
+      pid = spawn(*command_with_args)
+      Process.wait(pid)
+    end
+    pid
+  end
+
   private
 
 end

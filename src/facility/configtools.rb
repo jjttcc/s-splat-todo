@@ -38,10 +38,12 @@ module ConfigTools
   CONFIG_FILE_PATH = self.constructed_path([CONFIG_DIR_PATH, 'config'])
   # Name of executable "stodo shell" file:
   STODO_SHELL_FILE_NAME = '.stodo-shell'
+  DEFAUT_GIT_DIR = 'git'
   ### config tags
   SPEC_PATH_TAG        = 'specpath'
   DATA_PATH_TAG        = 'datapath'
   USER_PATH_TAG        = 'userpath'
+  GIT_PATH_TAG         = 'gitpath'
   BACKUP_PATH_TAG      = 'backuppath'
   OLD_SPECS_TAG        = 'processed_specs'
   EMAIL_TEMPLATE_TAG   = 'emailtemplate'

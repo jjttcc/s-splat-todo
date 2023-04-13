@@ -26,6 +26,8 @@ class Configuration
   attr_reader :data_path
   # path for user files
   attr_reader :user_path
+  # path to the stodo git directory
+  attr_reader :git_path
   # default/backup email address
   attr_reader :default_email
   # path(s) for backups of data files
@@ -63,6 +65,7 @@ class Configuration
       "user_path"               => user_path,
       "spec_path"               => spec_path,
       "data_path"               => data_path,
+      "git_path"                => git_path,
       "backup_paths"            => backup_paths,
       "post_init_spec_path"     => post_init_spec_path,
       "default_email"           => default_email,
@@ -102,6 +105,10 @@ class Configuration
     @spec_path = settings[SPEC_PATH_TAG]
     @data_path = settings[DATA_PATH_TAG]
     @user_path = settings[USER_PATH_TAG]
+    @git_path = settings[GIT_PATH_TAG]
+    if @git_path.nil? then
+      @git_path = File.join(data_path, DEFAUT_GIT_DIR)
+    end
     @default_email = settings[DEFAULT_EMAIL_TAG]
     @post_init_spec_path =
       ConfigTools::constructed_path([data_path, OLD_SPECS_TAG])

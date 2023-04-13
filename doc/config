@@ -3,6 +3,9 @@ specpath = /home/mylogin/.stodo/specs
 datapath = /home/mylogin/.stodo/data
 # Default path for user files, such as attachments:
 userpath = /home/mylogin/.stodo/user
+## Override the path of the "stodo git repository" -
+# (default is <datapath>/git) - uncomment/modify to change:
+#gitpath = /home/mylogin/mystodo/git
 # Default email address to use if not specified elsewhere:
 default_email = defaultuser@default.org
 # comma-separated list of one or more backup paths:
