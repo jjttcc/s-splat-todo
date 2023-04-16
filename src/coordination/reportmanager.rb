@@ -2,6 +2,7 @@ require 'ruby_contracts'
 require 'preconditionerror'
 require 'timetools'
 require 'byebug'
+require 'stodogit'
 
 # Manager of reporting-related actions
 class ReportManager
@@ -37,6 +38,43 @@ class ReportManager
     end
     targets.each do |t|
       puts "#{t.handle}"
+    end
+  end
+
+  # List all handles currently in the git repository.
+  # ('criteria' is currently not used.)
+  def list_git_handles(criteria)
+    # (Ignore 'criteria' [might never be used].)
+    gitpath = Configuration.instance.git_path
+    if ! Dir.exist? gitpath then
+      FileUtils.mkdir_p gitpath
+    end
+    Dir.chdir gitpath do
+      repo = STodoGit.new
+      repo.list_handles
+    end
+  end
+
+  # Output all log entries for the items/handles specified by 'criteria'
+  # currently in the git repository.
+  def show_git_log(criteria)
+    handles = nil
+    if ! criteria.null_criteria? then
+      if criteria.handles_only? then
+        handles = criteria.handles
+      else
+        handles = targets_for_criteria(criteria).map do |t|
+          t.handle
+        end
+      end
+    end
+    gitpath = Configuration.instance.git_path
+    if ! Dir.exist? gitpath then
+      FileUtils.mkdir_p gitpath
+    end
+    Dir.chdir gitpath do
+      repo = STodoGit.new
+      repo.show_git_log handles
     end
   end
 

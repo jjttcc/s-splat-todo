@@ -76,6 +76,14 @@ class ReportUtil
         result = Proc.new {
           reporter.report_due(criteria)
         }
+      when /^git-list/
+        result = Proc.new {
+          reporter.list_git_handles(criteria)
+        }
+      when /^git-log/
+        result = Proc.new {
+          reporter.show_git_log(criteria)
+        }
       when /^attach/
         result = Proc.new {
           reporter.report_attachments(criteria)

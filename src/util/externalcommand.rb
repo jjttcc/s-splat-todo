@@ -30,9 +30,9 @@ class ExternalCommand
     result
   end
 
-  # Execute 'command' (a path to an executable file) in the background via
-  # 'spawn', passing it 0 or more arguments. "detach" the resulting process
-  # and return its process id (pid).
+  # Execute 'command_with_args' (a path to an executable file, with 0
+  # or more arguments) in the background via 'spawn'.
+  # "detach" the resulting process and return its process id (pid).
   def self.execute *command_with_args
     pid = -1
     command  = command_with_args[0]
@@ -45,8 +45,8 @@ class ExternalCommand
     pid
   end
 
-  # Execute 'command' (a path to an executable file) and wait for it to
-  # finish, passing it 0 or more arguments.
+  # Execute 'command_with_args' (a path to an executable file, with 0 or
+  # more arguments) and wait for it to finish.
   def self.execute_and_block *command_with_args
     pid = -1
     command  = command_with_args[0]
@@ -57,6 +57,22 @@ class ExternalCommand
       Process.wait(pid)
     end
     pid
+  end
+
+  # Execute 'command_with_args' (a path to an executable file, with 0 or
+  # more arguments), wait for it to finish, and return the output/stdout as
+  # an array - one element per line of output.
+  def self.execute_with_output *command_with_args
+    result = []
+    command  = command_with_args[0]
+    if ! valid_executable command then
+      raise "#{command} is not valid: #{invalidity_reason command}"
+    else
+      io = IO.popen(command_with_args)
+      result = io.readlines(chomp: true)
+      io.close
+    end
+    result
   end
 
   private

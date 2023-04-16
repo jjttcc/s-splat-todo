@@ -160,7 +160,7 @@ do_report() {
     -*) shift
       ;;
   esac
-  run $report $modded_args $*
+  run $report $modded_args "$@"
 }
 
 do_edit() {
@@ -325,8 +325,10 @@ git_help() {
   local ls="$s$s$s$s"
   echo -e "Usage: $progname git-<cmd> <h>... [options]"
   echo -e "\nCommand (git-<cmd>):"
+  echo -e "  git-list              List handles of items in git repo"
   echo -e "  git-add <h>... $s Add/update and commit the items with handles\c"
       echo -e " <h>...\n${ls}to/in the git repository"
+  echo -e "  git-log <h>...        display the Log for <h>..."
   echo -e "  git-ret <dt> <h>...   Retrieve the specified version, \c"
   echo -e "according to <dt>\n$ls(date-time), of the \c"
   echo -e "specified items (<h>...) from the\n${ls}git repository \c"
@@ -447,14 +449,13 @@ case $1 in
     ;;
   comb*) do_combined_processing
     ;;
-  rep*) shift; do_report $*
+  rep*) shift; do_report "$@"
     ;;
   del*)
     shift;
     do_edit delete $*
     ;;
   add*)
-echo "You called 'add*)'" >&2
     shift;
     do_quoted_edit add "$@"
     ;;
@@ -495,6 +496,14 @@ echo "You called 'add*)'" >&2
     shift;
     pre_process_attachments $*
     do_report attach $proca_handles
+    ;;
+  git-li*)
+    shift
+    do_report git-list "$@"
+    ;;
+  git-lo*)
+    shift
+    do_report git-log "$@"
     ;;
   git-add)
     shift
