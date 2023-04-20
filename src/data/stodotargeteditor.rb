@@ -2,18 +2,19 @@ require 'fileutils'
 require 'ruby_contracts'
 require 'stodogit'
 require 'commandoptions'
+require 'editingtogitfacilities'
 
 # Editors of "STodoTarget"s
 class STodoTargetEditor
-  include SpecTools, ErrorTools
+  include SpecTools, ErrorTools, EditingToGitFacilities
   include Contracts::DSL
 
   public
 
-  attr_reader :last_command_failed, :last_failure_message,
+  attr_reader :last_command_failed, :last_failure_message
     # Did the last editor command result in a state change that
     # requires a database update?:
-    :change_occurred
+  attr_reader :change_occurred
 
   def apply_command(handle, parameters)
     @last_command_failed = false
@@ -39,6 +40,11 @@ class STodoTargetEditor
     end
   end
 
+  def close_edit
+$log.warn "#{self.class}.#{__method__}"
+    do_pending_commit
+  end
+
   protected
 
   attr_reader :target_for
@@ -57,17 +63,19 @@ class STodoTargetEditor
 
   def initialize_method_map
     @method_for = {
-      'delete'                => :delete_target,
-      'change_parent'         => :change_parent,
-      'change_handle'         => :change_handle,
-      'remove_descendant'     => :remove_descendant,
-      'state'                 => :modify_state,
-      'clear_descendants'     => :clear_descendants,
-      'clone'                 => :make_clone,
-      'git-add'               => :git_add,
-      're_adopt_descendants'  => :re_adopt_descendants,
-      'remove_false_children' => :remove_false_children,
+      DELETE                => :delete_target,
+      CHANGE_PARENT         => :change_parent,
+      CHANGE_HANDLE         => :change_handle,
+      REMOVE_DESCENDANT     => :remove_descendant,
+      STATE                 => :modify_state,
+      CLEAR_DESCENDANTS     => :clear_descendants,
+      CLONE                 => :make_clone,
+      GIT_ADD               => :git_add,
+      RE_ADOPT_DESCENDANTS  => :re_adopt_descendants,
+      REMOVE_FALSE_CHILDREN => :remove_false_children,
     }
+    # Provides mapping of method symbols to commands:
+    @command_for = @method_for.invert
   end
 
   # array constructed from 'handle' and 'rawcmd' with the following structure:
@@ -87,7 +95,7 @@ class STodoTargetEditor
     result
   end
 
-  ### Methods for @method_for table
+  ###  Methods for @method_for table
 
   # Delete the target IDd by 'handle'.
   pre "handle exists" do |handle| ! handle.nil? end
@@ -119,10 +127,14 @@ class STodoTargetEditor
       end
     end
     target_for.delete(t.handle)
+    repo = Configuration.instance.stodo_git
+    if repo.in_git(t.handle) then
+      execute_git_command(@command_for[__method__], t)
+    end
     self.change_occurred = true
   end
 
-  # Add/update and commit the item with 'handle'.
+  # git-add/update and commit the item with 'handle'.
   pre "handle exists" do |handle| ! handle.nil? end
   pre "No data change yet" do change_occurred == false end
   pre "target for 'handle' exists" do |handle|
@@ -138,17 +150,7 @@ class STodoTargetEditor
     if recursive then
       targets.concat(tgt.descendants)
     end
-    gitpath = Configuration.instance.git_path
-    if ! Dir.exist? gitpath then
-      FileUtils.mkdir_p gitpath
-    end
-    Dir.chdir gitpath do
-      repo = STodoGit.new
-      targets.each do |t|
-        repo.update_file t.handle, t
-      end
-      repo.commit commit_msg
-    end
+    execute_git_command(@command_for[__method__], targets)
     # ('git-add' will not change any STodoTarget items.)
     self.change_occurred = false
   end
@@ -195,6 +197,10 @@ class STodoTargetEditor
         assert('consistent handle values') { phandle == new_parent.handle }
         t.parent_handle = new_parent.handle
         new_parent.add_child(t)
+      end
+      repo = Configuration.instance.stodo_git
+      if repo.in_git(t.handle) then
+        execute_git_command(@command_for[__method__], t)
       end
       self.change_occurred = true
     end
@@ -330,13 +336,24 @@ class STodoTargetEditor
   def modify_state handle, state
     t = @target_for[handle]
     if t != nil then
-      execute_guarded_state_change(t, state)
+      succeeded = execute_guarded_state_change(t, state)
+      if succeeded then
+        execute_git_command(@command_for[__method__], t)
+      end
       self.change_occurred = true
     else
       $log.warn "Expected target for handle #{handle} not found."
     end
   end
 
+  ###  Helpers/utilities
+
+  # Execute a "guarded" state-change - i.e., iff 'statechg' is valid,
+  # execute the change.
+  # Return whether or not the specified change was valid/executed.
+  post 'return boolean' do |result|
+    ! result.nil? && [true, false].include?(result)
+  end
   def execute_guarded_state_change(target, statechg)
       current_state = target.state
       old_state = current_state.value
@@ -365,6 +382,7 @@ class STodoTargetEditor
       if not valid then
         $log.warn "Invalid state change request: #{old_state} => #{statechg}"
       end
+      valid
   end
 
 end

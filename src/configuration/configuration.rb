@@ -6,6 +6,7 @@ require 'yamlstorebaseddatamanager'
 require 'spectools'
 require 'configtools'
 require 'mediaconfigtools'
+require 'stodogit'
 
 # Configuration settings for the current run
 class Configuration
@@ -28,6 +29,8 @@ class Configuration
   attr_reader :user_path
   # path to the stodo git directory
   attr_reader :git_path
+  # path to the git executable (e.g.: /bin/git)
+  attr_reader :git_executable
   # default/backup email address
   attr_reader :default_email
   # path(s) for backups of data files
@@ -45,7 +48,10 @@ class Configuration
   # Should attachments be "edited" (potentially modified) during this run?
   attr_reader :edit_attachment
 
-  VERSION =  '1.0.102'
+  # The "global" git-repository object
+  attr_reader :stodo_git
+
+  VERSION =  '1.0.103'
   PROGNAME = 'stodo'
 
   # stodo version identifier
@@ -66,6 +72,7 @@ class Configuration
       "spec_path"               => spec_path,
       "data_path"               => data_path,
       "git_path"                => git_path,
+      "git_executable"          => git_executable,
       "backup_paths"            => backup_paths,
       "post_init_spec_path"     => post_init_spec_path,
       "default_email"           => default_email,
@@ -89,6 +96,9 @@ class Configuration
 
   attr_writer :view_attachment, :edit_attachment
 
+  post 'important objects exist' do
+    ! data_manager.nil? && ! stodo_git.nil?
+  end
   def initialize
     setup_config_path
     settings = config_file_settings
@@ -97,6 +107,15 @@ class Configuration
     set_internal_vars
     @test_run = ENV[STTESTRUN] != nil
     @data_manager = YamlStoreBasedDataManager.new(data_path, user)
+    @stodo_git = initialized_stodo_git
+  end
+
+  def initialized_stodo_git
+    # The git path might not exist at this point.
+    if ! Dir.exist? git_path then
+      FileUtils.mkdir_p git_path
+    end
+    STodoGit.new(git_path)
   end
 
   def set_config_vars settings
@@ -108,6 +127,10 @@ class Configuration
     @git_path = settings[GIT_PATH_TAG]
     if @git_path.nil? then
       @git_path = File.join(data_path, DEFAUT_GIT_DIR)
+    end
+    @git_executable = settings[GIT_EXE_PATH_TAG]
+    if @git_executable.nil? then
+      @git_executable = DEFAUT_GIT_EXE_TAG
     end
     @default_email = settings[DEFAULT_EMAIL_TAG]
     @post_init_spec_path =

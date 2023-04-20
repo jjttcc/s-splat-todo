@@ -44,6 +44,7 @@ if ARGV.length > 1 then
     target_editor = TemplateTargetBuilder.new(options,
                                               manager.existing_targets, spec)
     manager.target_builder = target_editor
+$log.warn "change case - calling 'update_targets' - handle: #{handle}"
     manager.update_targets
   else
     # Iterate over item handles:
@@ -58,5 +59,6 @@ $log.warn "[#{File.basename(__FILE__)}:#{__LINE__}] hs, c, o: #{handles}, "\
         manager.edit_target(h, command)
       end
     end
+    manager.close_edit
   end
 end

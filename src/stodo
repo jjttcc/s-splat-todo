@@ -443,15 +443,15 @@ process_attachment_help() {
 }
 
 case $1 in
-  new|init) process_new_items
+  new|init) process_new_items     # (can cause git-action)
     ;;
   noti*) process_notifications
     ;;
-  comb*) do_combined_processing
+  comb*) do_combined_processing   # (can cause git-action)
     ;;
   rep*) shift; do_report "$@"
     ;;
-  del*)
+  del*)                           # (can cause git-action)
     shift;
     do_edit delete $*
     ;;
@@ -459,15 +459,16 @@ case $1 in
     shift;
     do_quoted_edit add "$@"
     ;;
-  change*)
+  change*)                        # (can cause git-action)
     shift;
     do_quoted_edit change_item "$@"
     ;;
-  chpar*)
+  chpar*)                         # (can cause git-action)
     shift;
     do_edit change_parent $*
     ;;
-  chhan*)
+  chhan*)                         # (can cause git-action)
+#!!!!to-do: implement stodo_git link/logic
     shift;
     do_edit change_handle $*
     ;;
@@ -483,7 +484,7 @@ case $1 in
     shift;
     do_edit clone $*
     ;;
-  sta*)
+  sta*)                           # (can cause git-action)
     shift;
     new_state=$1; shift
     do_edit state:$new_state $*
@@ -497,15 +498,15 @@ case $1 in
     pre_process_attachments $*
     do_report attach $proca_handles
     ;;
-  git-li*)
+  git-li*)                        # (will cause git-action - NO repo change)
     shift
     do_report git-list "$@"
     ;;
-  git-lo*)
+  git-lo*)                        # (will cause git-action - NO repo change)
     shift
     do_report git-log "$@"
     ;;
-  git-add)
+  git-add)                        # (will cause git-action - repo change)
     shift
     do_quoted_edit git-add "$@"
     ;;

@@ -13,4 +13,5 @@ spec_collector = FileBasedSpecGatherer.new
 # Build the s*todo targets.
 target_builder = TargetBuilder.new spec_collector
 manager = STodoManager.new target_builder
+$log.warn "manager.perform_initial_processing"
 manager.perform_initial_processing

@@ -45,14 +45,7 @@ class ReportManager
   # ('criteria' is currently not used.)
   def list_git_handles(criteria)
     # (Ignore 'criteria' [might never be used].)
-    gitpath = Configuration.instance.git_path
-    if ! Dir.exist? gitpath then
-      FileUtils.mkdir_p gitpath
-    end
-    Dir.chdir gitpath do
-      repo = STodoGit.new
-      repo.list_handles
-    end
+    Configuration.instance.stodo_git.list_handles
   end
 
   # Output all log entries for the items/handles specified by 'criteria'
@@ -68,14 +61,7 @@ class ReportManager
         end
       end
     end
-    gitpath = Configuration.instance.git_path
-    if ! Dir.exist? gitpath then
-      FileUtils.mkdir_p gitpath
-    end
-    Dir.chdir gitpath do
-      repo = STodoGit.new
-      repo.show_git_log handles
-    end
+    Configuration.instance.stodo_git.show_git_log handles
   end
 
   def show_description(criteria)

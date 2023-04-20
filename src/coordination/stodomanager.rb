@@ -41,6 +41,7 @@ class STodoManager
   pre 'target_builder set' do ! self.target_builder.nil? end
   pre 'targets nil' do target_builder.targets.nil? end
   def perform_initial_processing
+$log.warn "#{self.class}.perform_initial_processing"
     process_targets
     if processing_required then
       email = Email.new(mailer)
@@ -68,12 +69,25 @@ class STodoManager
   def perform_ongoing_processing
     self.dirty = false
     email = Email.new(mailer)
+    changed_items, git_items = [], []
+    repo = Configuration.instance.stodo_git
     self.existing_targets.values.each do |t|
       t.add_notifier(email)
+      self.dirty = false
       # Pass 'self' to allow t to set 'dirty':
       t.perform_ongoing_actions(self)
+      if dirty then
+        changed_items << t
+        if repo.in_git t.handle then
+          git_items << t
+        end
+      end
     end
-    if dirty then
+    if ! changed_items.empty? then
+      if ! git_items.empty? then
+        repo.update_items git_items
+        repo.commit "updated #{repo.update_count} items"
+      end
       @data_manager.store_targets(self.existing_targets)
     end
   end
@@ -123,6 +137,12 @@ class STodoManager
     end
   end
 
+  # Finalize any editing actions begun by 'edit_target'.
+  # (For example, run pending git-commit.)
+  def close_edit
+    editor.close_edit
+  end
+
   # Add the newly-created targets specified by target_builder.targets -
   # to persistent store.
   pre 'target_builder set' do ! target_builder.nil? end
@@ -147,18 +167,24 @@ class STodoManager
           end
         end
       end
+      # (No 'git' updates needed, since only new targets were created.)
       @data_manager.store_targets(self.existing_targets)
     end
   end
 
   # Ensure that the specified targets are updated in persistent store.
-  # (Make no modifications to any member of 'targets'.)
   pre 'target_builder set' do ! self.target_builder.nil? end
   def update_targets
     if ! target_builder.targets_prepared? then
       target_builder.prepare_targets
     end
     target_builder.process_targets
+    edits = target_builder.edited_targets
+$log.warn "edits: #{edits.inspect}"
+    if ! edits.empty? then
+      repo = configuration.stodo_git
+      repo.update_items_and_commit(edits, nil, true)
+    end
     @data_manager.store_targets(self.existing_targets)
   end
 
@@ -219,6 +245,7 @@ class STodoManager
   pre  'targets not yet processed' do self.target_builder.targets.nil?  end
   post 'targets processed' do ! self.target_builder.targets.nil?  end
   def process_targets
+$log.warn "#{self.class}.#{__method__} (might use git)"
     self.target_builder.existing_targets = self.existing_targets
     self.target_builder.process_targets
     tgts = self.target_builder.targets
@@ -244,6 +271,12 @@ class STodoManager
     end
     self.target_builder.edited_targets.each do |tgt|
       @edited_targets[tgt.handle] = tgt
+    end
+    if ! @edited_targets.empty? then
+      repo = Configuration.instance.stodo_git
+$log.warn "#{__method__} (calling git - update_items)"
+      repo.update_items(@edited_targets.values, true)
+      repo.commit "#{__method__} - #{repo.update_count} items"
     end
   end
 

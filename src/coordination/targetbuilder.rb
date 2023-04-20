@@ -54,9 +54,14 @@ class TargetBuilder
   # Process STodoTarget objects according to self.specs, and, based on
   # 'processing_mode', create a new STodoTarget object or edit the
   # existing one that corresponds to the specification.
-  pre '"existing_targets" set' do ! self.existing_targets.nil? end
-  pre 'specs exist' do ! self.specs.nil? end
-  post 'targets exist' do ! self.targets.nil? end
+  # Add any existing 'targets' that were edited to self.edited_targets.
+  pre '"existing_targets" set' do ! existing_targets.nil? end
+  pre 'specs exist' do ! specs.nil? end
+  pre 'edited_targets empty' do
+    ! edited_targets.nil? && edited_targets.empty?
+  end
+  post 'targets exist' do ! targets.nil? end
+  post 'edited_targets exist' do ! edited_targets.nil? end
   def process_targets
     if ! targets_prepared? then
       prepare_targets
@@ -103,7 +108,10 @@ class TargetBuilder
   attr_writer :targets, :processing_mode
 
   pre  'collector exists' do |spec_collector| ! spec_collector.nil? end
-  post 'targets.nil?' do self.targets.nil? end
+  post 'targets.nil?' do targets.nil? end
+  post 'edited_targets empty' do
+    ! edited_targets.nil? && edited_targets.empty?
+  end
   # Set self.processing_mode to CREATE_MODE, unless overridden in descendant.
   # Initialize @spec_collector, @edited_targets, @time_changed_for.
   # Initialize @target_factory_for ("target factory" hash table).
