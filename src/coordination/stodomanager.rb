@@ -41,7 +41,6 @@ class STodoManager
   pre 'target_builder set' do ! self.target_builder.nil? end
   pre 'targets nil' do target_builder.targets.nil? end
   def perform_initial_processing
-$log.warn "#{self.class}.perform_initial_processing"
     process_targets
     if processing_required then
       email = Email.new(mailer)
@@ -180,7 +179,6 @@ $log.warn "#{self.class}.perform_initial_processing"
     end
     target_builder.process_targets
     edits = target_builder.edited_targets
-$log.warn "edits: #{edits.inspect}"
     if ! edits.empty? then
       repo = configuration.stodo_git
       repo.update_items_and_commit(edits, nil, true)
@@ -245,7 +243,6 @@ $log.warn "edits: #{edits.inspect}"
   pre  'targets not yet processed' do self.target_builder.targets.nil?  end
   post 'targets processed' do ! self.target_builder.targets.nil?  end
   def process_targets
-$log.warn "#{self.class}.#{__method__} (might use git)"
     self.target_builder.existing_targets = self.existing_targets
     self.target_builder.process_targets
     tgts = self.target_builder.targets
@@ -274,7 +271,6 @@ $log.warn "#{self.class}.#{__method__} (might use git)"
     end
     if ! @edited_targets.empty? then
       repo = Configuration.instance.stodo_git
-$log.warn "#{__method__} (calling git - update_items)"
       repo.update_items(@edited_targets.values, true)
       repo.commit "#{__method__} - #{repo.update_count} items"
     end

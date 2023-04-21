@@ -41,7 +41,6 @@ class STodoTargetEditor
   end
 
   def close_edit
-$log.warn "#{self.class}.#{__method__}"
     do_pending_commit
   end
 
@@ -126,9 +125,9 @@ $log.warn "#{self.class}.#{__method__}"
         c.parent_handle = nil
       end
     end
-    target_for.delete(t.handle)
+    target_for.delete(handle)
     repo = Configuration.instance.stodo_git
-    if repo.in_git(t.handle) then
+    if repo.in_git(handle) then
       execute_git_command(@command_for[__method__], t)
     end
     self.change_occurred = true
@@ -199,7 +198,7 @@ $log.warn "#{self.class}.#{__method__}"
         new_parent.add_child(t)
       end
       repo = Configuration.instance.stodo_git
-      if repo.in_git(t.handle) then
+      if repo.in_git(handle) then
         execute_git_command(@command_for[__method__], t)
       end
       self.change_occurred = true
@@ -227,6 +226,10 @@ $log.warn "#{self.class}.#{__method__}"
       self.target_for.delete(t.handle)
       t.change_handle(new_handle)
       self.target_for[new_handle] = t
+      repo = Configuration.instance.stodo_git
+      if repo.in_git(handle) then
+        execute_git_command(@command_for[__method__], [handle, new_handle])
+      end
       self.change_occurred = true
     end
   end

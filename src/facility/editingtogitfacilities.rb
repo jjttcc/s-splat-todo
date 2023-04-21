@@ -39,6 +39,7 @@ module EditingToGitFacilities
   GIT_COMMAND_FOR = {
     DELETE          => :delete_item,
     CHANGE_PARENT   => :update_item,
+    CHANGE_HANDLE   => :nil,
     STATE           => :update_item,
     GIT_ADD         => :update_item,
   }
@@ -50,22 +51,19 @@ module EditingToGitFacilities
   GIT_PLURAL_COMMAND_FOR = {
     DELETE          => nil,             # not valid for delete
     CHANGE_PARENT   => nil,             # not valid for change_parent
+    CHANGE_HANDLE   => :move_file,
     STATE           => :update_items,
     GIT_ADD         => :update_items,
   }
 
   # The STodoGit command for the specified 'edit_cmd'
   def git_command_for edit_cmd
-$log.warn "[#{__method__}] edit_cmd: #{edit_cmd}"
-$log.warn "[#{__method__}] GIT_COMMAND_FOR[edit_cmd]: #{GIT_COMMAND_FOR[edit_cmd]}"
     GIT_COMMAND_FOR[edit_cmd]
   end
 
   # The plural version (i.e., takes multiple items) of the STodoGit command
   # for the specified 'edit_cmd'
   def git_plural_command_for edit_cmd
-$log.warn "[#{__method__}] edit_cmd: #{edit_cmd}"
-$log.warn "[#{__method__}] GIT_COMMAND_FOR[edit_cmd]: #{GIT_COMMAND_FOR[edit_cmd]}"
     GIT_PLURAL_COMMAND_FOR[edit_cmd]
   end
 
@@ -76,9 +74,7 @@ $log.warn "[#{__method__}] GIT_COMMAND_FOR[edit_cmd]: #{GIT_COMMAND_FOR[edit_cmd
     ! item.nil? && (item.is_a?(STodoTarget) || item.is_a?(Enumerable))
   end
   def execute_git_command(editing_cmd, item)
-#a.is_a?(Enumerable)'
     repo = Configuration.instance.stodo_git
-$log.warn "[#{__method__}] editing_cmd: #{editing_cmd}"
     if item.is_a?(Enumerable) then
       command = git_plural_command_for(editing_cmd)
     else
@@ -87,33 +83,12 @@ $log.warn "[#{__method__}] editing_cmd: #{editing_cmd}"
     repo.send(command, item)
   end
 
-  # Use 'repo' to execute the git command corresponding to 'editing_cmd'
-  # on 'item'.
-  pre 'repo is-git' do |repo| ! repo.nil? && repo.is_a?(STodoGit) end
-  pre 'ed_cmd symbol' do |r, ed_cmd| ! ed_cmd.nil? && ed_cmd.is_a?(Symbol) end
-  pre 'item type' do |r, ec, item| ! item.nil? && item.is_a?(STodoTarget) end
-  def v1___execute_git_command(repo, editing_cmd, item)
-$log.warn "[#{__method__}] editing_cmd: #{editing_cmd}"
-    command = git_command_for(editing_cmd)
-    repo.send(command, item)
-    if ! @git_cmd_count then
-      @git_cmd_count = 0
-    end
-    @git_cmd_count += 1
-    at_exit do
-      git_commit(repo,
-                 "committing #{@git_cmd_count} operations (#{editing_cmd}...)")
-    end
-  end
-
   # If a STodoGit commit is pending, execute it.
   def do_pending_commit(msg = nil)
     repo = Configuration.instance.stodo_git
     if repo.commit_pending then
-$log.warn "#{self.class}.#{__method__} - committing"
       repo.commit msg
     else
-$log.warn "#{self.class}.#{__method__} - NO commits pending"
     end
   end
 

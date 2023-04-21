@@ -468,7 +468,6 @@ case $1 in
     do_edit change_parent $*
     ;;
   chhan*)                         # (can cause git-action)
-#!!!!to-do: implement stodo_git link/logic
     shift;
     do_edit change_handle $*
     ;;
@@ -498,15 +497,15 @@ case $1 in
     pre_process_attachments $*
     do_report attach $proca_handles
     ;;
-  git-li*)                        # (will cause git-action - NO repo change)
+  git-l[is]*|gitl[is]*)           # (will cause git-action - NO repo change)
     shift
     do_report git-list "$@"
     ;;
-  git-lo*)                        # (will cause git-action - NO repo change)
+  git-lo*|gitlo*)                 # (will cause git-action - NO repo change)
     shift
     do_report git-log "$@"
     ;;
-  git-add)                        # (will cause git-action - repo change)
+  git-add|gitadd)                 # (will cause git-action - repo change)
     shift
     do_quoted_edit git-add "$@"
     ;;

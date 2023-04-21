@@ -21,6 +21,7 @@ if ARGV.length > 1 then
       two_arg_warning command
     else
       manager.edit_target(handle, command_and_args)
+      manager.close_edit
     end
   when /^add/
     require 'templatetargetbuilder'
@@ -44,14 +45,10 @@ if ARGV.length > 1 then
     target_editor = TemplateTargetBuilder.new(options,
                                               manager.existing_targets, spec)
     manager.target_builder = target_editor
-$log.warn "change case - calling 'update_targets' - handle: #{handle}"
     manager.update_targets
   else
-    # Iterate over item handles:
     opts = arguments.select do |a| a[0] == '-' end
     handles = arguments.select do |a| a[0] != '-' end
-$log.warn "[#{File.basename(__FILE__)}:#{__LINE__}] hs, c, o: #{handles}, "\
-"#{command}, #{opts}"
     handles.each do |h|
       if ! opts.empty? then
         manager.edit_target(h, command, opts)

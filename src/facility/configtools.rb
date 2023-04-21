@@ -35,6 +35,30 @@ module ConfigTools
     ]
   end
 
+  # Arguments (Array) to 'git log' command to produce log output for the
+  # specified files (handles), which are expected to exist within the
+  # repository:
+  pre 'handles is array' do |hndls| ! hndls.nil? && hndls.is_a?(Array) end
+  def git_log_args(handles)
+    result = [
+      # Forces 'git' to use #{git_path} as its repo/root-directory:
+      "--git-dir=#{git_path}/.git", 'log', '--',
+    ]
+    result.concat(handles)
+    result
+  end
+
+  # Arguments (Array) to 'git mv' command to "move" 'old_handle' to
+  # 'new_handle':
+  pre 'handles is array' do |hndls| ! hndls.nil? && hndls.is_a?(Array) end
+  def git_mv_args(old_handle, new_handle)
+    result = [
+      # Forces 'git' to use #{git_path} as its repo/root-directory:
+      "--git-dir=#{git_path}/.git", 'mv', '--', old_handle, new_handle
+    ]
+    result
+  end
+
   def self.home_path
     result = ENV['HOME']
     if not result then result = ENV['STODO_HOME'] end

@@ -62,6 +62,7 @@ class ExternalCommand
   # Execute 'command_with_args' (a path to an executable file, with 0 or
   # more arguments), wait for it to finish, and return the output/stdout as
   # an array - one element per line of output.
+  post 'result is array' do |result| ! result.nil? && result.is_a?(Array) end
   def self.execute_with_output *command_with_args
     result = []
     command  = command_with_args[0]

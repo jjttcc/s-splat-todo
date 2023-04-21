@@ -6,5 +6,4 @@ require 'stodomanager'
 
 
 manager = STodoManager.new
-$log.warn "manager.perform_ongoing_processing (#{})"
 manager.perform_ongoing_processing

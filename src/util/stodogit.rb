@@ -59,7 +59,39 @@ class STodoGit
   end
 
   # Display the git log for the specified handles.
-  def show_git_log handles, outfile = $stdout
+  # And return the result as an array as well.
+  pre 'hndls is array' do |hndls| ! hndls.nil? && hndls.is_a?(Array) end
+  def show_git_log hndls, outfile = $stdout
+    outer_sep = '=' * 50
+    report = ""
+    if hndls.nil? || hndls.empty? then
+      handles = handles_in_repo
+    else
+      handles = hndls
+    end
+    config = Configuration.instance
+    cmd = config.git_executable
+    entries = []
+    last = handles.count - 1
+    (0 .. last).each do |i|
+      args = config.git_log_args [handles[i]]
+      entries << "#{handles[i]}:"
+      entries.concat(ExternalCommand.execute_with_output(cmd, *args))
+      if i < last then
+        entries << outer_sep
+      end
+    end
+    report = entries.join("\n")
+    outfile.puts report
+    # (See References[3] for info on git commit names, patterns, etc.)
+    entries
+  end
+
+  # Display the git log for the specified handles.
+  # (This stopped working due, apparently, switching to specify the
+  # 'git-path' to Git.new [instead of just "cd"ing to the git directory
+  # first] combined with a bug in ruby-git and/or in git.)
+  def old___show_git_log_with_new_bug handles, outfile = $stdout
     inner_sep = '-' * 34 + "\n"
     outer_sep = '=' * 50 + "\n"
     report = ""
@@ -105,26 +137,9 @@ class STodoGit
     File.open(filepath, "w") do |f|
       f.write(item.to_s)
     end
-$log.warn "[#{__method__}] updating #{item.handle}"
     git.add item.handle
     @update_count += 1
     @commit_pending = true
-  end
-
-  # Update the specified file/item (via item.handle) with contents from
-  # 'item' and 'git add' it.
-  pre  'item-good' do |item| ! item.nil? && item.is_a?(STodoTarget) end
-  post 'counted' do update_count > 0 end
-  def old___remove___update_file item
-    if ! git_path_exists then
-      git.init
-    end
-    File.open(item.handle, "w") do |f|
-      f.write(item.to_s)
-    end
-$log.warn "[#{__method__}] updating #{item.handle}"
-    git.add item.handle
-    @update_count += 1
   end
 
   # Update the specified files/items (via <item>.handle) with contents from
@@ -134,14 +149,12 @@ $log.warn "[#{__method__}] updating #{item.handle}"
   pre  'items-good' do |ilist| ! ilist.nil? && ilist.is_a?(Array) end
   post 'counted' do update_count > 0 end
   def update_files item_list, only_git_items = false
-$log.warn "[#{__method__}] ilist, ogi: #{item_list}, #{only_git_items}"
     items = item_list
     if only_git_items then
       items = item_list.select do |i|
         in_git i.handle
       end
     end
-$log.warn "[#{__method__}] items: #{items}"
     items.each do |i|
       update_item(i)
     end
@@ -164,12 +177,29 @@ $log.warn "[#{__method__}] items: #{items}"
 
   alias_method :update_items_and_commit, :update_files_and_commit
 
+  # Move ('git mv') the specified file/handle (old_and_new_hndl[0]) to have
+  # the new name (old_and_new_hndl[1]).
+  pre  'hndl-array' do |oanh|
+    ! oanh.nil? && oanh.is_a?(Array) && oanh.count >= 2
+  end
+  pre  'old-handle-in-git' do |oanh| in_git(oanh[0]) end
+  post 'commit pending' do commit_pending end
+  def move_file old_and_new_hndl
+    config = Configuration.instance
+    old_handle, new_handle = old_and_new_hndl[0], old_and_new_hndl[1]
+    cmd = config.git_executable
+    args = config.git_mv_args(old_handle, new_handle)
+    ExternalCommand.execute_and_block(cmd, *args)
+    # Force the "handles" cache to be rebuilt.
+    build_repo_handles_hash true
+    @commit_pending = true
+  end
+
   # Remove the specified file/item (IDd with item.handle).
   pre  'item-good' do |item| ! item.nil? && item.is_a?(STodoTarget) end
   pre  'item-in-git' do |item| in_git(item.handle) end
   post 'commit pending' do commit_pending end
   def delete_file item
-$log.warn "[#{__method__}] 'rm'ing #{item.handle}"
     git.rm item.handle
     # Force the "handles" cache to be rebuilt.
     build_repo_handles_hash true
@@ -188,7 +218,6 @@ $log.warn "[#{__method__}] 'rm'ing #{item.handle}"
         msg += " - #{commit_msg}"
       end
       begin
-$log.warn "#{self.class}.#{__method__} calling git.commit"
         git.commit msg
       rescue Exception => e
         $log.warn e
@@ -199,7 +228,6 @@ $log.warn "#{self.class}.#{__method__} calling git.commit"
       assert('update_count is 0') { update_count == 0 }
       assert('NOT commit_pending') { ! commit_pending }
       @commit_pending = false
-$log.warn "#{self.class}.#{__method__} NOT calling git.commit"
     end
   end
 
