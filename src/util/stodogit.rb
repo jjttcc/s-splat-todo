@@ -87,36 +87,31 @@ class STodoGit
     entries
   end
 
-  # Display the git log for the specified handles.
-  # (This stopped working due, apparently, switching to specify the
-  # 'git-path' to Git.new [instead of just "cd"ing to the git directory
-  # first] combined with a bug in ruby-git and/or in git.)
-  def old___show_git_log_with_new_bug handles, outfile = $stdout
-    inner_sep = '-' * 34 + "\n"
-    outer_sep = '=' * 50 + "\n"
-    report = ""
-    if handles.nil? || handles.empty? then
-      handles = handles_in_repo
-    end
-    first = true
-    handles.each do |h|
-      l = git.log(-1).object(h)
-      if first then
-        report += "#{h}:\n"
-        first = false
-      else
-        report += "#{outer_sep}#{h}:\n"
-      end
-      entries = l.map do |commit|
-        commit_report commit
-      end
-      report += entries.join(inner_sep)
-    end
-    outfile.puts report
-    # (See References[3] for info on git commit names, patterns, etc.)
-  end
-
   alias_method :list_handles, :list_files
+
+  # Display the contents of the specified (via 'handles') items of the
+  # specified commit.
+  pre 'id-exists' do |cid| ! cid.nil? && ! cid.empty? end
+  pre 'handles: array' do |c, h| ! h.nil? && h.is_a?(Array) end
+  def show_git_version(commit_id, handles, outfile = $stdout)
+    outer_sep = '=' * 50
+    report = ""
+    config = Configuration.instance
+    cmd = config.git_executable
+    entries = []
+    last = handles.count - 1
+    (0 .. last).each do |i|
+      args = config.git_show_args(commit_id, handles[i])
+      entries << "#{handles[i]}:"
+      entries.concat(ExternalCommand.execute_with_output(cmd, *args))
+      if i < last then
+        entries << outer_sep
+      end
+    end
+    report = entries.join("\n")
+    outfile.puts report
+    entries
+  end
 
   ###  Element change
 

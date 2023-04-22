@@ -48,6 +48,18 @@ module ConfigTools
     result
   end
 
+  # Arguments (Array) to the 'git show' command to output the specified
+  # version (id) of the specified file (handle).
+  pre 'id-exists' do |id| ! id.nil? && ! id.empty? end
+  pre 'handle-exists' do |handle| ! handle.nil? && ! handle.empty? end
+  def git_show_args(id, handle)
+    result = [
+      # Forces 'git' to use #{git_path} as its repo/root-directory:
+      "--git-dir=#{git_path}/.git", 'show', "#{id}:#{handle}"
+    ]
+    result
+  end
+
   # Arguments (Array) to 'git mv' command to "move" 'old_handle' to
   # 'new_handle':
   pre 'handles is array' do |hndls| ! hndls.nil? && hndls.is_a?(Array) end

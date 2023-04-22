@@ -33,6 +33,7 @@ module SpecTools
   ST_REJECT_BADREFS     = 'STODO_REJECT_BADREFS'
   ST_REJECT_BADATTCHMTS = 'STODO_REJECT_BADATTCHMTS'
   ST_ATTCH_ACTION       = 'ST_ATTCH_ACTION'
+  ST_COMMIT_ID          = 'ST_COMMIT_ID'
 
   # tags/patterns from spec with special meaning
   INITIAL_EMAIL_PTRN = Regexp.new('\[initial\]')
@@ -94,6 +95,15 @@ module SpecTools
   def reject_nonexistent_attachments
     answer = ENV[ST_REJECT_BADATTCHMTS]
     ! answer.nil? && ! answer.empty?
+  end
+
+  # commit-id for git operation - environment variable
+  def git_commit_id
+    ENV[ST_COMMIT_ID]
+  end
+
+  def no_commit_id_msg
+    "commit-id (#{ST_COMMIT_ID} env. var.) not set or empty"
   end
 
 end

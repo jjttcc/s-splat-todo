@@ -329,10 +329,10 @@ git_help() {
   echo -e "  git-add <h>... $s Add/update and commit the items with handles\c"
       echo -e " <h>...\n${ls}to/in the git repository"
   echo -e "  git-log <h>...        display the Log for <h>..."
-  echo -e "  git-ret <dt> <h>...   Retrieve the specified version, \c"
-  echo -e "according to <dt>\n$ls(date-time), of the \c"
+  echo -e "  git-ret <id> <h>...   Retrieve the specified commit, \c"
+  echo -e "according to <id>\n$ls(commit id), of the \c"
   echo -e "specified items (<h>...) from the\n${ls}git repository \c"
-  echo -e "and print them to stdout"
+  echo -e "and print their contents to stdout"
   echo -e "Options:"
   echo -e "  -r${ms}Recursive: apply <cmd> to all descendants as well"
   echo -e "  -m:<msg> $s$s use <msg> as the commit Message"
@@ -508,6 +508,11 @@ case $1 in
   git-add|gitadd)                 # (will cause git-action - repo change)
     shift
     do_quoted_edit git-add "$@"
+    ;;
+  git-re*|gitre*)                 # (will cause git-action - NO repo change)
+    shift
+    id=$1; shift
+    ST_COMMIT_ID="$id" do_report git-ret "$@"
     ;;
   set*)
     shift;

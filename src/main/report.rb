@@ -14,6 +14,7 @@ require 'targetstateset'
 require 'searchcriteria'
 
 class ReportUtil
+
   public
 
   # Digest the arguments (ARGV) and use them to produce the report.
@@ -83,6 +84,10 @@ class ReportUtil
       when /^git-log/
         result = Proc.new {
           reporter.show_git_log(criteria)
+        }
+      when /^git-ret/
+        result = Proc.new {
+          reporter.show_git_items(criteria)
         }
       when /^attach/
         result = Proc.new {

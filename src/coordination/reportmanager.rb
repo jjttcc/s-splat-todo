@@ -1,12 +1,13 @@
 require 'ruby_contracts'
 require 'preconditionerror'
+require 'spectools'
 require 'timetools'
 require 'byebug'
 require 'stodogit'
 
 # Manager of reporting-related actions
 class ReportManager
-  include TimeTools, ErrorTools
+  include SpecTools, TimeTools, ErrorTools
   include Contracts::DSL
 
   public
@@ -62,6 +63,26 @@ class ReportManager
       end
     end
     Configuration.instance.stodo_git.show_git_log handles
+  end
+
+  # Obtain the specified version (according to git_commit_id) of the
+  # specified items (from criteria) and output their contents to stdout.
+  def show_git_items(criteria)
+    commit_id = git_commit_id
+    if commit_id.nil? || commit_id.empty? then
+      raise "git-ret: #{no_commit_id_msg}"
+    end
+    handles = nil
+    if ! criteria.null_criteria? then
+      if criteria.handles_only? then
+        handles = criteria.handles
+      else
+        handles = targets_for_criteria(criteria).map do |t|
+          t.handle
+        end
+      end
+    end
+    Configuration.instance.stodo_git.show_git_version(commit_id, handles)
   end
 
   def show_description(criteria)
