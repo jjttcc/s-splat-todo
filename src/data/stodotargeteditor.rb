@@ -17,6 +17,7 @@ class STodoTargetEditor
   attr_reader :change_occurred
 
   def apply_command(handle, parameters)
+$log.warn "#{__method__} - h, params: #{handle}, #{parameters}"
     @last_command_failed = false
     self.change_occurred = false
     clean_handle = handle.split(/#{DEFAULT_COMPONENT_SEPARATOR}/)[0]
@@ -26,10 +27,23 @@ class STodoTargetEditor
     else
       if parameters.is_a?(Enumerable) then
         command, args = parameters[0], [handle, parameters[1..-1]].flatten
+        if command.include?(DEFAULT_COMPONENT_SEPARATOR) then
+          # ('command:spec': "clean up" 'command' and "fix" 'args')
+          parts = command.split(/#{DEFAULT_COMPONENT_SEPARATOR}/)
+          command = parts[0]
+          if parts.count > 1 then
+            args.insert(1, parts[1])
+          end
+        end
+#!!!!!!!:
+$log.warn "#{__LINE__} - cmd, args: #{command}, #{args}"
       else
         components = cmd_and_args_for(handle, parameters)
         command, args = components[0], components[1..-1]
+$log.warn "#{__LINE__} - components: #{components}"
+$log.warn "#{__LINE__} - cmd, args: #{command}, #{args}"
       end
+$log.warn "#{__LINE__} - cmd, args: #{command}, #{args}"
       method = @method_for[command]
       if method == nil then
         @last_command_failed = true
@@ -41,7 +55,13 @@ class STodoTargetEditor
   end
 
   def close_edit
-    do_pending_commit
+$log.warn "close_edit - commit_msg: #{commit_msg}"
+    do_pending_commit commit_msg
+  end
+
+#!!!!!
+  def old__close_edit commit_msg
+    do_pending_commit commit_msg
   end
 
   protected
@@ -50,7 +70,8 @@ class STodoTargetEditor
 
   private
 
-  attr_writer :change_occurred
+  attr_writer   :change_occurred
+  attr_accessor :commit_msg
 
   DEFAULT_COMPONENT_SEPARATOR, NO_PARENT = ":", '{none}'
   private_constant :DEFAULT_COMPONENT_SEPARATOR, :NO_PARENT
@@ -105,6 +126,10 @@ class STodoTargetEditor
   def delete_target handle, *options
     opts = CommandOptions.new(__method__.to_s, options)
     recursive = opts.recursive?
+    self.commit_msg = opts.message  # (Will be used by 'close_edit'.)
+$log.warn "#{__method__} - opts: #{opts.inspect}"
+$log.warn "#{__method__} - recursive: #{recursive}"
+$log.warn "#{__method__} - message: #{opts.message}"
     t = target_for[handle]
     if recursive then
       t.children.each do |c|
@@ -127,6 +152,7 @@ class STodoTargetEditor
     end
     target_for.delete(handle)
     repo = Configuration.instance.stodo_git
+$log.warn "#{__method__} - #{handle} in git: #{repo.in_git(handle)}"
     if repo.in_git(handle) then
       execute_git_command(@command_for[__method__], t)
     end
@@ -143,12 +169,15 @@ class STodoTargetEditor
   def git_add handle, *options
     opts = CommandOptions.new(__method__.to_s, options)
     recursive = opts.recursive?
-    commit_msg = opts.message
+    self.commit_msg = opts.message  # (Will be used by 'close_edit'.)
     tgt = target_for[handle]
     targets = [tgt]
     if recursive then
       targets.concat(tgt.descendants)
     end
+$log.warn "cfor: #{@command_for}"
+$log.warn "cfor#{__method__}: #{@command_for[__method__]}"
+$log.warn "cfor#{__method__}.class: #{@command_for[__method__].class}"
     execute_git_command(@command_for[__method__], targets)
     # ('git-add' will not change any STodoTarget items.)
     self.change_occurred = false
@@ -167,8 +196,10 @@ class STodoTargetEditor
     ! self.target_for[handle].nil?
   end
   pre "phandle exists" do |h, phandle| ! phandle.nil?  end
-  def change_parent handle, phandle
+  def change_parent handle, phandle, *options
     t = self.target_for[handle]
+    opts = CommandOptions.new(__method__.to_s, options)
+    self.commit_msg = opts.message  # (Will be used by 'close_edit'.)
     new_parent = nil
     make_orphan = ! phandle.nil? && phandle.downcase == NO_PARENT
     if ! make_orphan then
@@ -217,10 +248,12 @@ class STodoTargetEditor
     ! self.target_for[new_handle].nil? &&
       self.target_for[new_handle].handle == new_handle
   end
-  def change_handle(handle, new_handle)
+  def change_handle(handle, new_handle, *options)
     if target_for[new_handle] then
       $log.warn(new_handle_in_use_msg(handle, new_handle))
     else
+      opts = CommandOptions.new(__method__.to_s, options)
+      self.commit_msg = opts.message  # (Will be used by 'close_edit'.)
       t = self.target_for[handle]
       # Remove the old hash entry, associated with the old 'handle' key:
       self.target_for.delete(t.handle)
@@ -243,15 +276,22 @@ class STodoTargetEditor
     ! self.target_for[handle].nil?
   end
   pre "'dhandle' exists" do |handle, dhandle| ! dhandle.nil?  end
-  def remove_descendant handle, dhandle
+  def remove_descendant handle, dhandle, *options
+    opts = CommandOptions.new(__method__.to_s, options)
+    self.commit_msg = opts.message  # (Will be used by 'close_edit'.)
     t = target_for[handle]
     t.remove_descendant dhandle
     if ! t.last_removed_descendant.nil? then
-      self.target_for.delete(t.last_removed_descendant.handle)
-      $log.warn "removed #{t.last_removed_descendant.handle}, "\
+      removed_item = t.last_removed_descendant
+      self.target_for.delete(removed_item.handle)
+      $log.warn "removed #{removed_item.handle}, "\
         "descendant of #{handle}"
       self.change_occurred = true
       t.clear_last_removed_descendant
+      repo = Configuration.instance.stodo_git
+      if repo.in_git(removed_item.handle) then
+        execute_git_command(@command_for[__method__], removed_item)
+      end
     end
   end
 
@@ -259,7 +299,9 @@ class STodoTargetEditor
   # descendants.
   pre "handle_spec exists" do |handle_spec| ! handle_spec.nil? end
   pre "No data change yet" do self.change_occurred == false end
-  def clear_descendants handle_spec
+  def clear_descendants handle_spec, *options
+    opts = CommandOptions.new(__method__.to_s, options)
+    self.commit_msg = opts.message  # (Will be used by 'close_edit'.)
     hspec_components = handle_spec.split(/#{DEFAULT_COMPONENT_SEPARATOR}/)
     handle = hspec_components[0]
     exceptions = hspec_components[1 .. -1]
@@ -271,6 +313,10 @@ class STodoTargetEditor
       orig_descs = orig_descs - t.descendants
       orig_descs.each do |d|
         self.target_for.delete(d.handle)
+        repo = Configuration.instance.stodo_git
+        if repo.in_git(d.handle) then
+          execute_git_command(@command_for[__method__], d)
+        end
       end
       # (If t's descendant count didn't change, assume no data change.)
       self.change_occurred = orig_desc_count != t.descendants.count
@@ -336,7 +382,9 @@ class STodoTargetEditor
 
   # Change the state of the target IDd by 'handle' to 'state'
   pre "No data change yet" do self.change_occurred == false end
-  def modify_state handle, state
+  def modify_state handle, state, *options
+    opts = CommandOptions.new(__method__.to_s, options)
+    self.commit_msg = opts.message  # (Will be used by 'close_edit'.)
     t = @target_for[handle]
     if t != nil then
       succeeded = execute_guarded_state_change(t, state)

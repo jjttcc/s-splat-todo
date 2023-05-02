@@ -37,11 +37,13 @@ module EditingToGitFacilities
   # (Commands that aren't mapped - produce nil - do not correspond to a
   # STodoGit action.)
   GIT_COMMAND_FOR = {
-    DELETE          => :delete_item,
-    CHANGE_PARENT   => :update_item,
-    CHANGE_HANDLE   => :nil,
-    STATE           => :update_item,
-    GIT_ADD         => :update_item,
+    DELETE            => :delete_item,
+    CHANGE_PARENT     => :update_item,
+    CHANGE_HANDLE     => :nil,
+    CLEAR_DESCENDANTS => :delete_item,
+    REMOVE_DESCENDANT => :delete_item,
+    STATE             => :update_item,
+    GIT_ADD           => :update_item,
   }
 
   # Mapping of command "stodo editing" commands to plural version of
@@ -69,7 +71,7 @@ module EditingToGitFacilities
 
   # Use 'repo' to execute the git command corresponding to 'editing_cmd'
   # on 'item'.
-  pre 'ed_cmd symbol' do |ed_cmd| ! ed_cmd.nil? && ed_cmd.is_a?(Symbol) end
+  pre 'ed_cmd exists' do |ed_cmd| ! ed_cmd.nil? && ! ed_cmd.empty? end
   pre 'item type' do |ec, item|
     ! item.nil? && (item.is_a?(STodoTarget) || item.is_a?(Enumerable))
   end

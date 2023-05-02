@@ -625,6 +625,8 @@ alias todview=view-todo
 alias toview=todview
 # to-do view - or "view to-do":
 alias tov=todview
+# parallel-to/rhymes-with etod:
+alias vtod=todview
 # tabbed to-do view - or 'view-tabbed-todos':
 alias ttov=vttod
 alias todnew=todo-new

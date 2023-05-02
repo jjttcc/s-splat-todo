@@ -29,9 +29,7 @@ module ConfigTools
   # Arguments (Array) to 'git' command to produce a list of files in repo:
   def git_lsfile_args
     [
-      # Forces 'git' to use #{git_path} as its repo/root-directory:
-      "--git-dir=#{git_path}/.git",
-      'ls-tree', '--full-tree', '-r', '--name-only', 'HEAD'
+      *base_git_args, 'ls-tree', '--full-tree', '-r', '--name-only', 'HEAD'
     ]
   end
 
@@ -40,10 +38,7 @@ module ConfigTools
   # repository:
   pre 'handles is array' do |hndls| ! hndls.nil? && hndls.is_a?(Array) end
   def git_log_args(handles)
-    result = [
-      # Forces 'git' to use #{git_path} as its repo/root-directory:
-      "--git-dir=#{git_path}/.git", 'log', '--',
-    ]
+    result = [ *base_git_args, 'log', '--' ]
     result.concat(handles)
     result
   end
@@ -53,22 +48,29 @@ module ConfigTools
   pre 'id-exists' do |id| ! id.nil? && ! id.empty? end
   pre 'handle-exists' do |handle| ! handle.nil? && ! handle.empty? end
   def git_show_args(id, handle)
-    result = [
-      # Forces 'git' to use #{git_path} as its repo/root-directory:
-      "--git-dir=#{git_path}/.git", 'show', "#{id}:#{handle}"
-    ]
+    result = [ *base_git_args, 'show', "#{id}:#{handle}" ]
     result
   end
 
   # Arguments (Array) to 'git mv' command to "move" 'old_handle' to
   # 'new_handle':
-  pre 'handles is array' do |hndls| ! hndls.nil? && hndls.is_a?(Array) end
+  pre 'handles-exist' do |oh, nh|
+    ! oh.nil? && ! oh.empty? && ! nh.nil? && ! nh.empty?
+  end
   def git_mv_args(old_handle, new_handle)
-    result = [
-      # Forces 'git' to use #{git_path} as its repo/root-directory:
-      "--git-dir=#{git_path}/.git", 'mv', '--', old_handle, new_handle
-    ]
+    result = [ *base_git_args, 'mv', '--', old_handle, new_handle ]
     result
+  end
+
+  def base_git_args
+    [
+      # Forces 'git' to use #{git_path} as its repo/root-directory:
+      "--git-dir=#{git_path}/.git", "--work-tree=#{git_path}"
+=begin
+See:
+https://stackoverflow.com/questions/1386291/git-git-dir-not-working-as-expected
+=end
+    ]
   end
 
   def self.home_path

@@ -50,8 +50,7 @@ class FileBasedSpecGatherer
     d = Dir.new spec_path
     d.each do |filename|
       path = spec_path + File::SEPARATOR + filename
-      if
-        File.file?(path) && filename !~ /^\./ then
+      if File.file?(path) && filename !~ /^\./ then
         s = new_spec_for(path)
         if s.valid? then
           @specs << s

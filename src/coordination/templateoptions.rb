@@ -10,6 +10,8 @@ class TemplateOptions
   attr_reader :type, :categories, :description, :email, :handle, :location,
     :time, :parent, :title, :calendar_ids, :duration, :priority,
     :references, :attachments
+  # git-commit message - i.e., not STodoTarget attribute:
+  attr_reader :commit_message
 
   # query: Is a parse error to be treated as fatal - i.e., causes an
   # exception to be raised?
@@ -45,8 +47,8 @@ class TemplateOptions
   def process_options
     i = 0
     catf, descf, emf, hndf, locf, parf, titf, cif, durf, ief, oef,
-      timf, prif, reff, atf = 'c', 'd', 'e', 'h', 'l', 'p', 't', 'ci', 'du',
-        'ie', 'oe', 'ti', 'pr', 'r', 'at'
+      timf, prif, reff, atf, cmm = 'c', 'd', 'e', 'h', 'l', 'p', 't', 'ci',
+        'du', 'ie', 'oe', 'ti', 'pr', 'r', 'at', 'm'
     while i < self.argument_array.length do
       case self.argument_array[i]
       when /^-#{catf}\b/
@@ -87,6 +89,8 @@ class TemplateOptions
       when /^-#{atf}\b/
         attchmts = next_arg(i + 1, atf, true); i += attchmts.length
         @attachments = attchmts.join(SPEC_FIELD_JOINER)
+      when /^-#{cmm}\b/
+        @commit_message = next_arg(i + 1, cmm)[0]; i += 1
       else
         if @type == nil then
           @type = self.argument_array[i]

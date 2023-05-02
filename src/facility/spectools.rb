@@ -9,6 +9,8 @@ module SpecTools
     'email', 'comment', 'parent', 'reminders', 'start_date', 'expiration_date',
     'date_time', 'duration', 'location', 'calendar_ids', 'categories',
     'attachments', 'references'
+  # key/label for "transitory" commit-message field:
+  COMMIT_MSG_KEY = 'commit'
   SINGULAR_REMINDER_KEY = 'reminder'
   SPEC_FIELD_DELIMITER = /,\s*/
   SPEC_FIELD_JOINER = ','

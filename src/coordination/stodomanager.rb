@@ -122,6 +122,7 @@ class STodoManager
   end
   pre 'opts valid' do |h, c, opts| opts.nil? || opts.is_a?(Array) end
   def edit_target(handle, command, options = nil)
+$log.warn "edit_target - h, c, o: #{handle}, #{command}, #{options}"
     cmdarg = command
     if ! options.nil? then
       cmdarg = [command] + options
@@ -173,7 +174,7 @@ class STodoManager
 
   # Ensure that the specified targets are updated in persistent store.
   pre 'target_builder set' do ! self.target_builder.nil? end
-  def update_targets
+  def update_targets options
     if ! target_builder.targets_prepared? then
       target_builder.prepare_targets
     end
@@ -181,7 +182,8 @@ class STodoManager
     edits = target_builder.edited_targets
     if ! edits.empty? then
       repo = configuration.stodo_git
-      repo.update_items_and_commit(edits, nil, true)
+$log.warn "options: #{options.inspect}"
+      repo.update_items_and_commit(edits, options.commit_message, true)
     end
     @data_manager.store_targets(self.existing_targets)
   end
@@ -272,7 +274,13 @@ class STodoManager
     if ! @edited_targets.empty? then
       repo = Configuration.instance.stodo_git
       repo.update_items(@edited_targets.values, true)
-      repo.commit "#{__method__} - #{repo.update_count} items"
+      msg = @edited_targets.values.select { |i| i.commit }.map do |i|
+        i.commit
+      end.join("\n")
+      if msg.empty? then
+        msg = "updated #{repo.update_count} items"
+      end
+      repo.commit msg
     end
   end
 

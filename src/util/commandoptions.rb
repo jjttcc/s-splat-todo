@@ -11,29 +11,47 @@ class CommandOptions
   ###  Access
 
   # Constants for commands
-  DELETE        =  'delete_target'
-  GIT_ADD       =  'git_add'
-  GIT_LOG       =  'git_log'
-  GIT_RETRIEVE  =  'git_retrieve'
-  COMMANDS      =  [DELETE, GIT_ADD, GIT_LOG, GIT_RETRIEVE]
+  DELETE             =  'delete_target'
+  STATE              =  'modify_state'
+  GIT_ADD            =  'git_add'
+  GIT_LOG            =  'git_log'
+  GIT_RETRIEVE       =  'git_retrieve'
+  CHANGE_PARENT      =  'change_parent'
+  CHANGE_HANDLE      =  'change_handle'
+  CLEAR_DESCENDANTS  =  'clear_descendants'
+  REMOVE_DESCENDANT  =  'remove_descendant'
+  COMMANDS           =  [
+    DELETE, GIT_ADD, GIT_LOG, GIT_RETRIEVE, CHANGE_PARENT, CHANGE_HANDLE,
+    CLEAR_DESCENDANTS, REMOVE_DESCENDANT, STATE
+  ]
 
   def commands
     COMMANDS
   end
 
   RECURSIVE_OPT = '-r'
-  MESSAGE_OPT   = '-m:'
+  MESSAGE_OPT   = '-m'
 
-  DELETE_OPTIONS       = [RECURSIVE_OPT]
-  GIT_ADD_OPTIONS      = [RECURSIVE_OPT, MESSAGE_OPT]
-  GIT_RETRIEVE_OPTIONS = [RECURSIVE_OPT]
-  GIT_LOG_OPTIONS      = []
+  DELETE_OPTIONS             = [RECURSIVE_OPT, MESSAGE_OPT]
+  STATE_OPTIONS              = [MESSAGE_OPT]
+  GIT_ADD_OPTIONS            = [RECURSIVE_OPT, MESSAGE_OPT]
+  GIT_RETRIEVE_OPTIONS       = [RECURSIVE_OPT]
+  CHANGE_PARENT_OPTIONS      = [MESSAGE_OPT]
+  CHANGE_HANDLE_OPTIONS      = [MESSAGE_OPT]
+  CLEAR_DESCENDANTS_OPTIONS  = [MESSAGE_OPT]
+  REMOVE_DESCENDANT_OPTIONS  = [MESSAGE_OPT]
+  GIT_LOG_OPTIONS            = []
 
   OPTS_FOR = {
-    DELETE          => DELETE_OPTIONS,
-    GIT_ADD         => GIT_ADD_OPTIONS,
-    GIT_RETRIEVE    => GIT_RETRIEVE_OPTIONS,
-    GIT_LOG         => GIT_LOG_OPTIONS,
+    DELETE            => DELETE_OPTIONS,
+    STATE             => STATE_OPTIONS,
+    GIT_ADD           => GIT_ADD_OPTIONS,
+    GIT_RETRIEVE      => GIT_RETRIEVE_OPTIONS,
+    GIT_LOG           => GIT_LOG_OPTIONS,
+    CHANGE_PARENT     => CHANGE_PARENT_OPTIONS,
+    CHANGE_HANDLE     => CHANGE_HANDLE_OPTIONS,
+    CLEAR_DESCENDANTS => CLEAR_DESCENDANTS_OPTIONS,
+    REMOVE_DESCENDANT => REMOVE_DESCENDANT_OPTIONS,
   }
 
   # Is 'recursive' a valid option for self.command and, if so, is it set?
@@ -48,9 +66,9 @@ class CommandOptions
   def message
     result = nil
     if OPTS_FOR[command].include?(MESSAGE_OPT) then
-      msg_o = options.find do |o| o =~ /^#{MESSAGE_OPT}/ end
-      if msg_o then
-        result = msg_o[MESSAGE_OPT.length..-1]
+      msg_index = options.index(MESSAGE_OPT)
+      if ! msg_index.nil? && msg_index < options.count - 1 then
+        result = options[msg_index + 1]
       end
     end
     result

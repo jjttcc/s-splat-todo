@@ -316,7 +316,8 @@ delete_help() {
   local s='        '
   echo -e "Usage: $progname del <handle>... [options]"
   echo -e "\nOptions:"
-  echo -e "  -r                Recursive: delete all descendants as well"
+  echo -e "  -r              Recursive: delete all descendants as well"
+  echo -e "  -m <msg>        Use <msg> as commit message if items are in git"
 }
 
 git_help() {
@@ -443,50 +444,50 @@ process_attachment_help() {
 }
 
 case $1 in
-  new|init) process_new_items     # (can cause git-action)
+  new|init) process_new_items     # (might cause git-action - repo change)
     ;;
   noti*) process_notifications
     ;;
-  comb*) do_combined_processing   # (can cause git-action)
+  comb*) do_combined_processing   # (might cause git-action - repo change)
     ;;
   rep*) shift; do_report "$@"
     ;;
-  del*)                           # (can cause git-action)
+  del*)                           # (might cause git-action - repo change)
     shift;
-    do_edit delete $*
+    do_quoted_edit delete "$@"
     ;;
   add*)
     shift;
     do_quoted_edit add "$@"
     ;;
-  change*)                        # (can cause git-action)
+  change*)                        # (might cause git-action - repo change)
     shift;
     do_quoted_edit change_item "$@"
     ;;
-  chpar*)                         # (can cause git-action)
+  chpar*)                         # (might cause git-action - repo change)
     shift;
-    do_edit change_parent $*
+    do_quoted_edit change_parent "$@"
     ;;
-  chhan*)                         # (can cause git-action)
+  chhan*)                         # (might cause git-action - repo change)
     shift;
-    do_edit change_handle $*
+    do_quoted_edit change_handle "$@"
     ;;
-  clear?d*)
+  clear?d*)                       # (might cause git-action - repo change)
     shift;
-    do_edit clear_descendants $*
+    do_quoted_edit clear_descendants "$@"
     ;;
-  remove?d*)
+  remove?d*)                      # (might cause git-action - repo change)
     shift;
-    do_edit remove_descendant $*
+    do_quoted_edit remove_descendant "$@"
     ;;
   clon*)
     shift;
-    do_edit clone $*
+    do_quoted_edit clone "$@"
     ;;
-  sta*)                           # (can cause git-action)
+  sta*)                           # (might cause git-action - repo change)
     shift;
     new_state=$1; shift
-    do_edit state:$new_state $*
+    do_quoted_edit state:$new_state "$@"
     ;;
   temp*) shift; make_template "$@"
     ;;

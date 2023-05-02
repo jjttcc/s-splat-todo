@@ -128,8 +128,6 @@ class TargetBuilder
   def new_target spec
     result = nil
     builder = @target_factory_for[builder_key spec]
-    $log.debug "[new_target] spec: #{spec.handle}, #{spec.type}"
-    $log.debug "[new_target] builder: #{builder.inspect}"
     if builder == nil then
       if spec.type == TEMPLATE_TYPE then
         $log.warn "(Ignoring spec '#{spec.handle}' with '#{spec.type}' type.)"
@@ -140,11 +138,14 @@ class TargetBuilder
     else
       # Build the "target".
       t = builder.call(spec)
-      $log.debug "[new_target] t: #{t.inspect}"
       if t != nil && t.valid? then
         result = t
       elsif t != nil then
-        $log.warn "#{t.handle} is not valid [#{t}]"
+        msg = "#{t.handle} is not valid"
+        if ! t.invalidity_reason.nil? then
+          msg = "#{msg}: #{t.invalidity_reason}"
+        end
+        $log.warn msg
       end
     end
     $log.debug "[new_target] result[2] #{result.inspect}"

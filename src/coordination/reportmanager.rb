@@ -72,7 +72,7 @@ class ReportManager
     if commit_id.nil? || commit_id.empty? then
       raise "git-ret: #{no_commit_id_msg}"
     end
-    handles = nil
+    handles = []
     if ! criteria.null_criteria? then
       if criteria.handles_only? then
         handles = criteria.handles

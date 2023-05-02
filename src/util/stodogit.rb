@@ -142,7 +142,9 @@ class STodoGit
   # If 'only_git_items' then only do an update for members of 'items' that
   # are already in git - i.e., bypass non-git items.
   pre  'items-good' do |ilist| ! ilist.nil? && ilist.is_a?(Array) end
-  post 'counted' do update_count > 0 end
+  post 'counted if not only_git_items' do |il, ogi|
+    implies(! ogi && il.count > 0, update_count > 0)
+  end
   def update_files item_list, only_git_items = false
     items = item_list
     if only_git_items then

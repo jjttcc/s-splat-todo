@@ -23,6 +23,8 @@ class STodoTarget
   attr_reader :title, :content, :handle, :calendar_ids, :priority, :comment,
     :reminders, :categories, :parent_handle, :notifiers, :children, :state,
     :last_removed_descendant
+  # "transitory" commit-message field - not stored:
+  attr_reader :commit
   # Array of attached media files:
   attr_reader :attachments
   # Array of STodoTarget references (via handle):
@@ -66,7 +68,7 @@ class STodoTarget
       result += "#{TYPE_KEY}: #{TEMPLATE_TYPE}\n"
     end
     for tag in [TITLE_KEY, HANDLE_KEY, DESCRIPTION_KEY, PRIORITY_KEY,
-                COMMENT_KEY, PARENT_KEY] do
+                COMMENT_KEY, PARENT_KEY, COMMIT_MSG_KEY] do
       v = self.instance_variable_get("@#{tag}")
       if v == nil then  # (description is an alias, not an attribute.)
         case tag
@@ -210,6 +212,11 @@ class STodoTarget
   # Is 'self' valid - i.e., are the field values all valid?
   def valid?
     @valid
+  end
+
+  # Reason (String) that 'self' is not valid (! self.valid?)
+  def invalidity_reason
+    @field_invalidity_reason
   end
 
   # Does 'self' have a parent?
@@ -477,8 +484,14 @@ class STodoTarget
     @email_spec = ""
     @notification_subject = ""
     @full_notification_message = ""
-    @notification_email_addrs = nil
+#    @notification_email_addrs = nil
+    if defined?(@notification_email_addrs) then
+      remove_instance_variable(:@notification_email_addrs)
+    end
     @short_notification_message = ""
+    if defined?(@commit) then
+      remove_instance_variable(:@commit)
+    end
     @reminders.each do |r|
       r.prepare_for_db_write
     end
@@ -491,7 +504,7 @@ class STodoTarget
   attr_writer   :last_removed_descendant
   attr_writer   :last_op_changed_state
   attr_writer   :title, :content, :priority, :comment, :reminders,
-    :categories, :state, :attachments, :references
+    :categories, :state, :attachments, :references, :commit
   attr_accessor :email_spec
 
   private
@@ -534,6 +547,7 @@ class STodoTarget
     @content = spec.description
     @comment = spec.comment
     @priority = spec.priority
+    @commit = spec.commit
     @categories = []
     @attachments = []
     @references = []
@@ -578,6 +592,7 @@ class STodoTarget
     guarded_scalar_assignment(:title, spec, nil)
     guarded_scalar_assignment(:content, spec, :description)
     guarded_scalar_assignment(:comment, spec)
+    guarded_scalar_assignment(:commit, spec)
     guarded_scalar_assignment(:priority, spec)
     if spec.email then
       guarded_scalar_assignment(:email_spec, spec, :email)
@@ -714,9 +729,25 @@ class STodoTarget
 
   ### Implementation/verification
 
+  ILLEGAL_HANDLE_CHARS = " :"
+
+  # Check fields for validity.
+  # If any are invalid, set @valid to false and @field_invalidity_reason to
+  # a string containing the reason for invalidity.
   def check_fields
     # handle serves as an id and is mandatory.
-    if not self.handle then $log.warn "No handle for #{self.title}" end
+    if not handle then
+      @field_invalidity_reason = "No handle for #{self.title}"
+      @valid = false
+    elsif handle.chars.any? { |c| ILLEGAL_HANDLE_CHARS.include?(c) } then
+      char = handle.chars.find { |c| ILLEGAL_HANDLE_CHARS.include?(c) }
+      @field_invalidity_reason = "handle (#{handle}) has invalid character: "
+      @field_invalidity_reason += "'#{char}'"
+      @valid = false
+    end
+    if ! @valid then
+      $log.warn $field_invalidity_reason
+    end
   end
 
   pre 'refs exist' do ! self.references.nil? end

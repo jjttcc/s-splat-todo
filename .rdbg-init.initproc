@@ -10,22 +10,24 @@ eval def pmeth(o=self) ; puts o.public_methods end
 # like pmeth, but don'w show inherited methods:
 eval def pmetho(o=self) ; puts o.public_methods(false) end
 
-b src/main/initial-processing.rb 15
-b src/main/initial-processing.rb 17
-b src/configuration/configuration.rb 50
-# b src/coordination/targetbuilder.rb 43
+b src/main/initial-processing.rb 14
+b src/main/initial-processing.rb 16
+# process_targets:
+b src/coordination/targetbuilder.rb 66
+b src/coordination/targetbuilder.rb 73
 # edit_target, first line:
-b src/coordination/targetbuilder.rb 121
-b src/coordination/targetbuilder.rb 124
-b src/coordination/targetbuilder.rb 125
+b src/coordination/targetbuilder.rb 159
 # perform_initial_processing, first line:
-b src/coordination/stodomanager.rb 39
+b src/coordination/stodomanager.rb 44
+b src/coordination/stodomanager.rb 61
+b src/data/yamlstorebaseddatamanager.rb 20
 # edit_target, first line:
 b src/coordination/stodomanager.rb 111
 # STodoManager initialize, first line:
 b src/coordination/stodomanager.rb 171
 # STodoManager, in process_targets - @target_builder.edited_targets.each do |tgt|:
 b src/coordination/stodomanager.rb 249
+b src/coordination/stodomanager.rb 272
 # beginning of 'main_modify_fields':
 b src/core/stodotarget.rb 496
 # beginning of 'modify_fields':

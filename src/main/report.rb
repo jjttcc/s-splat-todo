@@ -6,6 +6,7 @@
 # this application, which can perhaps allow this action to be "fitted" into
 # the category of reporting.)
 
+require 'ruby_contracts'
 require 'errortools'
 require 'configuration'
 require 'stodomanager'
@@ -14,6 +15,7 @@ require 'targetstateset'
 require 'searchcriteria'
 
 class ReportUtil
+  include Contracts::DSL
 
   public
 

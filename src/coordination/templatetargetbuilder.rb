@@ -38,7 +38,7 @@ class TemplateTargetBuilder < TargetBuilder
   def initialize(options, the_existing_targets = nil, the_spec = nil)
     self.existing_targets = the_existing_targets
     if the_spec.nil? then
-    # (Initialize self.spec with defaults [2nd arg]:)
+      # (2nd arg: Initialize self.spec with defaults:)
       self.spec = StubbedSpec.new(options, true)
     else
       self.spec = the_spec

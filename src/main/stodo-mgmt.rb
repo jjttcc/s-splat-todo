@@ -10,6 +10,40 @@ def two_arg_warning command
   $log.warn "Wrong number of arguments - usage: #{command} <arg1> <arg2>"
 end
 
+OPT_CHAR = '-'
+
+# command-line options (marked with OPT_CHAR) from 'arguments'
+# Assumption: All elements from the first occurrence in 'arguments' of
+# OPT_CHAR to the end of the array are options.
+def opts_from_args arguments
+  result = []
+  opt_ind = -1
+  (0 .. arguments.count - 1).each do |i|
+    if arguments[i] =~ /^#{OPT_CHAR}/ then
+      opt_ind = i
+      break
+    end
+  end
+  if opt_ind >= 0 then
+    result = arguments[opt_ind .. -1]
+  end
+  result
+end
+
+# handles from 'arguments' - everything up to, but not including, the
+# first occurrence of OPT_CHAR
+def handles_from_args arguments
+  result = []
+  arguments.each do |a|
+    if a =~ /^#{OPT_CHAR}/ then
+      break
+    else
+      result << a
+    end
+  end
+  result
+end
+
 if ARGV.length > 1 then
   manager = STodoManager.new
   command = ARGV[0]; arguments = ARGV[1..-1]
@@ -45,10 +79,11 @@ if ARGV.length > 1 then
     target_editor = TemplateTargetBuilder.new(options,
                                               manager.existing_targets, spec)
     manager.target_builder = target_editor
-    manager.update_targets
+    manager.update_targets(options)
   else
-    opts = arguments.select do |a| a[0] == '-' end
-    handles = arguments.select do |a| a[0] != '-' end
+    require 'templateoptions'
+    opts = opts_from_args(arguments)
+    handles = handles_from_args(arguments)
     handles.each do |h|
       if ! opts.empty? then
         manager.edit_target(h, command, opts)
