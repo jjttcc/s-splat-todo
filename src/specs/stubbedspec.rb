@@ -51,7 +51,7 @@ class StubbedSpec < STodoSpec
     @setting_for[CATEGORIES_KEY] = options.categories
     @setting_for[ATTACHMENTS_KEY] = options.attachments
     @setting_for[REFERENCES_KEY] = options.references
-    @setting_for[COMMIT_MSG_KEY] = ''
+    @setting_for[COMMIT_MSG_KEY] = options.commit_message
   end
 
 end

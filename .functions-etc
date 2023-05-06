@@ -1,0 +1,20 @@
+#!/bin/env bash
+# vim: ts=4 sw=4 expandtab
+
+# Note: This var has to be maintained as new directories are added:
+main_source_dirs="src/configuration/ src/coordination/ src/core/ src/data/
+src/error/ src/facility/ src/main/ src/notification/ src/specs/ src/util/
+src/attributes"
+
+# Application source files (no debug, test, etc.)
+srcfiles() {
+    for d in $main_source_dirs; do
+        ls -1 -d $d/*.rb
+    done
+    ls -d src/stodo
+}
+
+# Edit source files with gvim.
+edit_src() {
+    gvim -geometry +0+0 -c "set lines=65 | TlistOpen" $(srcfiles)
+}

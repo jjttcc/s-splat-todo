@@ -23,6 +23,8 @@ if [ -f $rcfile -a -r $rcfile ]; then
 fi
 
 ## s*todo convenience aliases
+alias st='stodo'
+alias sth='stodo -h'
 alias hnd='stodo rep'               # list handles
 alias hndn='stodo rep|pr -n -t'     # list handles, numbered
 alias rep='stodo rep'

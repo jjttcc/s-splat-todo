@@ -69,7 +69,7 @@ class STodoManager
     self.dirty = false
     email = Email.new(mailer)
     changed_items, git_items = [], []
-    repo = Configuration.instance.stodo_git
+    repo = configuration.stodo_git
     self.existing_targets.values.each do |t|
       t.add_notifier(email)
       self.dirty = false
@@ -154,6 +154,7 @@ $log.warn "edit_target - h, c, o: #{handle}, #{command}, #{options}"
     targets = target_builder.targets
     if ! targets.empty? then
       targets.each do |t|
+        repo = configuration.stodo_git
         $log.debug "[add_new_targets] adding #{t.handle}"
         self.existing_targets[t.handle] = t
         if ! t.parent_handle.nil? then
@@ -166,8 +167,11 @@ $log.warn "edit_target - h, c, o: #{handle}, #{command}, #{options}"
               t.parent_handle = nil
           end
         end
+        if t.commit then
+          repo.update_item(t)
+          repo.commit t.commit
+        end
       end
-      # (No 'git' updates needed, since only new targets were created.)
       @data_manager.store_targets(self.existing_targets)
     end
   end
@@ -271,8 +275,8 @@ $log.warn "options: #{options.inspect}"
     self.target_builder.edited_targets.each do |tgt|
       @edited_targets[tgt.handle] = tgt
     end
+    repo = configuration.stodo_git
     if ! @edited_targets.empty? then
-      repo = Configuration.instance.stodo_git
       repo.update_items(@edited_targets.values, true)
       msg = @edited_targets.values.select { |i| i.commit }.map do |i|
         i.commit
@@ -281,6 +285,15 @@ $log.warn "options: #{options.inspect}"
         msg = "updated #{repo.update_count} items"
       end
       repo.commit msg
+    end
+    if ! @new_targets.empty? then
+      @new_targets.values.each do |i|
+        msg = i.commit
+        if msg then
+          repo.update_item(i)
+          repo.commit msg
+        end
+      end
     end
   end
 

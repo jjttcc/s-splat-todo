@@ -2,6 +2,7 @@
 
 require 'ruby_contracts'
 require 'git'   # See References for example/info re ruby-git[1]
+require 'errortools'
 require 'externalcommand'
 
 # Abstraction for the management of a git repository for "stodo"
@@ -9,7 +10,7 @@ require 'externalcommand'
 # instantiated as part of the process's "configuration" instantiated
 # and available to be used throughout the duration of the process.
 class STodoGit
-  include Contracts::DSL
+  include Contracts::DSL, ErrorTools
 
   public
 
@@ -58,27 +59,33 @@ class STodoGit
     outfile.puts result
   end
 
-  # Display the git log for the specified handles.
-  # And return the result as an array as well.
-  pre 'hndls is array' do |hndls| ! hndls.nil? && hndls.is_a?(Array) end
-  def show_git_log hndls, outfile = $stdout
+  # Display the git log for the specified handles. If 'hndls' is nil,
+  # display the entire log.
+  # Return the result as an array as well.
+  pre 'hndls is array' do |hndls| hndls.nil? || hndls.is_a?(Array) end
+  def show_git_log hndls = [], outfile = $stdout
     outer_sep = '=' * 50
     report = ""
     if hndls.nil? || hndls.empty? then
-      handles = handles_in_repo
+      handles = []
     else
       handles = hndls
     end
     config = Configuration.instance
     cmd = config.git_executable
     entries = []
-    last = handles.count - 1
-    (0 .. last).each do |i|
-      args = config.git_log_args [handles[i]]
-      entries << "#{handles[i]}:"
-      entries.concat(ExternalCommand.execute_with_output(cmd, *args))
-      if i < last then
-        entries << outer_sep
+    if handles.empty? then
+      entries.concat(ExternalCommand.execute_with_output(cmd,
+                                                         *config.git_log_args))
+    else
+      last = handles.count - 1
+      (0 .. last).each do |i|
+        args = config.git_log_args [handles[i]]
+        entries << "#{handles[i]}:"
+        entries.concat(ExternalCommand.execute_with_output(cmd, *args))
+        if i < last then
+          entries << outer_sep
+        end
       end
     end
     report = entries.join("\n")
@@ -123,7 +130,9 @@ class STodoGit
   ###  State-changing commands
 
   # Update the specified file/item (via item.handle) with contents from
-  # 'item' and 'git add' it.
+  # 'item' and 'git add' it. If the file associated with 'item' does not
+  # exist (i.e., item is not yet in the git repository), create it before
+  # writing item's contents to it and git-adding it.
   pre  'item-good' do |item| ! item.nil? && item.is_a?(STodoTarget) end
   post 'u-count incremented by 1' do update_count > 0 end
   post 'commit pending' do commit_pending end

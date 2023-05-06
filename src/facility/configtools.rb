@@ -36,10 +36,14 @@ module ConfigTools
   # Arguments (Array) to 'git log' command to produce log output for the
   # specified files (handles), which are expected to exist within the
   # repository:
-  pre 'handles is array' do |hndls| ! hndls.nil? && hndls.is_a?(Array) end
-  def git_log_args(handles)
-    result = [ *base_git_args, 'log', '--' ]
-    result.concat(handles)
+  pre 'handles is array' do |hndls| hndls.nil? || hndls.is_a?(Array) end
+  def git_log_args(handles = nil)
+    if handles.nil? || handles.empty? then
+      result = [ *base_git_args, 'log' ]
+    else
+      result = [ *base_git_args, 'log', '--' ]
+      result.concat(handles)
+    end
     result
   end
 
