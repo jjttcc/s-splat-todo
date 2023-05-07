@@ -17,7 +17,6 @@ class STodoTargetEditor
   attr_reader :change_occurred
 
   def apply_command(handle, parameters)
-$log.warn "#{__method__} - h, params: #{handle}, #{parameters}"
     @last_command_failed = false
     self.change_occurred = false
     clean_handle = handle.split(/#{DEFAULT_COMPONENT_SEPARATOR}/)[0]
@@ -35,15 +34,10 @@ $log.warn "#{__method__} - h, params: #{handle}, #{parameters}"
             args.insert(1, parts[1])
           end
         end
-#!!!!!!!:
-$log.warn "#{__LINE__} - cmd, args: #{command}, #{args}"
       else
         components = cmd_and_args_for(handle, parameters)
         command, args = components[0], components[1..-1]
-$log.warn "#{__LINE__} - components: #{components}"
-$log.warn "#{__LINE__} - cmd, args: #{command}, #{args}"
       end
-$log.warn "#{__LINE__} - cmd, args: #{command}, #{args}"
       method = @method_for[command]
       if method == nil then
         @last_command_failed = true
@@ -55,12 +49,6 @@ $log.warn "#{__LINE__} - cmd, args: #{command}, #{args}"
   end
 
   def close_edit
-$log.warn "close_edit - commit_msg: #{commit_msg}"
-    do_pending_commit commit_msg
-  end
-
-#!!!!!
-  def old__close_edit commit_msg
     do_pending_commit commit_msg
   end
 
@@ -127,9 +115,6 @@ $log.warn "close_edit - commit_msg: #{commit_msg}"
     opts = CommandOptions.new(__method__.to_s, options)
     recursive = opts.recursive?
     self.commit_msg = opts.message  # (Will be used by 'close_edit'.)
-$log.warn "#{__method__} - opts: #{opts.inspect}"
-$log.warn "#{__method__} - recursive: #{recursive}"
-$log.warn "#{__method__} - message: #{opts.message}"
     t = target_for[handle]
     if recursive then
       t.children.each do |c|
@@ -152,7 +137,6 @@ $log.warn "#{__method__} - message: #{opts.message}"
     end
     target_for.delete(handle)
     repo = Configuration.instance.stodo_git
-$log.warn "#{__method__} - #{handle} in git: #{repo.in_git(handle)}"
     if repo.in_git(handle) then
       execute_git_command(@command_for[__method__], t)
     end
@@ -175,9 +159,6 @@ $log.warn "#{__method__} - #{handle} in git: #{repo.in_git(handle)}"
     if recursive then
       targets.concat(tgt.descendants)
     end
-$log.warn "cfor: #{@command_for}"
-$log.warn "cfor#{__method__}: #{@command_for[__method__]}"
-$log.warn "cfor#{__method__}.class: #{@command_for[__method__].class}"
     execute_git_command(@command_for[__method__], targets)
     # ('git-add' will not change any STodoTarget items.)
     self.change_occurred = false

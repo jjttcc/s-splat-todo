@@ -54,8 +54,7 @@ class STodoSpec
 
   # Scan 'spec_string' for settings and use them to set "self"'s fields.
   def scan_spec spec_string
-    cleaned_spec_string = stripped_of_comments(spec_string)
-    extract_settings(cleaned_spec_string)
+    extract_settings(spec_string)
   end
 
   def method_missing method_name
@@ -89,6 +88,22 @@ class STodoSpec
     end
   end
 
+  FILTERED = {}
+  [
+    TYPE_KEY, TITLE_KEY, HANDLE_KEY, PRIORITY_KEY,
+    DUE_DATE_KEY, GOAL_KEY, EMAIL_KEY, CALENDAR_IDS_KEY,
+    PARENT_KEY, EXPIRATION_DATE_KEY, DATE_TIME_KEY, DURATION_KEY,
+    LOCATION_KEY, CATEGORIES_KEY, ATTACHMENTS_KEY, REFERENCES_KEY,
+    COMMIT_MSG_KEY
+  ].each do |k|
+    FILTERED[k] = true
+  end
+
+  # Is 'key' to be filtered/cleaned?
+  def is_filtered key
+    FILTERED[key]
+  end
+
   # Extract the settings implied in `spec_string' and use them to set
   # "self"'s fields.
   def extract_settings spec_string
@@ -109,8 +124,18 @@ class STodoSpec
     @setting_for = {}
     if not components.empty? and components.length % 2 == 0 then
       (0 .. components.length - 1).step(2) do |i|
-        key = standardized_key(components[i].sub(/: */, ""))
-        value = components[i + 1]
+        rawkey = components[i]
+        key = standardized_key(rawkey.sub(/: *\n?/, ""))
+        if is_filtered key then
+          value = stripped_of_comments components[i + 1]
+        else
+          value = components[i + 1]
+        end
+        if
+          (key == DESCRIPTION_KEY || key == COMMENT_KEY) && rawkey =~ /\n/
+        then
+          value = "\n" + value  # Honor the specified starting newline
+        end
         if key == HANDLE_KEY then
           value = value.sub(/(?m:\n.*)/, "")
         end
@@ -124,4 +149,5 @@ class STodoSpec
   def stripped_of_comments s
     s.gsub(/^#.*/, "")
   end
+
 end

@@ -122,7 +122,6 @@ class STodoManager
   end
   pre 'opts valid' do |h, c, opts| opts.nil? || opts.is_a?(Array) end
   def edit_target(handle, command, options = nil)
-$log.warn "edit_target - h, c, o: #{handle}, #{command}, #{options}"
     cmdarg = command
     if ! options.nil? then
       cmdarg = [command] + options
@@ -186,7 +185,6 @@ $log.warn "edit_target - h, c, o: #{handle}, #{command}, #{options}"
     edits = target_builder.edited_targets
     if ! edits.empty? then
       repo = configuration.stodo_git
-$log.warn "options: #{options.inspect}"
       repo.update_items_and_commit(edits, options.commit_message, true)
     end
     @data_manager.store_targets(self.existing_targets)
