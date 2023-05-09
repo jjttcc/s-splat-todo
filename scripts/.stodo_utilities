@@ -2,7 +2,9 @@
 # Utilities - functions, aliases, etc. - for 'stodo'
 # vim: ts=4 sw=4 expandtab
 
-stodo_spec_path=~/.stodo/specs
+if [ ! "$stodo_spec_path" ]; then
+    stodo_spec_path=~/.stodo/specs
+fi
 # These 3 email addresses should be overridden in $rcfile:
 s_init_addr=default_email@default.org
 s_ongoing_addr=default_email@default.org
@@ -22,7 +24,7 @@ if [ -f $rcfile -a -r $rcfile ]; then
     . $rcfile
 fi
 
-## s*todo convenience aliases
+### s*todo convenience aliases, for lazy typists:
 alias st='stodo'
 alias sth='stodo -h'
 alias hnd='stodo rep'               # list handles
@@ -38,14 +40,15 @@ alias remh='stodo rep remh'
 alias chi='stodo rep child'
 alias child-handles-only='descendant-handles-only'
 alias chih='child-handles-only'
-alias stree='chi|less'
 alias roots="stree|\grep '^[^ ]'|sort|more"
 alias seth='set $(hnd)'
 alias setha='set $(hnd -a)'
 alias shlp='stodo help'
 alias del='stodo del'
-alias chpar='stodo chpar'
+alias chpar='stodo chparent'
+alias chp='stodo chparent'
 alias chha='stodo chhandle'
+alias chh='stodo chhandle'
 alias clone='stodo clone'
 alias temp='stodo temp'
 alias sinit='stodo init'
@@ -56,8 +59,40 @@ alias fin='stodo stat finish'
 alias res='stodo stat resume'
 alias vatt='view-attachments'
 alias vat=vatt
+alias pra='stodo proca'
 alias curhdl='echo $STODO_HDL'
 alias comphdl='comp $STODO_HDL'
+alias sts='st set'
+
+### s*todo functions
+
+# list all item due dates, paged
+duep() {
+    stodo rep due "$@"|pager
+}
+
+# summary report for all items, paged
+summp() {
+    stodo rep summ "$@"|pager
+}
+
+# list all reminders, paged
+remp() {
+    stodo rep remp "$@"|pager
+}
+
+# list all ancestor hierarchies
+stree() {
+    chi "$@"|pager
+}
+
+alias chip=stree
+
+### s*todo git... aliases
+alias sglog='stodo gitlog'
+alias sgls='stodo gitls'
+alias sgret='stodo gitret'
+alias sgadd='stodo gitadd'
 
 # complete report:
 comp() {
@@ -210,7 +245,7 @@ hgrep() {
         return 3
     fi
     expr=$1; shift
-    stodo rep handle handle:$expr $@
+    stodo rep handle handle:$expr "$@"
 }
 
 # grep for 'description's with the specified regex.
@@ -220,7 +255,7 @@ dgrep() {
         return 3
     fi
     expr=$1; shift
-    stodo rep handle descr:$expr $@
+    stodo rep handle descr:$expr "$@"
 }
 
 # grep for 'title's with the specified regex.
@@ -230,7 +265,7 @@ tgrep() {
         return 3
     fi
     expr=$1; shift
-    stodo rep handle title:$expr $@
+    stodo rep handle title:$expr "$@"
 }
 
 # grep for 'title's and 'description's with the specified regex.
@@ -240,7 +275,7 @@ tdgrep() {
         return 3
     fi
     expr=$1; shift
-    stodo rep handle "title:$expr@descr:$expr" $@
+    stodo rep handle "title:$expr@descr:$expr" "$@"
 }
 
 # Handles of all descendants of the specified handles
@@ -879,4 +914,107 @@ run_comment_code() {
         local handle=$1
         DESCR_NO_HANDLE=y descr $handle|run_extracted_comment_code $handle
     fi
+}
+
+
+#### High/application-level tools
+
+# Switch to a different config directory/path by exporting and setting
+# STODO_CONFIG_PATH.
+# Note: <config-directory-path> refers to the directory in which the
+# 'config' file resides.
+swconf() {
+    local path=$1
+    if [ ! "$path" ]; then
+        echo "Usage: swconf <config-directory-path>" >&2
+        return 17
+    fi
+    if is_accessible_dir $path; then
+        export STODO_CONFIG_PATH=$path
+        candidate_spec_path=$(stodo set|awk '/^spec_path:/ { print $NF}')
+        if is_accessible_dir "$candidate_spec_path"; then
+            stodo_spec_path=$candidate_spec_path
+            return 0
+        else
+            echo -e "Switch failed: stodo 'spec_path' setting"\
+                "is not valid: $candidate_spec_path" >&2
+            return 2
+        fi
+    else
+        echo "Switch failed: 'STODO_CONFIG_PATH' was not changed." >&2
+        return 1
+    fi
+    return 0
+}
+
+# Unset STODO_CONFIG_PATH variable.
+unswconf() {
+    unset STODO_CONFIG_PATH
+}
+
+#### Shell-related utilities
+
+# Is $1 a file and is it readable?
+# Options:
+#   case $2 in
+#       -q*) <suppress-warnings>
+#   esac
+is_readable_file() {
+    local result=0
+    local path=$1
+    local warnings=true
+    if [ $# -eq 0 ]; then
+        result=-1
+    else
+        case "$2" in
+            -q*) warnings=false
+        esac
+        if [ ! -f "$path" ]; then
+            if $warnings; then
+                echo "$path does not exist or is not a regular file." >&2
+            fi
+            result=1
+        elif [ ! -r "$path" ]; then
+            if $warnings; then
+                echo "$path is not readable." >&2
+            fi
+            result=2
+        fi
+    fi
+    return $result
+}
+
+# Is $1 a directory and is it readable and executable?
+# Options:
+#   case $2 in
+#       -q*) <suppress-warnings>
+#   esac
+is_accessible_dir() {
+    local result=0
+    local path=$1
+    local warnings=true
+    if [ $# -eq 0 ]; then
+        result=-1
+    else
+        case "$2" in
+            -q*) warnings=false
+        esac
+        if [ ! -d "$path" ]; then
+            if $warnings; then
+                echo "$path does not exist or is not a directory." >&2
+            fi
+            result=1
+        elif [ ! -r "$path" ]; then
+            if $warnings; then
+                echo "$path is not readable." >&2
+            fi
+            result=2
+        elif [ ! -x "$path" ]; then
+            if $warnings; then
+                echo "$path is not executable." >&2
+            fi
+            result=3
+        fi
+    fi
+    return $result
 }

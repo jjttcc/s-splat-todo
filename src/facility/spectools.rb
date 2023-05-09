@@ -4,11 +4,12 @@ module SpecTools
   TYPE_KEY, TITLE_KEY, DESCRIPTION_KEY, HANDLE_KEY, PRIORITY_KEY, DUE_DATE_KEY,
     GOAL_KEY, EMAIL_KEY, COMMENT_KEY, PARENT_KEY, REMINDER_KEY, START_DATE_KEY,
     EXPIRATION_DATE_KEY, DATE_TIME_KEY, DURATION_KEY, LOCATION_KEY,
-    CALENDAR_IDS_KEY, CATEGORIES_KEY, ATTACHMENTS_KEY, REFERENCES_KEY =
+    CALENDAR_IDS_KEY, CATEGORIES_KEY, ATTACHMENTS_KEY, REFERENCES_KEY,
+    APPEND_DESCRIPTION_KEY =
     'type', 'title', 'description', 'handle', 'priority', 'due_date', 'goal',
     'email', 'comment', 'parent', 'reminders', 'start_date', 'expiration_date',
     'date_time', 'duration', 'location', 'calendar_ids', 'categories',
-    'attachments', 'references'
+    'attachments', 'references', 'appended_description'
   # key/label for "transitory" commit-message field:
   COMMIT_MSG_KEY = 'commit'
   SINGULAR_REMINDER_KEY = 'reminder'

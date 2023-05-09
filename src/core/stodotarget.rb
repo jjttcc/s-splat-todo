@@ -589,7 +589,11 @@ class STodoTarget
   end
   def main_modify_fields spec, target_list
     guarded_scalar_assignment(:title, spec, nil)
-    guarded_scalar_assignment(:content, spec, :description)
+    if spec.appended_description && ! spec.appended_description.empty? then
+      guarded_scalar_assignment(:content, spec, :appended_description, true)
+    else
+      guarded_scalar_assignment(:content, spec, :description)
+    end
     guarded_scalar_assignment(:comment, spec)
     guarded_scalar_assignment(:commit, spec)
     guarded_scalar_assignment(:priority, spec)
@@ -796,8 +800,10 @@ class STodoTarget
   #      assignment
   # If ! alt_name.nil? use it as the name of the "attribute" of 'spec' to
   # assign to self.<attr_name>; otherwise, use 'spec.<attr_name>'.
+  # If 'append', append the specified value from 'spec' to the existing
+  # field instead of assigning it.
   pre 'args are valid' do |aname, spec| ! aname.nil? && ! spec.nil? end
-  def guarded_scalar_assignment(attr_name, spec, alt_name = nil)
+  def guarded_scalar_assignment(attr_name, spec, alt_name = nil, append = false)
     if ! alt_name.nil? then
       specname = alt_name
     else
@@ -810,7 +816,12 @@ class STodoTarget
         newval_valid = ! new_value.empty?
       end
       if newval_valid then
-        self.send("#{attr_name}=", spec.send(specname))
+        if ! append then
+          self.send("#{attr_name}=", spec.send(specname))
+        else
+          self.send("#{attr_name}=",
+                    "#{self.send(attr_name)}#{spec.send(specname)}")
+        end
       end
     end
   end

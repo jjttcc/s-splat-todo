@@ -219,9 +219,10 @@ class STodoGit
   post 'commit NOT pending' do ! commit_pending end
   def commit commit_msg = nil
     if commit_pending then
-      msg = Time.now.to_s
       if ! commit_msg.nil? && ! commit_msg.empty? then
-        msg += " - #{commit_msg}"
+        msg = commit_msg
+      else
+        msg = "added #{update_count} files"
       end
       begin
         git.commit msg

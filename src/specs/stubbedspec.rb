@@ -33,6 +33,7 @@ class StubbedSpec < STodoSpec
     end
     @setting_for[TITLE_KEY] = options.title
     @setting_for[DESCRIPTION_KEY] = options.description
+    @setting_for[APPEND_DESCRIPTION_KEY] = options.appended_description
     @setting_for[HANDLE_KEY] = options.handle
     @setting_for[HANDLE_KEY] = handle
     @setting_for[PRIORITY_KEY] = options.priority

@@ -9,7 +9,7 @@ class TemplateOptions
 
   attr_reader :type, :categories, :description, :email, :handle, :location,
     :time, :parent, :title, :calendar_ids, :duration, :priority,
-    :references, :attachments
+    :references, :attachments, :appended_description
   # git-commit message - i.e., not STodoTarget attribute:
   attr_reader :commit_message
 
@@ -46,9 +46,9 @@ class TemplateOptions
 
   def process_options
     i = 0
-    catf, descf, emf, hndf, locf, parf, titf, cif, durf, ief, oef,
-      timf, prif, reff, atf, cmm = 'c', 'd', 'e', 'h', 'l', 'p', 't', 'ci',
-        'du', 'ie', 'oe', 'ti', 'pr', 'r', 'at', 'm'
+    catf, descf, adescf, emf, hndf, locf, parf, titf, cif, durf, ief, oef,
+      timf, prif, reff, atf, cmm = 'c', 'd', 'ad', 'e', 'h', 'l', 'p', 't',
+        'ci', 'du', 'ie', 'oe', 'ti', 'pr', 'r', 'at', 'm'
     while i < self.argument_array.length do
       case self.argument_array[i]
       when /^-#{catf}\b/
@@ -56,6 +56,8 @@ class TemplateOptions
         @categories = cats.join(SPEC_FIELD_JOINER)
       when /^-#{descf}\b/
         @description = next_arg(i + 1, descf)[0]; i += 1
+      when /^-#{adescf}\b/
+        @appended_description = next_arg(i + 1, descf)[0]; i += 1
       when /^-#{emf}\b/
         emails = next_arg(i + 1, emf, true); i += emails.length
         @main_email = emails.join(SPEC_FIELD_JOINER)
@@ -109,6 +111,7 @@ class TemplateOptions
   def init_attributes
     @categories = nil
     @description = nil
+    @appended_description = nil
     @email = nil
     @handle = nil
     @location = nil

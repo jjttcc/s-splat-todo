@@ -17,7 +17,11 @@ class CalendarEntry
   def submit
     if time != nil then
       cmd = entry_creation_command
-      exec_cmd cmd
+      if cmd.nil? then
+        $log.debug "No external calendar service is configured."
+      else
+        exec_cmd cmd
+      end
     else
       $log.warn "#{self.class}: Submission requested for item with " +
         "null 'time' field [#{self.inspect}]"
@@ -44,32 +48,36 @@ class CalendarEntry
   ### Implementation - utilities
 
   def entry_creation_command
-    if duration == nil then
-      # (nil duration implies "infinitely small" "meeting".)
-      @duration = 1
-    end
-    enforce_entry_creation_preconditions
     program = @configuration.calendar_tool
-    result = [program, '--calendar', calendar_id, '--title', title,
-              '--when', time.strftime('%Y-%m-%d %H:%M'),
-              '--duration', duration.to_s]
-    if location != nil then
-      result << '--where' << location
+    if program.nil? then
+      result = nil
     else
-      result << '--where' << ''
+      if duration == nil then
+        # (nil duration implies "infinitely small" "meeting".)
+        @duration = 1
+      end
+      enforce_entry_creation_preconditions
+      result = [program, '--calendar', calendar_id, '--title', title,
+                '--when', time.strftime('%Y-%m-%d %H:%M'),
+                '--duration', duration.to_s]
+      if location != nil then
+        result << '--where' << location
+      else
+        result << '--where' << ''
+      end
+      if description != nil then
+        result << '--description' << description
+      end
+      if reminder_spec != nil then
+        result << '--reminder' << reminder_spec
+      else
+        result << '--reminder' << '0'
+      end
+      if invitees != nil then
+        result << '--who' << invitees.split(' ')
+      end
+      result << 'add'
     end
-    if description != nil then
-      result << '--description' << description
-    end
-    if reminder_spec != nil then
-      result << '--reminder' << reminder_spec
-    else
-      result << '--reminder' << '0'
-    end
-    if invitees != nil then
-      result << '--who' << invitees.split(' ')
-    end
-    result << 'add'
     result
   end
 

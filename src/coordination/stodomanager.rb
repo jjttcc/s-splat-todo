@@ -43,11 +43,7 @@ class STodoManager
   def perform_initial_processing
     process_targets
     if processing_required then
-      email = Email.new(mailer)
-      @new_targets.values.each do |t|
-        t.add_notifier(email)
-        t.initiate(calendar, self)
-      end
+      initiate_new_targets @new_targets.values
       @edited_targets.values.each do |t|
         if self.target_builder.time_changed_for[t] then
           t.initiate(calendar, self)
@@ -171,6 +167,7 @@ class STodoManager
           repo.commit t.commit
         end
       end
+      initiate_new_targets targets
       @data_manager.store_targets(self.existing_targets)
     end
   end
@@ -292,6 +289,15 @@ class STodoManager
           repo.commit msg
         end
       end
+    end
+  end
+
+  # Call 'initiate' on each new target in 'targets'.
+  def initiate_new_targets targets
+    email = Email.new(mailer)
+    targets.each do |t|
+      t.add_notifier(email)
+      t.initiate(calendar, self)
     end
   end
 

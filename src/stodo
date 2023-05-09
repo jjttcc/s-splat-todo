@@ -310,6 +310,7 @@ add_help() {
     "\"attachments\" line"
   echo -e "  -r <r1>[,<r2>...]    use <r1>,... to create a"\
     "line of \"references\"\n${ls}   (handles) to existing items"
+  echo -e "  -m <msg>$s        add item to git and use <msg> as commit Message"
 }
 
 delete_help() {
@@ -317,7 +318,7 @@ delete_help() {
   echo -e "Usage: $progname del <handle>... [options]"
   echo -e "\nOptions:"
   echo -e "  -r              Recursive: delete all descendants as well"
-  echo -e "  -m <msg>        Use <msg> as commit message if items are in git"
+  echo -e "  -m <msg>        use <msg> as commit Message if items are in git"
 }
 
 git_help() {
@@ -336,7 +337,7 @@ git_help() {
   echo -e "and print their contents to stdout"
   echo -e "Options:"
   echo -e "  -r${ms}Recursive: apply <cmd> to all descendants as well"
-  echo -e "  -m:<msg> $s$s use <msg> as the commit Message"
+  echo -e "  -m <msg> $s$s use <msg> as the commit Message"
 }
 
 admin_help() {
@@ -369,17 +370,19 @@ change_help() {
   echo -e "\nOptions:"
   echo -e "  -t <title> $s  replace the Title with <title>"
   echo -e "  -d <desc> $s   replace the Description with <desc>"
+  echo -e "  -ad <s>   $s   Append <s> to the Description"
   echo -e "  -c <cat>... $s replace Categories with <cat[,<cat>...]>"
   echo -e "  -e <email> $s  replace the ongoing Email address with <email>"
   echo -e "  -ti <datetime>       replace the <datetime> with date&time"
-#  echo -e "  -ci <id>... $s replace the Calendar Ids with <id>..."
+#!!!  echo -e "  -ci <id>... $s replace the Calendar Ids with <id>..."
   echo -e "  -l <loc> $s    replace the Location (appointment only) with <loc>"
   echo -e "  -du <dur> $s   replace the Duration (appointment only) with <dur>"
   echo -e "  -pr <priority>       replace the Priority with <priority>"
   echo -e "  -at <a1>[,<a2>...]   use <a1>,... to assign a new"\
-    "\"attachments\" line"
+    "\"Attachments\" line"
   echo -e "  -r <r1>[,<r2>...]    use handles <r1>,... to assign a new"\
     "line of\n${ls}   \"references\" to existing items"
+  echo -e "  -m <msg> $s    use <msg> as commit Message if item is in git"
 }
 
 clear_d_help() {
@@ -415,7 +418,7 @@ template_help() {
   echo -e "  -du <dur> $s      use <dur> as the duration (appointment only)"
   echo -e "  -pr <priority> $s use <priority> as the priority"
   echo -e "  -at <a1>[,<a2>...]   use <a1>,... to create an"\
-    "\"attachments\" line"
+    "\"Attachments\" line"
   echo -e "  -r <r1>[,<r2>...]    use handles <r1>,... to create a"\
     "line of \"references\"\n${ls}   to existing items"
 }
@@ -439,7 +442,7 @@ process_attachment_help() {
   local ls='                    '
   echo -e "Usage: $progname proca <handle> [...] [options]"
   echo -e "\nOptions:"
-  echo -e "  -v $s \"view\" the attachment (i.e., read-only)"
+  echo -e "  -v $s \"view\" the attachment (i.e., read-only) [default]"
   echo -e "  -e $s \"edit\" (modify) the attachment"
 }
 

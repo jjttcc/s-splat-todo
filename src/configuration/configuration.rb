@@ -136,12 +136,21 @@ class Configuration
     @post_init_spec_path =
       ConfigTools::constructed_path([data_path, OLD_SPECS_TAG])
     @templated_email_command = settings[EMAIL_TEMPLATE_TAG]
-    @calendar_tool = settings[CALENDAR_COMMAND_TAG]
+    set_calendar_tool
     @backup_paths = scanned_backup_paths(settings[BACKUP_PATH_TAG])
     validate_paths({:spec_path => spec_path, :data_path => data_path,
         :user_path => user_path, :post_init_spec_path => post_init_spec_path})
     validate_paths(labeled_paths(backup_paths))
     validate_exefiles(@calendar_tool)
+  end
+
+  def set_calendar_tool
+    calcmd_setting = settings[CALENDAR_COMMAND_TAG]
+    if ! calcmd_setting.nil? && ! calcmd_setting.empty? then
+      @calendar_tool = settings[CALENDAR_COMMAND_TAG]
+    else
+      @calendar_tool = nil
+    end
   end
 
   # Set values based on "internal" (not generally directly available to the
@@ -223,10 +232,11 @@ class Configuration
 
   # Validate the specified paths - raise an exception if any are not found in
   # the path or are not executable.
+  # Note: a "nil" path is considered a no-op - i.e., valid.
   def validate_exefiles *paths
     errors = []
     paths.each do |p|
-      if ConfigTools::which(p) == nil then
+      if ! p.nil? && ConfigTools::which(p) == nil then
         errors << "Executable file '#{p}' is not in the path."
       end
     end
