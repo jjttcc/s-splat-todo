@@ -333,6 +333,9 @@ class ReportManager
     sta_cmp = lambda {|tgt, crit|
       tgt.state == nil || crit.states.include?(tgt)
     }
+    typ_cmp = lambda {|tgt, crit|
+      tgt.type == nil || crit.types.include?(tgt.type)
+    }
     ttl_cmp = lambda {|tgt, crit|
       crit.title_exprs.any? { |e|
       Regexp.new(e, Regexp::IGNORECASE).match(tgt.title) }
@@ -348,6 +351,7 @@ class ReportManager
 
     @comparison_method_table[PRI] = pri_cmp
     @comparison_method_table[STATE] = sta_cmp
+    @comparison_method_table[TYPE] = typ_cmp
     @comparison_method_table[TITLE] = ttl_cmp
     @comparison_method_table[HANDLE] = hnd_cmp
     @comparison_method_table[DESCRIPTION] = des_cmp
@@ -411,8 +415,8 @@ class ReportManager
   end
 
   # "type-spec" keys
-  PRI, STATE, TITLE, HANDLE, DESCRIPTION = 'pri', 'state', 'title', 'handle',
-    'description'
+  PRI, STATE, TITLE, HANDLE, DESCRIPTION, TYPE = 'pri', 'state', 'title',
+    'handle', 'description', 'type'
 
   attr_reader :comparison_method_table
 
@@ -423,6 +427,9 @@ class ReportManager
     end
     if criteria.has_states? then
       stat_key = STATE
+    end
+    if criteria.has_types? then
+      stat_key = TYPE
     end
     if criteria.has_title_exprs? then
       ttl_key = TITLE

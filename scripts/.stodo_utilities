@@ -30,6 +30,7 @@ alias sth='stodo -h'
 alias hnd='stodo rep'               # list handles
 alias hndn='stodo rep|pr -n -t'     # list handles, numbered
 alias rep='stodo rep'
+alias desc='stodo rep desc'
 alias due='stodo rep due'
 alias short='stodo rep short'
 alias shrt=short

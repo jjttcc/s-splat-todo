@@ -24,7 +24,7 @@ class TemplateOptions
 
   private
 
-  DEFAULT_TYPE=APPOINTMENT
+  DEFAULT_TYPE = APPOINTMENT
 
   post 'arg_array set' do |r, aa|
     implies(! aa.nil?, self.argument_array == aa)

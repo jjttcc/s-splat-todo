@@ -15,7 +15,7 @@ require 'targetstateset'
 require 'searchcriteria'
 
 class ReportUtil
-  include Contracts::DSL
+  include Contracts::DSL, SpecTools
 
   public
 
@@ -106,9 +106,9 @@ class ReportUtil
   private
 
   TYPE_SPEC_SEP, KEY_VALUE_SEP, FIELD_SEP = '@', ':', ',\s*'
-  STATES, PRIORITIES, TITLE_EXPRS, HANDLE_EXPRS, DESCR_EXPRS =
+  STATES, PRIORITIES, TITLE_EXPRS, HANDLE_EXPRS, DESCR_EXPRS, TYPES =
     'states', 'priorities', 'title_exprs', 'handle_exprs',
-    'description_exprs'
+    'description_exprs', 'types'
   TOP_PRI, SECOND_PRI, THIRD_PRI, LAST_PRI = 1, 2, 3, 4
   ALL_PRIORITIES = [TOP_PRI, SECOND_PRI, THIRD_PRI, LAST_PRI]
 
@@ -126,6 +126,8 @@ class ReportUtil
         else
           if STATES =~ /#{key}/ then
             set_states(value)
+          elsif TYPES =~ /#{key}/ then
+            set_types(value)
           elsif PRIORITIES =~ /#{key}/ then
             set_priorities(value)
           elsif TITLE_EXPRS =~ /#{key}/ then
@@ -167,6 +169,37 @@ class ReportUtil
     else
       self.states = TargetStateSet.new(nil)
     end
+  end
+
+  # Set self.types according to the specifications implied by 's'.
+  def self.set_types(s)
+    self.types = Set.new
+    if s != nil then
+      components = s.split(/#{FIELD_SEP}/)
+      components.each do |c|
+        newtype = type_from_expr(c)
+        if ! newtype.nil? then
+          self.types << newtype
+        end
+      end
+    end
+  end
+
+  TYPE_FOR = {}
+  [TASK, APPOINTMENT, NOTE, PROJECT].each do |t|
+    TYPE_FOR[t] = t
+  end
+  TYPE_FOR[APPOINTMENT_ALIAS2] = APPOINTMENT
+  TYPE_FOR[NOTE_ALIAS2] = NOTE
+
+  def self.type_from_expr e
+    result = nil
+    TYPE_FOR.keys.each do |k|
+      if k =~ /#{e}/ then
+        result = TYPE_FOR[k]
+      end
+    end
+    result
   end
 
   # Set self.priorities according to the specifications implied by 's'.
@@ -232,7 +265,7 @@ class ReportUtil
   end
 
   class << self
-    attr_accessor :states, :priorities, :title_exprs,
+    attr_accessor :states, :types, :priorities, :title_exprs,
       :handle_exprs, :description_exprs, :handles, :criteria
   end
 

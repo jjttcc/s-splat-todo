@@ -278,12 +278,15 @@ report_help() {
   echo -e "<type-spec> - one or more of the following, separated by '@':"
   echo -e "  pri:<n1>[,<n2>[,...]]  - only priorities <n1>, <n2>, ..."
   echo -e "  stat:<s1>[,<s2>[,...]] - only statuses <s1>, <s2>, ..."
+  echo -e "  type:<t1>[,<t2>[,...]] - only types <t1>, <t2>, ..."
   echo -e "  title:<regex>          - only items whose title matches <regex>"
   echo -e "  handle:<regex>         - only items whose handle matches <regex>"
   echo -e "  descr:<regex>          - only items whose description matches "\
     "<regex>"
   echo -e "\nNotes:"
   echo -e " - If <report-type> is not specified, list all target handles."
+  echo -e " - The type can be any of:."
+  echo -e '      "task", "note" or "memo", "appointment" or "event", "project"'
 }
 
 add_help() {

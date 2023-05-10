@@ -14,7 +14,7 @@ class SearchCriteria
 
   #####  Access
 
-  attr_reader :states, :priorities, :title_exprs, :handle_exprs,
+  attr_reader :states, :priorities, :types, :title_exprs, :handle_exprs,
     :description_exprs, :handles
 
   #####  Status report
@@ -22,14 +22,14 @@ class SearchCriteria
   # Should only the 'handles' list be used - i.e., other specs are empty?
   def handles_only?
     assert_invariant {invariant}
-    handles.count > 0 && states.count == 0 &&
+    handles.count > 0 && states.count == 0 && types.count == 0 &&
       priorities.count == 0 && title_exprs.count == 0 &&
       handle_exprs.count == 0 && description_exprs.count == 0
   end
 
   # Are all criteria empty/unspecified?
   def null_criteria?
-    handles.count == 0 && states.count == 0 &&
+    handles.count == 0 && states.count == 0 && types.count == 0 &&
       priorities.count == 0 && title_exprs.count == 0 &&
       handle_exprs.count == 0 && description_exprs.count == 0
   end
@@ -42,6 +42,11 @@ class SearchCriteria
   # Are one or more states specified?
   def has_states?
     states.count > 0
+  end
+
+  # Are one or more states specified?
+  def has_types?
+    types.count > 0
   end
 
   # Are one or more title expressions specified?
@@ -61,7 +66,7 @@ class SearchCriteria
 
   private
 
-  attr_writer :states, :priorities, :title_exprs, :handle_exprs,
+  attr_writer :states, :types, :priorities, :title_exprs, :handle_exprs,
     :description_exprs, :handles
 
   # precondition: datetime != nil
@@ -73,6 +78,11 @@ class SearchCriteria
     self.description_exprs =
       (criteria.description_exprs.nil?)? []: criteria.description_exprs
     self.handles = (criteria.handles.nil?)? []: criteria.handles
+    if criteria.types.nil? then
+      self.types = []
+    else
+      self.types = criteria.types
+    end
     self.priorities = []
     if criteria.priorities != nil then
       criteria.priorities.each do |p|
@@ -85,9 +95,9 @@ class SearchCriteria
   ### class invariant
 
   def invariant
-    ! (self.handles.nil? || self.states.nil? || self.priorities.nil? ||
-       self.title_exprs.nil? || self.handle_exprs.nil? ||
-       self.description_exprs.nil?)
+    ! (self.handles.nil? || self.states.nil? || self.types.nil? ||
+       self.priorities.nil? || self.title_exprs.nil? ||
+       self.handle_exprs.nil? || self.description_exprs.nil?)
   end
 
 end
