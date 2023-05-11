@@ -14,19 +14,24 @@ eval def sh; puts self.handle end
 ###b src/main/stodo-mgmt.rb 32
 ###b src/main/stodo-mgmt.rb 36
 ###b src/main/stodo-mgmt.rb 37
+# in when 'add':
+b src/main/stodo-mgmt.rb 63
+b src/main/stodo-mgmt.rb 64
+b src/main/stodo-mgmt.rb 68
 # after 'else':
 b src/main/stodo-mgmt.rb 86
 b src/main/stodo-mgmt.rb 88
 b src/main/stodo-mgmt.rb 90
 b src/main/stodo-mgmt.rb 92
+b src/specs/stubbedspec.rb 54
 # initialize:
 b src/coordination/templatetargetbuilder.rb 10
 b src/coordination/templatetargetbuilder.rb 14
 # initialize:
 b src/coordination/templateoptions.rb 36
 # process_options:
-b src/coordination/templateoptions.rb 48
-b src/coordination/templateoptions.rb 94
+#b src/coordination/templateoptions.rb 48
+b src/coordination/templateoptions.rb 90
 
 b src/data/stodotargeteditor.rb 20
 b src/util/commandoptions.rb 49

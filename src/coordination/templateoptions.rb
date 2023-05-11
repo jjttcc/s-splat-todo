@@ -8,8 +8,8 @@ class TemplateOptions
   public
 
   attr_reader :type, :categories, :description, :email, :handle, :location,
-    :time, :parent, :title, :calendar_ids, :duration, :priority,
-    :references, :attachments, :appended_description
+    :time, :parent, :title, :calendar_ids, :duration, :priority, :reminders,
+    :references, :attachments, :appended_description, :appended_reminders
   # git-commit message - i.e., not STodoTarget attribute:
   attr_reader :commit_message
 
@@ -47,8 +47,9 @@ class TemplateOptions
   def process_options
     i = 0
     catf, descf, adescf, emf, hndf, locf, parf, titf, cif, durf, ief, oef,
-      timf, prif, reff, atf, cmm = 'c', 'd', 'ad', 'e', 'h', 'l', 'p', 't',
-        'ci', 'du', 'ie', 'oe', 'ti', 'pr', 'r', 'at', 'm'
+      timf, prif, remf, aremf, reff, atf, cmm = 'c', 'd', 'ad', 'e', 'h', 'l',
+        'p', 't', 'ci', 'du', 'ie', 'oe', 'ti', 'pr', 'rem', 'arem', 'r',
+        'at', 'm'
     while i < self.argument_array.length do
       case self.argument_array[i]
       when /^-#{catf}\b/
@@ -85,6 +86,10 @@ class TemplateOptions
       when /^-#{oef}/
         emails = next_arg(i + 1, oef, true); i += emails.length
         @ongoing_email = emails.join(SPEC_FIELD_JOINER)
+      when /^-#{aremf}\b/
+        @appended_reminders = next_arg(i + 1, aremf)[0]; i += 1
+      when /^-#{remf}\b/
+        @reminders = next_arg(i + 1, remf)[0]; i += 1
       when /^-#{reff}\b/
         refs = next_arg(i + 1, reff, true); i += refs.length
         @references = refs.join(SPEC_FIELD_JOINER)
@@ -125,6 +130,8 @@ class TemplateOptions
     @initial_email = nil
     @ongoing_email = nil
     @references = nil
+    @reminders = nil
+    @appended_reminders = nil
     @attachments = nil
   end
 

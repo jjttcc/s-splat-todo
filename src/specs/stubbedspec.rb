@@ -42,7 +42,6 @@ class StubbedSpec < STodoSpec
     @setting_for[EMAIL_KEY] = email
     @setting_for[COMMENT_KEY] = ''
     @setting_for[PARENT_KEY] = options.parent
-    @setting_for[REMINDER_KEY] = ''
     @setting_for[START_DATE_KEY] = ''
     @setting_for[EXPIRATION_DATE_KEY] = expire_date.to_s
     @setting_for[DATE_TIME_KEY] = options.time
@@ -52,6 +51,8 @@ class StubbedSpec < STodoSpec
     @setting_for[CATEGORIES_KEY] = options.categories
     @setting_for[ATTACHMENTS_KEY] = options.attachments
     @setting_for[REFERENCES_KEY] = options.references
+    @setting_for[REMINDER_KEY] = options.reminders
+    @setting_for[APPEND_REMINDER_KEY] = options.appended_reminders
     @setting_for[COMMIT_MSG_KEY] = options.commit_message
   end
 

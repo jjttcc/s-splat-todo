@@ -611,9 +611,13 @@ class STodoTarget
   end
 
   def post_modify_fields spec
-    rem = reminders_from_spec spec
-    if rem then
+    # Check first for specified replacements.
+    rem = reminders_from_spec spec, false
+    if rem && ! rem.empty? then
       @reminders = rem
+    else
+      rem = reminders_from_spec spec, true
+      @reminders.concat(rem)
     end
   end
 
@@ -623,31 +627,15 @@ class STodoTarget
   pre 'not spec.is_template? implies time != nil' do |spec|
       implies(! spec.is_template?, time != nil)
   end
-  def reminders_from_spec spec
-    reminders_string = spec.reminders
-    result = []
+  def reminders_from_spec spec, append = false
+    if append then
+      reminders_string = spec.appended_reminders
+    else
+      reminders_string = spec.reminders
+    end
     if reminders_string != nil then
       begin
-        date_strings = reminders_string.split(REMINDER_DELIMITER)
-        date_parser = DateParser.new(date_strings, true)
-        dates = date_parser.result
-        periodic_reminder_candidates = []
-        for i in 0 .. dates.length - 1 do
-          d = dates[i]
-          if d != nil then
-            result << OneTimeReminder.new(d)
-          else
-            if date_strings[i].downcase != NONE then
-              periodic_reminder_candidates << date_strings[i]
-            end
-          end
-        end
-        if periodic_reminder_candidates.length > 0 then
-          periodic_date_parser = PeriodicDateParser.new(
-            periodic_reminder_candidates, time)
-          periodic_reminders = periodic_date_parser.result
-          result.concat(periodic_reminders)
-        end
+        result = scanned_reminder(reminders_string)
       rescue Exception => e
         $log.warn "#{handle}: #{e} [stack trace:\n" +
           e.backtrace.join("\n") + ']'
@@ -660,6 +648,31 @@ class STodoTarget
     end
     if result then
       result.sort
+    end
+    result
+  end
+
+  def scanned_reminder(remspec)
+    result = []
+    date_strings = remspec.split(REMINDER_DELIMITER)
+    date_parser = DateParser.new(date_strings, true)
+    dates = date_parser.result
+    periodic_reminder_candidates = []
+    for i in 0 .. dates.length - 1 do
+      d = dates[i]
+      if d != nil then
+        result << OneTimeReminder.new(d)
+      else
+        if date_strings[i].downcase != NONE then
+          periodic_reminder_candidates << date_strings[i]
+        end
+      end
+    end
+    if periodic_reminder_candidates.length > 0 then
+      periodic_date_parser = PeriodicDateParser.new(
+        periodic_reminder_candidates, time)
+      periodic_reminders = periodic_date_parser.result
+      result.concat(periodic_reminders)
     end
     result
   end

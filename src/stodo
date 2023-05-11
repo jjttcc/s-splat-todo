@@ -284,8 +284,8 @@ report_help() {
   echo -e "  descr:<regex>          - only items whose description matches "\
     "<regex>"
   echo -e "\nNotes:"
-  echo -e " - If <report-type> is not specified, list all target handles."
-  echo -e " - The type can be any of:."
+  echo -e "   If <report-type> is not specified, list all target handles."
+  echo -e "   The type can be any of:."
   echo -e '      "task", "note" or "memo", "appointment" or "event", "project"'
 }
 
@@ -313,7 +313,10 @@ add_help() {
     "\"attachments\" line"
   echo -e "  -r <r1>[,<r2>...]    use <r1>,... to create a"\
     "line of \"references\"\n${ls}   (handles) to existing items"
+  echo -e "  -rem <remspec>$s  set REMinder(s) as specified by <remspec>"
   echo -e "  -m <msg>$s        add item to git and use <msg> as commit Message"
+  echo -e "\nNotes:"
+  echo -e "   <remspec>$s$s <expr1>[;<expr2>...]"
 }
 
 delete_help() {
@@ -385,7 +388,11 @@ change_help() {
     "\"Attachments\" line"
   echo -e "  -r <r1>[,<r2>...]    use handles <r1>,... to assign a new"\
     "line of\n${ls}   \"references\" to existing items"
+  echo -e "  -rem <remspec>       replace REMinder(s) with <remspec>"
+  echo -e "  -arem <remspec>      append <remspec> to REMinder(s)"
   echo -e "  -m <msg> $s    use <msg> as commit Message if item is in git"
+  echo -e "\nNotes:"
+  echo -e "   <remspec>$s   <date/time-expr1>[;<date/time-expr2>...]"
 }
 
 clear_d_help() {
