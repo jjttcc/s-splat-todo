@@ -612,18 +612,29 @@ class STodoTarget
 
   def post_modify_fields spec
     # Check first for specified replacements.
-    rem = reminders_from_spec spec, false
-    if rem && ! rem.empty? then
-      @reminders = rem
-    else
-      rem = reminders_from_spec spec, true
-      @reminders.concat(rem)
+    append = false
+    rems = reminders_from_spec spec, append
+    if rems.nil? then
+      append = true
+      rems = reminders_from_spec spec, append
+    end
+    if rems && ! rems.empty? then
+      if ! append then
+        @reminders = rems
+      else
+        if @reminders.nil? then
+          @reminders = []
+        end
+        @reminders.concat(rems)
+      end
     end
   end
 
   # "Reminder"s created based on spec.reminders - If spec.type == CORRECTION
-  # and spec.reminders is nil, nil is returned to indicate that no
-  # reminders were specified (i.e., the original reminders should be kept).
+  # and either:
+  #    spec.reminders is nil          (when append == false)
+  #    spec.appended_reminders is nil (when append == true)
+  # nil is returned to indicate that no reminders were specified.
   pre 'not spec.is_template? implies time != nil' do |spec|
       implies(! spec.is_template?, time != nil)
   end

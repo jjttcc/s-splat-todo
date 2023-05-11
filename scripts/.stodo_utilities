@@ -100,6 +100,11 @@ comp() {
     stodo rep comp $*|pager
 }
 
+# "cat" complete report - i.e., no pager
+compc() {
+    stodo rep comp $*
+}
+
 # complete report for item <n>:
 compn() {
     if expr "$1" : '^[0-9][0-9]*$' >/dev/null; then
