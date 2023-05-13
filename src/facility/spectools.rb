@@ -13,6 +13,7 @@ module SpecTools
   # key/label for "transitory" commit-message field:
   COMMIT_MSG_KEY = 'commit'
   SINGULAR_REMINDER_KEY = 'reminder'
+  MULTILINE_FIELD_END_EXPR = Regexp.new("^\cgendfield\cg")
   SPEC_FIELD_DELIMITER = /,\s*/
   SPEC_FIELD_JOINER = ','
   REMINDER_DELIMITER = /;\s*/
@@ -46,6 +47,7 @@ module SpecTools
   INITIAL_EMAIL_TAG = '[initial]'
   ONGOING_EMAIL_TAG = '[ongoing]'
   NONE = 'none'
+  NONE_SPEC = '{none}'  # spec indicating no <x>s (e.g., reminders, parent)
 
   # application-level error messages
   HANDLE_TAG = '<handle>'

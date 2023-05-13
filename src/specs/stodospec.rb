@@ -99,7 +99,7 @@ class STodoSpec
     FILTERED[k] = true
   end
 
-  # Is 'key' to be filtered/cleaned?
+  # Is the value associated with 'key' to be filtered/cleaned?
   def is_filtered key
     FILTERED[key]
   end
@@ -129,7 +129,7 @@ class STodoSpec
         if is_filtered key then
           value = stripped_of_comments components[i + 1]
         else
-          value = components[i + 1]
+          value = multiline_field(components[i + 1])
         end
         if
           (key == DESCRIPTION_KEY || key == COMMENT_KEY) && rawkey =~ /\n/
@@ -150,4 +150,19 @@ class STodoSpec
     s.gsub(/^#.*/, "")
   end
 
+  # The multi-line field of type String extracted from 's', ended by
+  # 'MULTILINE_FIELD_END_EXPR' (with newlines preserved)
+  pre 's is a string' do |s| ! s.nil? && s.is_a?(String) end
+  def multiline_field s
+    result = ""
+    lines = s.split("\n")
+    lines.each do |l|
+      if MULTILINE_FIELD_END_EXPR.match?(l) then
+        break
+      else
+        result += "#{l}\n"
+      end
+    end
+    result
+  end
 end

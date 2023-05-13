@@ -17,6 +17,7 @@ default_date='date --date="-1 days ago" +%Y-%m-%d'
 default_time='12:00'
 boundary='======================================================='
 boundary="$boundary===================="
+endfield_tag="endfield"
 
 rcfile=~/.stodo_user_rc
 # (Use $rcfile to override any of the "default" settings above.)
@@ -472,14 +473,29 @@ todo-corr() {
     local handle=$1
     local file=/tmp/$handle.corr.$(date "+%Y-%m-%d_%H%M")
     stodo rep comp $handle| awk '
+    BEGIN {
+        e1 = "^(goal|title|priority|comment|parent|reminders|categories|[a-z]+_date|"
+        e2 = "attachments|references|commit):"
+        # regex matching tag-lines that are to be commented with "#":
+        cexpr = e1 e2
+    }
     function print_as_comment() {
         print "#" $0; next
     }
     (in_comment) {
-        if ($1 ~ /^[a-z][-_a-z]*:/) {
+    if ($1 ~ /^[a-z][-_a-z]*:/) {   # (next field)
             in_comment = 0
+            # (Print with "#" - as a "comment" - to fit in.)
+            print "'"#$endfield_tag"'"
         } else {
             print_as_comment()
+        }
+    }
+    (in_descr) {
+    if ($1 ~ /^[a-z][-_a-z]*:/) {   # (next field)
+            in_descr = 0
+            print "'"$endfield_tag"'"
+        } else {
         }
     }
     /^type:/ {
@@ -490,12 +506,14 @@ todo-corr() {
     }
     /^status:/ { next }     # (Change status with a separate command.)
     /^comment:/ { in_comment = 1; print_as_comment() }
+    /^description:/ { in_descr = 1; }
     # skip these:
     /^initial.email/ { next }
     /^calendar_ids/ { next }
     /^children/ { next }
     # print as comment so that the user can, by default, ignore these:
-    /^(goal|title|priority|comment|parent|reminders|categories|[a-z]+_date):/ {
+#    /^(goal|title|priority|comment|parent|reminders|categories|[a-z]+_date):/ {
+    ($0 ~ cexpr) {
         print_as_comment() }
     /^([a-z _]*)email:/ {
         print_as_comment() }

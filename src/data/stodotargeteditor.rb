@@ -61,7 +61,7 @@ class STodoTargetEditor
   attr_writer   :change_occurred
   attr_accessor :commit_msg
 
-  DEFAULT_COMPONENT_SEPARATOR, NO_PARENT = ":", '{none}'
+  DEFAULT_COMPONENT_SEPARATOR, NO_PARENT = ":", NONE_SPEC
   private_constant :DEFAULT_COMPONENT_SEPARATOR, :NO_PARENT
 
   def initialize(target_map)

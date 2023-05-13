@@ -1,5 +1,9 @@
 # s\*todo
 
+<!---
+!!!!to-do: Add info about {none} spec
+-->
+
 ## Introduction
 
 s\*todo is yet another to-do application (implemented in ruby, for those

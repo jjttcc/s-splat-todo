@@ -612,20 +612,24 @@ class STodoTarget
 
   def post_modify_fields spec
     # Check first for specified replacements.
-    append = false
-    rems = reminders_from_spec spec, append
-    if rems.nil? then
-      append = true
+    if reminders_removal_ordered(spec) then
+      @reminders = []
+    else
+      append = false
       rems = reminders_from_spec spec, append
-    end
-    if rems && ! rems.empty? then
-      if ! append then
-        @reminders = rems
-      else
-        if @reminders.nil? then
-          @reminders = []
+      if rems.nil? then
+        append = true
+        rems = reminders_from_spec spec, append
+      end
+      if rems && ! rems.empty? then
+        if ! append then
+          @reminders = rems
+        else
+          if @reminders.nil? then
+            @reminders = []
+          end
+          @reminders.concat(rems)
         end
-        @reminders.concat(rems)
       end
     end
   end
@@ -1038,6 +1042,13 @@ class STodoTarget
         result += "ongoing #{EMAIL_KEY}: #{@ongoing_email_addrs.join(', ')}\n"
       end
     end
+    result
+  end
+
+  # Has the user indicated that all self's reminders should be removed?
+  def reminders_removal_ordered spec
+    result =
+      ! spec.reminders.nil? && spec.reminders.chomp.downcase == NONE_SPEC
     result
   end
 
