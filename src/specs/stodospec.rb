@@ -113,9 +113,9 @@ class STodoSpec
     PARENT_KEY, EXPIRATION_DATE_KEY, DATE_TIME_KEY, DURATION_KEY,
     LOCATION_KEY, CATEGORIES_KEY, ATTACHMENTS_KEY, REFERENCES_KEY,
     COMMIT_MSG_KEY].each do |key|
-      split_expr += '^' + key + ':\s*|'
+      split_expr += '^' + key + ':[ \t]*|'
     end
-    split_expr += '^' + REMINDER_EXPR + ':\s*|^' + START_EXPR + ':\s*)'
+    split_expr += '^' + REMINDER_EXPR + ':[ \t]*|^' + START_EXPR + ':[ \t]*)'
     split_regex = Regexp.new(split_expr)
     components = spec_string.split(split_regex, -1)
     if components.length > 0 and components[0] == "" then
@@ -132,7 +132,8 @@ class STodoSpec
           value = multiline_field(components[i + 1])
         end
         if
-          (key == DESCRIPTION_KEY || key == COMMENT_KEY) && rawkey =~ /\n/
+          (key =~ /#{DESCRIPTION_KEY}/ || key =~ /#{COMMENT_KEY}/) &&
+            rawkey =~ /\n/
         then
           value = "\n" + value  # Honor the specified starting newline
         end
