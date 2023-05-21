@@ -474,16 +474,29 @@ todo-corr() {
     local file=/tmp/$handle.corr.$(date "+%Y-%m-%d_%H%M")
     stodo rep comp $handle| awk '
     BEGIN {
-        e1 = "^(goal|title|priority|comment|parent|reminders|categories|[a-z]+_date|"
-        e2 = "attachments|references|commit):"
+        estart = "^("
+        eend   = "):"
+        # expr (component) for labels of one-line fields:
+        e1line = "goal|title|priority|parent|reminders|categories|[a-z]+_date|"
+        e1line = e1line "attachments|references|commit"
+        # ("comment" and "description" are multi-line)
+        cmt = "comment"
+        ecmt = estart cmt eend
+        desc = "description"
+        edesc = estart desc eend
+        # expr (component) for labels of multi-line fields:
+        e_mline = cmt "|" desc
         # regex matching tag-lines that are to be commented with "#":
-        cexpr = e1 e2
+        cmt_expr = estart e1line "|" cmt eend
+        # regex matching any valid "<label>:" line:
+        label_expr = estart e1line "|" e_mline eend
     }
     function print_as_comment() {
         print "#" $0; next
     }
     (in_comment) {
-    if ($1 ~ /^[a-z][-_a-z]*:/) {   # (next field)
+#    if ($1 ~ /^[a-z][-_a-z]*:/) {   # (next field)
+    if ($1 ~ label_expr) {   # (next field)
             in_comment = 0
             # (Print with "#" - as a "comment" - to fit in.)
             print "'"#$endfield_tag"'"
@@ -492,7 +505,8 @@ todo-corr() {
         }
     }
     (in_descr) {
-    if ($1 ~ /^[a-z][-_a-z]*:/) {   # (next field)
+#    if ($1 ~ /^[a-z][-_a-z]*:/) {   # (next field)
+    if ($1 ~ label_expr) {   # (next field)
             in_descr = 0
             print "'"$endfield_tag"'"
         } else {
@@ -513,7 +527,7 @@ todo-corr() {
     /^children/ { next }
     # print as comment so that the user can, by default, ignore these:
 #    /^(goal|title|priority|comment|parent|reminders|categories|[a-z]+_date):/ {
-    ($0 ~ cexpr) {
+    ($0 ~ cmt_expr) {
         print_as_comment() }
     /^([a-z _]*)email:/ {
         print_as_comment() }
@@ -794,7 +808,7 @@ canceled() {
     cancel_ptrn='^type:.*cancel'
     if [ $# -ne 0 ]; then
         tgt=$1
-        if grep -q "$cancel_ptrn" $tgt; then
+        if grep -qi "$cancel_ptrn" $tgt; then
             result=$true
         fi
     fi
