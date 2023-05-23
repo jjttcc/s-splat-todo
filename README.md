@@ -144,11 +144,9 @@ Run s\*todo to obtain a basic usage message - i.e.:
 #### Basics
 
 Attachments (the *attachments* field of an item) can be specified (e.g., with
-the *-at* option of the *add* or *change* command [***stodo add ...*** or
-***stodo change ...***]) for an item. The attachments for an item, if there are any,
-are listed by default with the *stodo report complete* (or
-*stodo rep comp <item-handle>*, where *rep* and *comp* are abbreviations for
-*report* and *complete*, respectively)
+the *-at* option of the *add* or *change* command) for an item.
+The attachments for an item, if there are any,
+are listed by default with the ***stodo report complete*** command.
 
 #### Actions on attachments (*proca* option)
 
@@ -164,7 +162,7 @@ Attachments can be "*processed*" via the *proca* command.  i.e.:
 (-v option) or *editor* (-e option) for the attachment, as specified
 according to the file type in the 'config' file. (See the section starting
 with the comment "# Paths to executables for various types ..." in the
-example config file, *doc/config*, for more info.)
+example config file, *doc/config*, for some example settings.)
 
 When the appropriate executable (i.e., *viewer* or *editor*) is invoked, it
 is started as a background process with the environment variable
@@ -174,23 +172,38 @@ executable.
 
 #### Invoking the *.stodo-shell* file on directories
 
-If the attachment is a directory, *stodo* looks for a file in that directory
+If, during a *proca* action, an attachment is a directory (an
+*attachment-directory*), *stodo* looks for a file in that directory
 named *.stodo-shell*. If the file exists and if it is a regular file,
 is readable, and is executable, it is invoked as a UNIX/Linux command
 (i.e., a script or a binary executable file). The file/executable is invoked
-with one command-line argument, which is the name of the attachment - i.e.,
-the directory that is being processed[1]. Here is an example .stodo-shell
-script:
+with the paths to the item's attachments as arguments.  Here is an example
+.stodo-shell script:
 
     #!/bin/bash
 
-    attachment=$1
+    attachments=$*
     if [ "$STODO_HDL" ]; then
         tmpfile=/tmp/$STODO_HDL-$$
         stodo rep comp $STODO_HDL >$tmpfile
         gvim -p -geometry +0+0 -c \
-            'set lines=65 columns=146 guifont=Monospace\ 26' $tmpfile $attachment
+            'set lines=65 columns=146 guifont=Monospace\ 26' $tmpfile $attachments
     fi
+
+#### Suppress actions with *.stodo-suppress-actions* file
+
+Like the *.stodo-shell* file, during a *proca* action, *stodo* also looks in
+an *attachment-directory* for a file named
+*.stodo&#x2011;suppress&#x2011;actions*.
+If this file exists, any actions that would otherwise be carried out on
+attachments that reside in that directory will be suppressed.
+However, invocation of
+a *.stodo-shell* file, if it exists and is valid, will not be suppressed.
+Thus the purpose of a *.stodo-suppress-actions* file is either to cause
+*stodo* to invoke (execute) a valid *.stodo-shell* file while performing no
+other actions in that directory, or, if there is no
+*.stodo-shell* file, to simply suppress all *proca* actions that would
+normally occur on attachment files that reside in that directory.
 
 ### Suggestion
 
@@ -229,8 +242,3 @@ flexibility and extensibility intended for the application itself.
 
 
 ## Notes
-
-[1] This is redundant, of course, since it is easy for the invoked program
-to obtain the current directory. However, an obvious enhancement to the
-*.stodo-shell* feature is to pass in the entire list of attachments for
-the target item as command-line arguments.

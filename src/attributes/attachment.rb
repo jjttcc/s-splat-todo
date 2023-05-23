@@ -57,14 +57,18 @@ class Attachment
   # If 'editing', the external command will be one designated for the
   # purpose of editing the attachment; otherwise, a command designated
   # for viewing will be invoked on the attachment.
+  # If 'self' represents a directory and if 'attachment_list' is not empty,
+  # the 'MediaHandler.execute_shell' method is invoked on 'attachment_list'.
   pre '"editing" eixsts' do |editing| ! editing.nil? end
   pre 'attchs valid' do |e, attchs| ! attchs.nil? && attchs.is_a?(Array) end
   def process editing, attachment_list
     handler = MediaHandler.new path
-    if editing then
-      handler.edit
-    else
-      handler.view
+    if ! handler.suppress_actions? then
+      if editing then
+        handler.edit
+      else
+        handler.view
+      end
     end
     if is_directory? then
       handler.execute_shell attachment_list

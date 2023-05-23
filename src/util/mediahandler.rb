@@ -15,6 +15,19 @@ class MediaHandler
 
   attr_reader :path, :config
 
+  ###  Status report
+
+  # Has the user indicated that attachment actions should be suppressed for
+  # self.path (via the existence of the 'STODO_SUPRESSION_FILE' file)?
+  def suppress_actions?
+    if File.directory?(path) then
+      dir_path = path
+    else
+      dir_path = File.expand_path('..', path)   # (parent directory)
+    end
+    config.suppression_file_exists?(dir_path)
+  end
+
   ###  Basic operations
 
   # Invoke the appropriate command, cmd, to edit the file at self.path.

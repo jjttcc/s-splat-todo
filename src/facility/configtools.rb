@@ -108,6 +108,8 @@ https://stackoverflow.com/questions/1386291/git-git-dir-not-working-as-expected
   CONFIG_FILE_PATH = self.constructed_path([CONFIG_DIR_PATH, 'config'])
   # Name of executable "stodo shell" file:
   STODO_SHELL_FILE_NAME = '.stodo-shell'
+  # File whose existence signifies suppression of "proca" actions:
+  STODO_SUPRESSION_FILE = '.stodo-suppress-actions'
   # git-related settings:
   DEFAUT_GIT_DIR   = 'git'
   # The standard ".git" repository directory:
@@ -143,6 +145,18 @@ https://stackoverflow.com/questions/1386291/git-git-dir-not-working-as-expected
     if ! File.file?(result) then
       result = nil
     end
+    result
+  end
+
+  # Does a stodo "action-suppression" file (STODO_SUPRESSION_FILE) exist
+  # within the directory specified by 'path'?
+  # If 'path' does not exist or cannot be read, the result is 'false'.
+  pre 'path is absolute' do |path|
+    ! path.nil? && path.is_a?(String) && path[0] == "/"
+  end
+  def suppression_file_exists?(path)
+    suppress_file = File.join(path, STODO_SUPRESSION_FILE)
+    result = File.exist?(suppress_file)
     result
   end
 
