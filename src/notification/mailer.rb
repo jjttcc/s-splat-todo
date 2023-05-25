@@ -9,8 +9,12 @@ class Mailer
 
   def send_message email
     subject, addresses, body = email.subject, email.to_addrs, email.body
-    command = email_command(subject, addresses)
-    exec_cmd command, body
+    if ! templated_email_command.nil? && ! templated_email_command.empty? then
+      command = email_command(subject, addresses)
+      exec_cmd command, body
+    else
+      $log.warn "'#{Configuration::EMAIL_TEMPLATE_TAG}' not set"
+    end
   end
 
   private

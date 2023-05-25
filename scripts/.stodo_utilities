@@ -66,6 +66,41 @@ alias curhdl='echo $STODO_HDL'
 alias comphdl='comp $STODO_HDL'
 alias sts='st set'
 
+### convenience functions
+
+print_alarm_usage() {
+    local msg1="Usage: alarm <handle> <final-time> [<st-add-options>]\n"
+    echo -e $msg1 >&2
+    echo '<final-time>:     [<stodo-date>,]<stodo-time>' >&2
+}
+
+# Set an alarm at the specified time.
+# Usage:
+#   alarm <handle> <final-time> [<st-add-options>]
+#
+# <handle> specifies the handle of the "alarm" item.
+# <final-time> is the actual, "final" <date-time> of the alarm.
+# <st-add-options> are the standard options to "stodo add". Run:
+#      stodo -h add
+#    to display valid options.
+# Note: <st-add-options> can specify reminders. (See 'stodo -h add'.)
+#
+# Format:
+#   <date-time>     [<date-string>,]<time-string>
+#   <date-string>   "date specification - one of many common date formats"
+#   <time-string>   "time specification - one of many common time formats"
+alarm() {
+    if [ $# -lt 2 ]; then
+        print_alarm_usage
+        return 1
+    fi
+    declare -a stodo_args
+    local handle=$1; shift
+    local dttime="$1"; shift
+
+    st add event -h $handle -ti "$dttime" "$@"
+}
+
 ### s*todo functions
 
 # list all item due dates, paged
@@ -223,6 +258,7 @@ tempa() {
         -pr 2 -t $hndl "$@"
 }
 
+# List of user-focused convenience commands
 stodoals='due sh[o]rt summ comp rem rema chi hnd seth del shlp stree roots'
 stodoals="$stodoals temp sinit sstat temp[mtpa] sus can fin res"
 stodoals="$stodoals ctree todcor todnew newt newa newm newp hndls hre"
@@ -683,6 +719,8 @@ todo-new() {
 }
 
 #### Miscellaneous convenience aliases
+
+# List available convenience commands:
 alias stal="echo $stodoals|fmt"
 # Force output of 'stal' into one column:
 alias stalc='rows-to-column stal'

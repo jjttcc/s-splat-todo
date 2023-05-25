@@ -9,16 +9,24 @@
 s\*todo is yet another to-do application (implemented in ruby, for those
 who care).  Its current features include, but are not limited to:
 
-  * Create entries (called *item*s) for tasks, memos, appointments, and projects.
+  * Create entries (called *item*s) for tasks, memos, appointments,
+    and projects.
   * Configure time-based notifications/reminders (currently only via email)
     for *item*s.
+<!---
+!!!!to-do: Get this working again and put the list item back in:
   * Add a google calendar entry (via gcalcli) for an *item* - e.g., date/time
     of an appointment or due-date for a task.
+-->
   * Change the status of an *item*: in-progress, suspended, completed, or
     canceled.
   * List pending *item*s, sorted by due date.
-  * Edit *item*s.
-  * Delete *item*s.
+  * Editing of *item*s with and editor or from the command line.
+  * Searching *item*s - by description, handle, or title.
+  * Version control of *item*s with *git*.
+  * Processing of file attachments.
+  * *item* hierarchies for organization/classification.
+  * *references* to other *item*s.
 
 s\*todo currently only runs on Linux systems, although it would probably be
 straightforward to port it to UNIX, including macOS.
@@ -33,15 +41,25 @@ this section.]
 
 ### Required dependencies
 
+#### Ruby dependencies
+
+  * ruby\_contracts
+  * activesupport
+  * debug
+  * byebug
+  * awesome\_print
+  * git
+
+#### Non-Ruby dependencies
+
   * perl 5.x
   * Modern::Perl module
-  * ruby\_contracts (e.g.: gem install ruby\_contracts)
-  * activesupport   (e.g.: gem install activesupport)
-  * debug           (e.g.: gem install debug)
-  * byebug          (e.g.: gem install byebug)
-  * awesome\_print  (e.g.: gem install awesome\_print)
+
 
 ### Configuration
+
+Some manual setup is currently required. This may be automated in the
+future.
 
 #### 'config' file
 
@@ -76,7 +94,31 @@ $HOME/.bash\_profile
 in the case in which the main stodo directory is:  
 $HOME/applications/stodo/src
 
-#### Required (for now) manual setup
+#### Configuring your email service
+
+##### Choose an email client and configure it to send emails
+
+If you don't already have an email client configured to send emails to
+recipients on the internet, you will need to choose a client (such as
+*elm* or *mutt*), make sure it is intalled on your system, and configure
+it to send emails from the computer on which you will run *stodo*.
+
+##### config file: *emailtemplate* setting
+
+The *emailtemplate* value needs to be set in the *config* file, according
+to the expected command-line format of your chosen email client - e.g.:  
+> `emailtemplate = mutt -s <subject> <addrs>`  
+
+This configuration for *mutt* tells *stodo* where to place the *subject*
+and email-address arguments when invoking *mutt* to send email. You will
+need to adapt this setting to what your email command-line client expects,
+if it is different. If you don't want to use email, or want to configure it
+at a later time, you can disable email by deleting this setting (or
+commenting it out by Inserting a '#' at the beginning of that line) or
+simply setting it to no value - i.e.:  
+> `emailtemplate =`
+
+#### Manual setup
 
 Create the 'data', 'specs', and 'processed\_specs' directories, based on the
 value configured for 'datapath' and 'specpath' in your 'config' file -
@@ -92,9 +134,17 @@ And, for example, if specpath is set to /home/user/.stodo/specs then do:
 Make sure that the 'userpath' directory (specified in the 'config' file)
 exists - e.g.:
 
-   mkdir /home/user/.stodo/user
+`   mkdir /home/user/.stodo/user`
 
-#### Required (for now) - stubbing of gcalcli
+Finally, copy the ***stodo*** script in the *stodo* *src* directory to
+a location that is in your $PATH - for example, $HOME/bin or
+/usr/local/bin. For example, if you have set the STODO_PATH variable,
+as described above and you want ***stodo*** script to reside in your
+home *bin* directory, you can do this:
+
+`   cp $STODO_PATH/stodo ~/bin`
+
+#### Stubbing of gcalcli
 
 Until I get gcalcli working with s\*todo again, it will need to be stubbed -
 that is, an empty, executable 'gcalcli' file will need to be created and
@@ -107,13 +157,29 @@ configured in the 'config' file.  The following steps are needed:
   `touch /home/user/bin/gcalcli`  
   `chmod +x /home/user/bin/gcalcli`
 
+#### Run *bundle* to install the dependencies specified in the Gemfile
+
+In the directory where the *Gemfile* resides, execute:  
+
+> `gem install bundler`  
+> `bundle install`
+
+#### Install the perl-library dependencies
+
+install *cpan* - e.g.:  
+> `sudo dnf install cpan`  
+or:  
+> `sudo apt-get install cpan`
+
+Then install *Modern::Perl* and *Date::Manip*
+> `cpan Modern::Perl`  
+> `cpan Date::Manip`
 
 ## How to use *stodo*
 
 ### Usage
 
 Run s\*todo to obtain a basic usage message - i.e.:
-
     Usage: stodo <command>
 
     commands:
@@ -128,7 +194,7 @@ Run s\*todo to obtain a basic usage message - i.e.:
       chhandle <h> <nh>  change handle of the item with handle <h> to <nh>
       change <h>         change attribute(s) of item with handle <h>
       add                add a new item
-      del <h>...         delete items with handles <h>, ...
+      del                delete the specified items
       clear_d <h>...     clear descendants of items with handle specs <h>, ...
       remove_d <h> <dh>  find descendant (handle <dh>) of ancestor (handle <h>)
                          and delete it
@@ -136,7 +202,8 @@ Run s\*todo to obtain a basic usage message - i.e.:
       stat <x> <h>...    change status of handles <h>, ... to state-change <x>
       temp [<type> ...]  output a to-do item Template (for target type <type>)
       backup [opts]      back up data files
-      proca <h>...       Process attachments for items with handles <h>...
+      proca <h>...       process attachments for items with handles <h>...
+      git-<cmd>          perform the specified 'git' operation: <cmd>
       version            print Version number and exit
 
 ### Attachments
