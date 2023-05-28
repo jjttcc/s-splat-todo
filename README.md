@@ -13,7 +13,7 @@ https://github.com/Ircam-WAM/Mezzo
 
 ## Introduction
 
-s\*todo is a to-do application. It is solely command-line-based[^1].
+s\*todo is a to-do application. It is solely command-line-based[^fn1].
 Its current features include:
 
   * Create entries (called *item*s) for tasks, memos, appointments,
@@ -345,6 +345,6 @@ flexibility and extensibility intended for the application itself.
 
 
 ## Notes
-[^1] Adding a web interface to *stodo* is probably doable, but it would take
+[^fn1] Adding a web interface to *stodo* is probably doable, but it would take
 a good deal of effort and time, the latter of which I appear not to have
 enough of these days.
