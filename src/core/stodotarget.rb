@@ -1057,7 +1057,12 @@ class STodoTarget
   # Set the fields of `calentry' from self's current state.
   def set_cal_fields calentry
     calentry.title = title
-    calentry.description = description + description_appendix
+    if ! description.nil? then
+      calentry.description = description
+    else
+      calentry.description = ""
+    end
+    calentry.description += description_appendix
   end
 
   # Additional information, if any, to add to the description

@@ -16,7 +16,7 @@ emailtemplate = mutt -s <subject> <addrs>
 # To use a user name other than your UNIX login name, edit/uncomment this:
 #user = mymyselfandi
 # The path of the gcalcli script:
-calendarcmd = /home/mylogin/lib/python2/bin/gcalcli
+#calendarcmd = /home/mylogin/lib/python2/bin/gcalcli
 # prefix to use for categories in some reports:
 categoryprefix = cat-
 # To specify no category prefix, uncomment this line:

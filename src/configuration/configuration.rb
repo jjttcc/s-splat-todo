@@ -147,7 +147,7 @@ class Configuration
   def set_calendar_tool
     calcmd_setting = settings[CALENDAR_COMMAND_TAG]
     if ! calcmd_setting.nil? && ! calcmd_setting.empty? then
-      @calendar_tool = settings[CALENDAR_COMMAND_TAG]
+      @calendar_tool = calcmd_setting
     else
       @calendar_tool = nil
     end
