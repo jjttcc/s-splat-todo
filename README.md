@@ -341,29 +341,26 @@ headers and aliases, to glean what could be useful for you.
 
 ## Name
 
-What does the name s\*todo (or, alternatively, s-todo or \*s\*todo) mean?
-Obviously, the "todo" part stands for "to-do", as in "to-do list".  
-s (or s\*, or \*s\*, for that matter) can stand for:
+What does *s* in s\*todo (or *stodo*) stand for?
+Well, it stands for whatever you want it to stand for, since *stodo* is
+open source and is, if you use it, essentially, *your* software.
+So you can think of the *s* as meaning any of:
 
-  - *s*cut work
-  - *s*ervices
-  - *s*hit
-  - *s*teps
-  - *s*tudies
-  - *s*tuff
-  - *s*weating
-  - task*s*
-  - thing*s*
-  - job*s*
+  - ***s***tuff
+  - ***s***teps
+  - ***s***tudies
+  - ***s***hit
+  - ***s***weating
 
-In other words, s\*todo (or s-todo or \*s\*todo) can stand for whatever you
-feel needs to be done - i.e., ***"my-important-items" to do***.  These items
-can be tasks, projects, jobs, meetings, events scheduled for a particular
-time, as well as just pieces of information (in \*s\*todo called "memos" or
-"notes") that you don't want to forget and, optionally, want to be reminded
-of occasionally.  The flexibility of the name is meant to symbolize the
-flexibility and extensibility intended for the application itself.
+And even, if you like:
 
+  - task***s***
+  - thing***s***
+  - job***s***
+
+Or whatever word you would like to use for work that, whether truly
+important or not, needs to be done - either right away, or at some point
+before *too much* time has passed.
 
 ## Notes
 [1] Adding a web interface to *stodo* is probably doable, but it would take
@@ -374,16 +371,17 @@ default 'gem' and 'bundler'. If you run into problems as well on your
 distribution and don't want to troubleshoot them, you can do what I did
 in my test install and switch to using *rvm*. If you do this, simply
 follow the instructions at:  
-https://rvm.io/rvm/install
-I had problems using the *--ruby* option in installing the stable version
+https://rvm.io/rvm/install  
+I had problems using the *--ruby* option while installing the stable version
 of *rvm*, so I recommend, as I did, omit that option:  
 
 `\curl -sSL https://get.rvm.io | bash -s stable`  
 
 Then activate the environment set up by the *rvm* install (e.g., by logging
-off and then back on). And then you might want to install ruby to
-bypass the system ruby, e.g.:  
+off and then back on). And then you can install ruby (the latest or
+whatever version you prefer) to override the system ruby, e.g.:  
 `rvm install 3.2.2`  
+(See *https://rvm.io/rubies/installing*)
 
 After that you should be able to remove the lock file and run
 `bundle install`:  

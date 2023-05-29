@@ -51,7 +51,7 @@ class Configuration
   # The "global" git-repository object
   attr_reader :stodo_git
 
-  VERSION =  '1.0.105'
+  VERSION =  '1.0.106'
   PROGNAME = 'stodo'
 
   # stodo version identifier
