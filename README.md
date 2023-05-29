@@ -88,29 +88,25 @@ pretty straightforward to port it to other UNIXes, including macOS.
   * perl 5.x
   * Modern::Perl module
 
-
-### Configuration
+### Installation and Configuration
 
 Some manual setup is currently required. This may be automated in the
 future, depending on how many requests I get for this.
 
-#### 'config' file
+#### Clone s\*todo and install the main *stodo* script
 
-Create a file named 'config' and either place it in
-$HOME/.config/stodo/ or set the environment variable STODO\_CONFIG\_PATH  
-(e.g., by adding:  
-`export STODO_CONFIG_PATH=<your-preferred-path>`  
-to your $HOME/.bash\_profile file) to the path you'd like to use and
-put the 'config' file in that directory.
-(There is an example config file in &lt;stodopath&gt;/doc/config, where
-&lt;stodopath&gt; is the location in which you installed the stodo source
-code tree. You can copy this file to the appropriate place and edit it
-to fit your requirements and system.)
+First, clone the *s\*todo* repository:
 
-Ensure that the 'userpath' setting in the 'config' file is set to your
-preferred location - e.g.:
+`git clone https://github.com/jjttcc/s-splat-todo`
 
-userpath = /home/user/.stodo/user
+cd to the cloned directory:
+
+`cd ./s-splat-todo/`
+
+Copy the *stodo* script to a directory that is in your $PATH, such as
+$HOME/bin:
+
+`cp src/stodo $HOME/bin/`
 
 #### STODO\_PATH environment variable
 
@@ -125,26 +121,50 @@ in:
 $HOME/.bash\_profile
 
 in the case in which the main stodo directory is:  
-$HOME/applications/stodo/src
+$HOME/applications/stodo
+
+#### 'config' file
+
+Decide where to put the *config* file - You can either place it in
+the default location - $HOME/.config/stodo/ - or set the environment
+variable STODO\_CONFIG\_PATH
+to a location where you intend for the *config* file to reside. Then
+copy the sample config file, doc/config, from the main *stodo* directory
+($STODO_PATH/../) to your chosen location.
+For example, for the default location, from the main *stodo* directory:
+
+`cp doc/config $HOME/.config/stodo`
+
+(Make sure you create this directory if it doesn't yet exist.)
+Next, edit the *config* file to fit your particular environment and
+preferences, as described below.
+
+##### *userpath*
+
+Ensure that the 'userpath' setting in the 'config' file is set to your
+preferred location - e.g.:
+
+userpath = /home/user/.stodo/user
 
 #### Configuring your email service
 
 ##### Choose an email client and configure it to send emails
 
-If you don't already have an email client configured to send emails to
+If you don't already have an email client with a command-line interface
+configured to send emails to
 recipients on the internet, you will need to choose a client (such as
-*elm* or *mutt*), make sure it is intalled on your system, and configure
+*elm* or *mutt*), make sure it is installed on your system, and configure
 it to send emails from the computer on which you will run *stodo*.
 
 ##### config file: *emailtemplate* setting
 
-The *emailtemplate* value needs to be set in the *config* file, according
+The *emailtemplate* value needs to be set in the *config* file according
 to the expected command-line format of your chosen email client - e.g.:  
 > `emailtemplate = mutt -s <subject> <addrs>`  
 
 This configuration for *mutt* tells *stodo* where to place the *subject*
 and email-address arguments when invoking *mutt* to send email. You will
-need to adapt this setting to what your email command-line client expects,
+need to adapt this setting to what your email client expects,
 if it is different. If you don't want to use email, or want to configure it
 at a later time, you can disable email by deleting this setting (or
 commenting it out by Inserting a '#' at the beginning of that line) or
@@ -169,13 +189,13 @@ exists - e.g.:
 
 `   mkdir /home/user/.stodo/user`
 
-Finally, copy the ***stodo*** script in the *stodo* *src* directory to
-a location that is in your $PATH - for example, $HOME/bin or
-/usr/local/bin. For example, if you have set the STODO_PATH variable,
-as described above and you want ***stodo*** script to reside in your
-home *bin* directory, you can do this:
+#### Backup directory
 
-`   cp $STODO_PATH/stodo ~/bin`
+Create a backup directory - e.g.:  
+`mkdir /home2/user/backups/stodo`  
+
+And set the *backuppath* to that path in the *config* file - e.g.:  
+`backuppath = /home2/user/backups/stodo`
 
 #### Disabling of gcalcli
 
@@ -188,9 +208,10 @@ file e.g.:
 
 #### Run *bundle* to install the dependencies specified in the Gemfile
 
-In the directory where the *Gemfile* resides, execute:  
+In the main *stodo* directory, where the *Gemfile* resides, execute[2]:  
 
-> `gem install bundler`  
+> `rm Gemfile.lock`  
+> `gem install bundler  # (if bundler is not already installed)`  
 > `bundle install`
 
 #### Install the perl-library dependencies
@@ -347,4 +368,24 @@ flexibility and extensibility intended for the application itself.
 ## Notes
 [1] Adding a web interface to *stodo* is probably doable, but it would take
 a good deal of effort and time, the latter of which I appear not to have
-enough of these days.
+enough of these days.  
+[2] I ran into problems when running these commands on Fedora 38 with the
+default 'gem' and 'bundler'. If you run into problems as well on your
+distribution and don't want to troubleshoot them, you can do what I did
+in my test install and switch to using *rvm*. If you do this, simply
+follow the instructions at:  
+https://rvm.io/rvm/install
+I had problems using the *--ruby* option in installing the stable version
+of *rvm*, so I recommend, as I did, omit that option:  
+
+`\curl -sSL https://get.rvm.io | bash -s stable`  
+
+Then activate the environment set up by the *rvm* install (e.g., by logging
+off and then back on). And then you might want to install ruby to
+bypass the system ruby, e.g.:  
+`rvm install 3.2.2`  
+
+After that you should be able to remove the lock file and run
+`bundle install`:  
+> `rm Gemfile.lock`  
+> `bundle install`  

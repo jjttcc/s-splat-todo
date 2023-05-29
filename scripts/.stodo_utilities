@@ -743,10 +743,24 @@ alias vtod=todview
 # tabbed to-do view - or 'view-tabbed-todos':
 alias ttov=vttod
 alias todnew=todo-new
+## Using an editor, create a new:
+#     task:
 alias newt='ST_CMDNAME=newt todnew t'
+#     appointment:
 alias newa='ST_CMDNAME=newa todnew a'
+#     memo:
 alias newm='ST_CMDNAME=newm todnew m'
+#     project:
 alias newp='ST_CMDNAME=newp todnew p'
+## From the command line, add a new (usage: <cmd> <handle> <options):
+#     task:
+alias addt='stodo add task -h'
+#     appointment:
+alias adda='stodo add appointment -h'
+#     memo:
+alias addm='stodo add memo -h'
+#     project:
+alias addp='stodo add project -h'
 alias ctree=comptree
 # Call 'set' on the output of "listpriority 1" - i.e., set to all
 # 1st-priority handles:
