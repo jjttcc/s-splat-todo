@@ -15,7 +15,7 @@ backuppath = /home2/backups/mylogin/stodo,/home3/backups/misc/mylogin/stodo/
 emailtemplate = mutt -s <subject> <addrs>
 # To use a user name other than your UNIX login name, edit/uncomment this:
 #user = mymyselfandi
-# The path of the gcalcli script:
+# The path of the gcalcli script (obsolete):
 #calendarcmd = /home/mylogin/lib/python2/bin/gcalcli
 # prefix to use for categories in some reports:
 categoryprefix = cat-

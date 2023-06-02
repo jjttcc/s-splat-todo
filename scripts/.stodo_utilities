@@ -761,6 +761,11 @@ alias adda='stodo add appointment -h'
 alias addm='stodo add memo -h'
 #     project:
 alias addp='stodo add project -h'
+# change (item with <handle>):
+alias change='stodo change '
+# typo alternative (change item):
+alias changi='stodo change '
+# Complete report, with descendants:
 alias ctree=comptree
 # Call 'set' on the output of "listpriority 1" - i.e., set to all
 # 1st-priority handles:

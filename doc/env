@@ -1,0 +1,12 @@
+export rvm_bin_path='/home/user/.rvm/bin'
+export GEM_HOME='/home/user/.rvm/gems/ruby-3.2.1'
+export MY_RUBY_HOME='/home/user/.rvm/rubies/ruby-3.2.1'
+export RUBY_EXEC=$MY_RUBY_HOME/bin/ruby
+export STODO_PATH='/home3/development/user/projects/s-todo/src'
+export rvm_path='/home/user/.rvm'
+export grc='https://www.grc.com/x/ne.dll?bh0bkyd2'
+export rvm_prefix='/home/user'
+export rvm_version='1.29.12 (latest)'
+export HOME='/home/user'
+export GEM_PATH='/home/user/.rvm/gems/ruby-3.2.1:/home/user/.rvm/gems/ruby-3.2.1@global'
+export RUBY_VERSION='ruby-3.2.1'

@@ -197,6 +197,8 @@ Create a backup directory - e.g.:
 And set the *backuppath* to that path in the *config* file - e.g.:  
 `backuppath = /home2/user/backups/stodo`
 
+<!---
+{This section is obsolete: gcalcli is no longer used.}
 #### Disabling of gcalcli
 
 Until I get gcalcli (python command-line interface to google calendar) working
@@ -205,6 +207,7 @@ simply commenting out, or deleting, the *calendarcmd* line in the config
 file e.g.:  
 
 `   #calendarcmd = /home/user/lib/python2/bin/gcalcli`
+-->
 
 #### Run *bundle* to install the dependencies specified in the Gemfile
 
@@ -224,6 +227,32 @@ or:
 Then install *Modern::Perl* and *Date::Manip*
 > `cpan Modern::Perl`  
 > `cpan Date::Manip`
+
+#### Setting up a *crontab* file for notifications and backups
+
+For timely notifications and backups, you'll need to configure a
+job-scheduling daemon such as *cron* to run *stodo* periodically.
+Here is an example crontab entry that I use to run *stodo*
+every 5 minutes to both trigger any pending notifications and look in
+the *specpath* for new or modified *stodo* entries to be processed:
+
+`*/5 * * * * . $HOME/.stodo/env; STODO_PATH=/home/development/user/s-todo/src $HOME/bin/stodo combined >/tmp/stodo-outerr.$$ 2>&1`  
+
+And this is an example crontab entry for executing *stodo*'s *backup*
+feature four times an hour:
+
+`2,17,32,47 * * * * . $HOME/.stodo/env; STODO_PATH=/home/development/user/s-todo/src $HOME/bin/stodo backup >/tmp/stodo-backup-outerr.$$ 2>&1`
+
+You'll need to add similar lines to your crontab file for notifications and
+backups.
+If you use a job-scheduling system other than *cron* you will need to
+configure equivalent settings in that system.
+See the *doc/env* file for an example *env* file (i.e., used in the  
+`. $HOME/.stodo/env`  
+part of both *crontab* entries). A lot of those
+settings, I believe, are obsolete and you won't need; but to save the time
+it would take to figure out which ones are not needed,
+it's probably safe just to leave them in the file.
 
 ## How to use *stodo*
 
