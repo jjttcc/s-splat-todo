@@ -606,7 +606,7 @@ class STodoTarget
       @calendar_ids = spec.calendar_ids.split(SPEC_FIELD_DELIMITER)
     end
     assign_categories spec
-    assign_attachments spec
+    assign_attachments spec, true
     assign_references spec
   end
 

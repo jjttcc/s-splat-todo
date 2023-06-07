@@ -33,5 +33,6 @@ src/util/external-date-examples
 test/config
 test/data
 test/user
+test/attachments
 .set-test-config
 /tools/
