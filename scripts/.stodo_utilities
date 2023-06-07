@@ -3,7 +3,8 @@
 # vim: ts=4 sw=4 expandtab
 
 if [ ! "$stodo_spec_path" ]; then
-    stodo_spec_path=~/.stodo/specs
+    stodo_spec_path=$(stodo settings|awk '/^spec_path/{print $NF}')
+#    stodo_spec_path=~/.stodo/specs
 fi
 # These 3 email addresses should be overridden in $rcfile:
 s_init_addr=default_email@default.org
@@ -258,7 +259,19 @@ tempa() {
         -pr 2 -t $hndl "$@"
 }
 
-# List of user-focused convenience commands
+# Remove all reminders from the specified items.
+# Usage: rmrem handle...
+rmrem() {
+    if [ $# -eq 0 ]; then
+        echo "Usage: rmrem handle..." >&2
+    else
+        for h; do
+            stodo change $h -rem '{none}'
+        done
+    fi
+}
+
+# List of some user-focused convenience commands
 stodoals='due sh[o]rt summ comp rem rema chi hnd seth del shlp stree roots'
 stodoals="$stodoals temp sinit sstat temp[mtpa] sus can fin res"
 stodoals="$stodoals ctree todcor todnew newt newa newm newp hndls hre"
@@ -783,6 +796,7 @@ alias va1=viewallp1
 alias vp1=viewp1
 alias ancpri=ancestors_with_priority
 alias runcmt=run_comment_code
+alias clearrem=rmrem
 
 #### Utilities
 

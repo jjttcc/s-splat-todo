@@ -1,0 +1,44 @@
+#!/bin/env bash
+# stodo user-specific settings, utilities, convenience functions, etc.
+# vim: sw=4 ts=4 expandtab
+
+s_init_addr=my.address@gmail.com
+s_ongoing_addr=my.address@gmail.com
+cal_email=my.address@gmail.com
+tod_editor=gvim
+tod_viewer=gview
+tabbed_viewer='gview -p'
+
+############# non-essential: example convenience facilities  #############
+
+#### default database
+
+mainstpath=/home/user/.config/stodo
+
+# Switch to the main/default stodo database.
+stmain() {
+    swconf $mainstpath
+}
+
+#### music-database-related
+
+musicstpath=/home/user/.config/stodo/music
+
+# Switch to the "stodo" music database.
+stmusic() {
+    swconf $musicstpath
+}
+
+# "Play" the specified item via "attachment processing".
+ply() {
+    stodo proca "$@" -v
+}
+
+# "grep" for all handles that match "$@" and, if any are found, "play" them
+# via 'ply'.
+plg() {
+    handles=$(hgrep "$@")
+    if [ "$handles" ]; then
+        ply $handles
+    fi
+}

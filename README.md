@@ -30,11 +30,6 @@ Its current features include:
   * Processing of file attachments.
   * *item* hierarchies for organization/classification.
   * *references* to other *item*s.
-<!---
-!!!!to-do: Get this working again and put the list item back in:
-  * Add a google calendar entry (via gcalcli) for an *item* - e.g., date/time
-    of an appointment or due-date for a task.
--->
 
 s\*todo currently only runs on Linux systems, although it might be
 pretty straightforward to port it to other UNIXes, including macOS.
@@ -130,7 +125,7 @@ the default location - $HOME/.config/stodo/ - or set the environment
 variable STODO\_CONFIG\_PATH
 to a location where you intend for the *config* file to reside. Then
 copy the sample config file, doc/config, from the main *stodo* directory
-($STODO_PATH/../) to your chosen location.
+($STODO\_PATH/../) to your chosen location.
 For example, for the default location, from the main *stodo* directory:
 
 `cp doc/config $HOME/.config/stodo`
@@ -313,7 +308,7 @@ example config file, *doc/config*, for some example settings.)
 
 When the appropriate executable (i.e., *viewer* or *editor*) is invoked, it
 is started as a background process with the environment variable
-***STODO_HDL*** set to the handle of the item whose attachment is being
+***STODO\_HDL*** set to the handle of the item whose attachment is being
 processed in order to make the handle available for use by the invoked
 executable.
 
@@ -352,21 +347,25 @@ other actions in that directory, or, if there is no
 *.stodo-shell* file, to simply suppress all *proca* actions that would
 normally occur on attachment files that reside in that directory.
 
-### .stodo_utilities
+### .stodo\_utilities
 
-The file *scripts/.stodo_utilities* is a bash script file that defines
+The file *scripts/.stodo\_utilities* is a bash script file that defines
 several aliases and convenience functions. You'll likely find some or many
 of these facilities useful. An easy way to use the script is to first copy
 it to your $HOME directory and then source it
 from your user profile file - for example, for *bash* and other *sh-based*
 shells, you can insert this line at an appropriate place in your
-profile file (*~/.bash_profile*, in the case of bash):
+profile file (*~/.bash\_profile*, in the case of bash):
 
 `. ~/.stodo_utilities`
 
-Unfortunately, there is no separate documentation for *.stodo_utilities*.
-You'll need to look through the file, especially the comments for function
-headers and aliases, to glean what could be useful for you.
+You can find documentation on the *.stodo\_utilities* file in:  
+`scripts/README.md`  
+
+Note that currently this document is small and very incomplete, so, if
+you're so inclined, you might want to take a look at the
+*.stodo\_utilities* file to get a sense of what's available and what
+facilities might be useful to you.
 
 ## Name
 
