@@ -137,7 +137,7 @@ class ReportUtil
           elsif DESCR_EXPRS =~ /#{key}/ then
             set_description_exprs(value)
           else
-            $stderr.puts "Warning: invalid type label: #{p}"
+            $log.error "Warning: invalid type label: #{p}"
           end
         end
       end

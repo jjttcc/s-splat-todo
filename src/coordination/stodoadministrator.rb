@@ -67,7 +67,6 @@ class STodoAdministrator
       if ! tmp_path.empty? then
         msg = "backup file:\n#{tmp_path}"
         $log.warn msg
-        puts msg
       end
     else
       config.data_manager.backup_database(config.backup_paths)
