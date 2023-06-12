@@ -40,6 +40,7 @@ mainhelp() {
     echo -e "as a new item with handle <nh>"
     echo -e "  stat <x> <h>...${gap}change status of handles <h>, ... to \c"
     echo -e "state-change <x>"
+    echo -e "  set[tings]     ${gap}show current configuration/Settings"
     echo -e "  temp [<type> ...]  output a to-do item Template \c"
     echo -e "(for target type <type>)"
     echo -e "  backup [opts] ${gap} back up data files"

@@ -17,7 +17,8 @@ module SpecTools
   SPEC_FIELD_DELIMITER = /,\s*/
   SPEC_FIELD_JOINER = ','
   REMINDER_DELIMITER = /;\s*/
-  DEFAULT_LOG_PATH = "/tmp/stodo-debug-#{$$}"
+  LOG_BASE = "stodo-debug-#{$$}"
+  DEFAULT_LOG_PATH = "/tmp/" + LOG_BASE
 
   # constants - s*todo-target-types and aliases:
   TASK, APPOINTMENT, NOTE, PROJECT, CORRECTION, EDIT = 'task', 'appointment',

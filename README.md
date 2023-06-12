@@ -183,7 +183,6 @@ Make sure that the 'userpath' directory (specified in the 'config' file)
 exists - e.g.:
 
 `   mkdir /home/user/.stodo/user`
-
 #### Backup directory
 
 Create a backup directory - e.g.:  
@@ -203,6 +202,36 @@ file e.g.:
 
 `   #calendarcmd = /home/user/lib/python2/bin/gcalcli`
 -->
+
+
+#### Configure logging
+
+You'll need to decide what type of log to use and, if you use regular
+file-based logs, where you want the log files to be placed. The *logtype*
+setting specifies what type of logging to use. If you want to use
+file-based logging, simply leave the *logtype* setting commented out (i.e.,
+as it is in *doc/config*) or remove it, since file-based logging is the
+default. Your other choice is using the *syslog* service, which logs to a
+file under */var/log*. I find this can be a good choice, as long as you have
+access to the root account (e.g., via *sudo*) and don't mind using it to
+read the log file, which on Linux will probably be */var/log/messages*.
+
+For file-based logging, set the *logpath* in the config file to specify
+where the log files should reside. For example, if you want the log files
+to live in the */var/tmp* directory:
+
+    # Path of directory in which to create log files:
+    logpath = /var/tmp
+
+If you prefer to use *syslog*:
+
+    # Uncomment this line to log via 'syslog' instead of regular log files:
+    logtype = syslog
+
+If *logtype* is set to *syslog*, the *logpath* will be ignored - no need to
+delete it or comment it out. Of course, if you use file-based logging,
+since *stodo* does not manage the log files, you'll need a way to remove
+old log files - e.g., with a *crontab* entry.
 
 #### Run *bundle* to install the dependencies specified in the Gemfile
 

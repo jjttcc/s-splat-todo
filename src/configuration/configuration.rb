@@ -1,6 +1,7 @@
 require 'ruby_contracts'
 require 'singleton'
 require 'logger'
+require 'syslog/logger'
 require 'fileutils'
 require 'yamlstorebaseddatamanager'
 require 'spectools'
@@ -16,6 +17,8 @@ class Configuration
 
   public
 
+  ###  Access
+
   # user name/id
   attr_reader :user
   # path of the stodo specification files
@@ -29,6 +32,10 @@ class Configuration
   attr_reader :user_path
   # path to the stodo git directory
   attr_reader :git_path
+  # path in which log files are to be placed
+  attr_reader :log_path
+  # type of device to use for logging
+  attr_reader :log_type
   # path to the git executable (e.g.: /bin/git)
   attr_reader :git_executable
   # default/backup email address
@@ -87,9 +94,16 @@ class Configuration
   end
 
   if ENV[ST_LOG_PATH] then
-    LOGPATH = ENV[ST_LOG_PATH] + File::SEPARATOR + "stodo-log-#{$$}"
+    LOGPATH = ENV[ST_LOG_PATH] + File::SEPARATOR + LOG_BASE
   else
     LOGPATH = DEFAULT_LOG_PATH
+  end
+
+  ###  Status report
+
+  # Are assertions - design by contract (DBC) - enabled?
+  def assertions_enabled?
+    ENV['ENABLE_ASSERTION']
   end
 
   private
@@ -103,6 +117,7 @@ class Configuration
     setup_config_path
     settings = config_file_settings
     set_config_vars settings
+    create_and_initialize_log
     set_external_media_tools settings
     set_internal_vars
     @test_run = ENV[STTESTRUN] != nil
@@ -125,6 +140,12 @@ class Configuration
     @data_path = settings[DATA_PATH_TAG]
     @user_path = settings[USER_PATH_TAG]
     @git_path = settings[GIT_PATH_TAG]
+    @log_path = nil
+    lp = settings[LOG_PATH_TAG]
+    if lp && ! lp.empty? then
+      @log_path = lp + File::SEPARATOR + LOG_BASE
+    end
+    @log_type = settings[LOG_TYPE_TAG]
     if @git_path.nil? then
       @git_path = File.join(data_path, DEFAUT_GIT_DIR)
     end
@@ -287,15 +308,29 @@ class Configuration
     result
   end
 
-  begin
-    $log = Logger.new(LOGPATH)
-  rescue Exception => e
-    raise "Creation of log file (#{LOGPATH}} failed: #{e}"
+  # Create the global $log object.
+  def create_and_initialize_log
+    begin
+      final_path = ""
+      if log_type == SYSLOG_TYPE then
+        $log = Syslog::Logger.new('stodo')
+      else
+        if log_path && ! log_path.empty? then
+          final_path = log_path
+        else
+          final_path = LOGPATH
+        end
+        $log = Logger.new(final_path)
+      end
+    rescue Exception => e
+      raise "Creation of log file (#{final_path}} failed: #{e}"
+    end
+    $debug = ENV[STDEBUG] != nil
+    if ENV[STLOG_LEVEL] then
+      $log.level = ENV[STLOG_LEVEL]
+    else
+      $log.level = $debug? Logger::DEBUG: Logger::WARN
+    end
   end
-  $debug = ENV[STDEBUG] != nil
-  if ENV[STLOG_LEVEL] then
-    $log.level = ENV[STLOG_LEVEL]
-  else
-    $log.level = $debug? Logger::DEBUG: Logger::WARN
-  end
+
 end
