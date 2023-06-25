@@ -117,7 +117,6 @@ class Configuration
     setup_config_path
     settings = config_file_settings
     set_config_vars settings
-    create_and_initialize_log
     set_external_media_tools settings
     set_internal_vars
     @test_run = ENV[STTESTRUN] != nil
@@ -146,6 +145,8 @@ class Configuration
       @log_path = lp + File::SEPARATOR + LOG_BASE
     end
     @log_type = settings[LOG_TYPE_TAG]
+    # (Initialize the log as soon as possible.)
+    create_and_initialize_log
     if @git_path.nil? then
       @git_path = File.join(data_path, DEFAUT_GIT_DIR)
     end
