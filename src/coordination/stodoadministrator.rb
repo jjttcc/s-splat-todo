@@ -38,6 +38,7 @@ class STodoAdministrator
       'backup' => :perform_data_backup,
       'version' => :print_version,
       'settings' => :print_settings,
+      'export' => :export,
     }
   end
 
@@ -71,6 +72,26 @@ class STodoAdministrator
     else
       config.data_manager.backup_database(config.backup_paths)
     end
+  end
+
+  # Backup the persistent data file.
+  pre 'args != nil' do |args| ! args.nil? end
+  def export args
+    config = Configuration.instance
+    if ! args.empty? then
+      if args.count < 2 then
+        $log.warn "Need at least 2 arguments (got: '#{args[0]}')"
+      else
+        handles = args[0 .. -2]
+        path = args.last
+      end
+    else
+      $log.warn "Missing arguments to 'export' command."
+    end
+   ['project', 'memorandum', 'scheduledevent'].each do |basename|
+     require basename
+   end
+    config.data_manager.export(handles, path, true)
   end
 
   # Print application version information.

@@ -50,6 +50,30 @@ class YamlStoreBasedDataManager
     end
   end
 
+  # Export the items with the specified 'handles' to the file-path
+  # indicated by 'path'. If 'recursive', include all descendants of the
+  # specified items.
+  pre 'handles' do |handles| ! handles.nil? end
+  pre 'path valid' do |h, p| ! p.nil? && ! p.empty? end
+  def export(handles, path, recursive = false)
+    all_targets = restored_targets
+    items = {}
+    handles.each do |h|
+      i = all_targets[h]
+      if i then
+        items[h] = i
+        if recursive then
+          i.descendants.each do |d|
+            items[d.handle] = d
+          end
+        end
+      else
+        $log.warn "#{h}: invalid handle"
+      end
+    end
+    perform_backup([path], nil, items)
+  end
+
   # Perform a temporary backup of the database, with an ad hoc, unique file
   # name. If the backup succeeds, make the path of the file used for the
   # backup available as:
@@ -88,9 +112,11 @@ class YamlStoreBasedDataManager
     @store.ultra_safe = true
   end
 
-  # Perform a backup of @store to each file in 'destinations' if they are
-  # out of date with respect to last_source_update. If last_source_update
-  # is nil, do the backup unconditionally.
+  # Perform a backup of 'source_targets' to each file in 'destinations' if
+  # they are out of date with respect to last_source_update. If
+  # last_source_update is nil, do the backup unconditionally.
+  # 'source_targets' is a hash table of items whose keys are the respective
+  # item handles.
   # If 'dests_are_directories', then assume each path in
   # 'destinations' is a directory and append
   # 'STORED_OBJECTS_FILENAME' to produce the database filename;

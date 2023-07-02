@@ -211,8 +211,10 @@ class Configuration
   def config_file_settings
     result = {}
     cfgfile = opened_config_file 'r'
-    # (".select ..." to filter out "# <comment>...":)
-    lines = cfgfile.read.split("\n").select do |l| l !~ /^\s*#/ end
+    # (".select ..." to filter out empty- and "# <comment>..."-lines:)
+    lines = cfgfile.read.split("\n").select do |l|
+      ! l.empty? && l !~ /^\s*#/
+    end
     result = Hash[lines.map { |l| l.split(/\s*=\s*/, 2) }]
     result
   end

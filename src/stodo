@@ -180,6 +180,11 @@ do_backup() {
   run $admin backup $*
 }
 
+do_export() {
+  checkpath $admin
+  run $admin export $*
+}
+
 print_version() {
   checkpath $admin
   run $admin version
@@ -350,18 +355,22 @@ git_help() {
 
 admin_help() {
   local gap="    "
-  local lgap="$gap${gap}${gap}${gap}${gap} "
+  local lgap="$gap${gap}${gap}${gap}${gap}${gap}  "
+  local mgap="${gap}${gap} "
   local desc_clean_help=\
-"for each child, c, of item, i (whose handle is <h>) if"\
-"\n${lgap}c.parent_handle "\
-"is either blank or identifies an item\n${lgap}other than i, remove c as "\
-"one of i's children. Perform\n${lgap}this same operation recursively on all "\
-"of i's children."
+"for each child, c, of item, i (whose handle is <h>)"\
+"\n${lgap}if c.parent_handle "\
+"is either blank or identifies an\n${lgap}item other than i, remove c as "\
+"one of i's children.\n${lgap}Perform this same operation recursively on all "\
+"of\n${lgap}i's children"
   echo -e "stodo administration commands:"
-  echo -e "  settings           show configured settings"
-  echo -e "  readopt <h>... ${gap}re-\"adopt\" emancipated descendants \c"
+  echo -e "  settings                show configured Settings"
+  echo -e "  readopt <h>... ${mgap}re-\"adopt\" emancipated descendants \c"
   echo -e "of the items with\n${lgap}handles <h>..."
-  echo -e "  desc_clean <h>...  $desc_clean_help"
+  echo -e "  desc_clean <h>...       $desc_clean_help"
+  echo -e "  exp[ort] <h>... <path>  Export the specified items (with \c"
+  echo -e "handles <h>...),\n${lgap}as well as the items' descendants, to \c"
+  echo -e "a file\n${lgap}named 'stodo_data.store', in the specified <path>"
 }
 
 backup_help() {
@@ -382,7 +391,6 @@ change_help() {
   echo -e "  -c <cat>... $s replace Categories with <cat[,<cat>...]>"
   echo -e "  -e <email> $s  replace the ongoing Email address with <email>"
   echo -e "  -ti <datetime>       replace the <datetime> with date&time"
-#!!!  echo -e "  -ci <id>... $s replace the Calendar Ids with <id>..."
   echo -e "  -l <loc> $s    replace the Location (appointment only) with <loc>"
   echo -e "  -du <dur> $s   replace the Duration (appointment only) with <dur>"
   echo -e "  -pr <priority>       replace the Priority with <priority>"
@@ -541,6 +549,10 @@ case $1 in
   desc_cl*)
     shift;
     do_edit remove_false_children $*
+    ;;
+  exp*)
+    shift;
+    do_export $*
     ;;
   v*|-v)
     print_version
