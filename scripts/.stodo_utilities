@@ -66,6 +66,11 @@ alias pra='stodo proca'
 alias curhdl='echo $STODO_HDL'
 alias comphdl='comp $STODO_HDL'
 alias sts='st set'
+### "status" aliases - display handle of all items with stat:<s>:
+alias stati='st rep hand stat:in-prog'
+alias stats='st rep hand stat:susp'
+alias statco='st rep hand stat:compl'
+alias statca='st rep hand stat:canceled'
 
 ### convenience functions
 
