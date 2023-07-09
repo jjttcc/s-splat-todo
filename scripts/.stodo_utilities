@@ -1061,6 +1061,22 @@ swconf() {
     return 0
 }
 
+# Save current $STODO_CONFIG_PATH value - in $OLD_STODO_CONFIG_PATH -
+# to allow temporarily changing STODO_CONFIG_PATH and then, later,
+# going back to the old config path by calling 'restore_old_config'.
+save_config() {
+    export OLD_STODO_CONFIG_PATH=$STODO_CONFIG_PATH
+}
+
+# restore STODO_CONFIG_PATH to its previously saved value (i.e., to
+# $OLD_STODO_CONFIG_PATH).
+restore_old_config() {
+    STODO_CONFIG_PATH=$OLD_STODO_CONFIG_PATH
+}
+
+alias svcfg=save_config
+alias rescfg=restore_old_config
+
 # Unset STODO_CONFIG_PATH variable.
 unswconf() {
     unset STODO_CONFIG_PATH
