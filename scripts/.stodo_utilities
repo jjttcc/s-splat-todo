@@ -2,10 +2,14 @@
 # Utilities - functions, aliases, etc. - for 'stodo'
 # vim: ts=4 sw=4 expandtab
 
-if [ ! "$stodo_spec_path" ]; then
-    stodo_spec_path=$(stodo settings|awk '/^spec_path/{print $NF}')
-#    stodo_spec_path=~/.stodo/specs
-fi
+# Set $stodo_spec_path if it is not set.
+set_spec_path() {
+    if [ ! "$stodo_spec_path" ]; then
+        stodo_spec_path=$(stodo settings|awk '/^spec_path/{print $NF}')
+    fi
+}
+
+set_spec_path
 # These 3 email addresses should be overridden in $rcfile:
 s_init_addr=default_email@default.org
 s_ongoing_addr=default_email@default.org
@@ -1072,6 +1076,8 @@ save_config() {
 # $OLD_STODO_CONFIG_PATH).
 restore_old_config() {
     STODO_CONFIG_PATH=$OLD_STODO_CONFIG_PATH
+    stodo_spec_path=
+    set_spec_path
 }
 
 alias svcfg=save_config
