@@ -197,6 +197,26 @@ class STodoTarget
     result = (state == nil) || state.active?
   end
 
+  # Is "self" in progress?
+  def in_progress?
+    self.state.in_progress?
+  end
+
+  # Is "self" suspended?
+  def suspended?
+    self.state.suspended?
+  end
+
+  # Is "self" canceled?
+  def canceled?
+    self.state.canceled?
+  end
+
+  # Is "self" completed?
+  def completed?
+    self.state.completed?
+  end
+
   def can_have_children?
     true
   end
@@ -460,8 +480,18 @@ class STodoTarget
 
   def descendants_report
     tree = TreeNode.new(self)
-    tree.descendants_report do |t|
-      "#{t.handle}, due: #{time_24hour(t.time)}"
+    tree.descendants_report do |d|
+      if d.in_progress? then
+        "#{d.handle}, due: #{time_24hour(d.time)} (#{d.state})"
+      elsif d.completed? then
+        "#{d.handle}, {due: #{time_24hour(d.time)}} (#{d.state})"
+      elsif d.suspended? then
+        "#{d.handle}, (due: #{time_24hour(d.time)}) (#{d.state})"
+      elsif d.canceled? then
+        "#{d.handle}, [due: #{time_24hour(d.time)}] (#{d.state})"
+      else
+        "#{d.handle}, <due: #{time_24hour(d.time)}> (invalid state)"
+      end
     end
   end
 

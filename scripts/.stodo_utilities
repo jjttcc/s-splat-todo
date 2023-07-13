@@ -661,15 +661,16 @@ todo-corrt() {
     return $result
 }
 
-# View the to-do item with the specified handle.
+# View the to-do item(s) with the specified handle(s).
 view-todo() {
     if [ $# -eq 0 ]; then
         return 42
     fi
     local result=0
-    local handle=$1
-    local file=/tmp/$handle.view.$(date "+%Y-%m-%d_%H%M")
-    stodo rep comp $handle > $file
+    local handle1=$1
+    local handles=$*
+    local file=/tmp/$handle1-etc.view.$(date "+%Y-%m-%d_%H%M")
+    stodo rep comp $handles > $file
     view_todo_file $file
     result=$?
     return $result

@@ -14,10 +14,6 @@ class TargetState
 
   ###  Access
 
-  def active?
-    result = value != COMPLETED && value != CANCELED
-  end
-
   def to_s
     result = value
     if value == COMPLETED || value == CANCELED then
@@ -25,6 +21,38 @@ class TargetState
       result += " (#{time_24hour(completion_time)})"
     end
     result
+  end
+
+  ###  Status report
+
+  # Is "self" in progress?
+  def in_progress?
+    @value == IN_PROGRESS
+  end
+
+  # Is "self" suspended?
+  def suspended?
+    @value == SUSPENDED
+  end
+
+  # Is "self" canceled?
+  def canceled?
+    @value == CANCELED
+  end
+
+  # Is "self" completed?
+  def completed?
+    @value == COMPLETED
+  end
+
+  # Is "self" active - i.e., not (COMPLETED or CANCELED)?
+  def active?
+    result = value != COMPLETED && value != CANCELED
+  end
+
+  # Is "self" inactive - i.e., COMPLETED or CANCELED?
+  def inactive?
+    result = value == COMPLETED || value == CANCELED
   end
 
   ## State transitions
