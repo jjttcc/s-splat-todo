@@ -103,7 +103,7 @@ class TemplateOptions
           @type = self.argument_array[i]
         else
           emsg = "Invalid argument: #{self.argument_array[i]}"
-          $log.warn emsg
+          log.warn emsg
           if self.parse_error_is_fatal then
             raise emsg
           end

@@ -67,6 +67,15 @@ module SpecTools
     "Error re handle-change operation for \"<handle>\": "\
     "new handle \"<new_handle>\" is already in use."
 
+  # The global $log object.
+  def log
+    if ! $log then
+      # Force creation of the Configuration singleton and thus the $log:
+      Configuration.instance
+    end
+    $log
+  end
+
   def invalid_parent_handle_msg(handle, parent_handle)
     result = INVALID_PARENT_HANDLE_TEMPLATE.sub(HANDLE_TAG, handle)
     result = result.sub(P_HANDLE_TAG, parent_handle)

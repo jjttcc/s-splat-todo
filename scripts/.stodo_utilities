@@ -111,7 +111,7 @@ alarm() {
     st add event -h $handle -ti "$dttime" "$@"
 }
 
-### s*todo functions
+### s*todo helper/shortcut functions
 
 # list all item due dates, paged
 duep() {
@@ -134,6 +134,16 @@ stree() {
 }
 
 alias chip=stree
+
+# Run 'chi', filtered (chiTerse) such that only the handles are printed.
+chit() {
+    chi "$@"|sed 's@,.*@@'
+}
+
+# Run 'chit', with paging
+chitp() {
+    chit "$@"|pager
+}
 
 ### s*todo git... aliases
 alias sglog='stodo gitlog'

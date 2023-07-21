@@ -16,5 +16,5 @@ srcfiles() {
 
 # Edit source files with gvim.
 edit_src() {
-    gvim -geometry +0+0 -c "set lines=65 | TlistOpen" $(srcfiles)
+    gvim -geometry +0+0 -c "set lines=65|set columns=115|TlistOpen" $(srcfiles)
 }
