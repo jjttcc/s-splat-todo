@@ -17,7 +17,6 @@ class ScheduledEvent < STodoTarget
   end
 
   def final_reminder
-    assert_invariant {invariant}
     if @final_reminder == nil then
       @final_reminder = OneTimeReminder.new(date_time)
     end
@@ -113,12 +112,6 @@ class ScheduledEvent < STodoTarget
     calentry.time = date_time
     calentry.location = location
     calentry.duration = duration
-  end
-
-  ###  class invariant
-
-  def invariant
-    @date_time != nil and super
   end
 
 end
