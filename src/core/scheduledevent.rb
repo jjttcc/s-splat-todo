@@ -17,7 +17,7 @@ class ScheduledEvent < STodoTarget
   end
 
   def final_reminder
-    if @final_reminder == nil then
+    if @final_reminder == nil && date_time != nil then
       @final_reminder = OneTimeReminder.new(date_time)
     end
     @final_reminder

@@ -69,7 +69,7 @@ class STodoManager
     self.existing_targets.values.each do |t|
       t.add_notifier(email)
       self.dirty = false
-      # Pass 'self' to allow t to set 'dirty':
+      # (Pass 'self' to allow t to set 'dirty':)
       t.perform_ongoing_actions(self)
       if dirty then
         changed_items << t

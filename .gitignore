@@ -36,3 +36,4 @@ test/user
 test/attachments
 .set-test-config
 /tools/
+Gemfile.lock

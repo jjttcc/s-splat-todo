@@ -25,13 +25,22 @@ class Mailer
   end
 
   def email_command subj, addrs
-    result = templated_email_command.clone
-    result.sub!(SUBJECT_TEMPLATE_PTRN, "'#{subj}'")
-    addr_str = ""
-    addrs.each do |a| addr_str += "#{a} " end
-    result.sub!(ADDRS_TEMPLATE_PTRN, addr_str)
+    result = []
+    work_array = templated_email_command.split
+    work_array.each do |word|
+      if word.sub!(SUBJECT_TEMPLATE_PTRN, "'#{subj}'") then
+        result << word
+      elsif word =~ ADDRS_TEMPLATE_PTRN then
+        result.concat(addrs)
+      else  # No match, so just append 'word' (command or simple argument):
+        result << word
+      end
+    end
+    result
   end
 
+  # Send the mail using 'mail_cmd' (an array suitable for use in IO.popen,
+  # which is expected to contain the subject) with body: 'body'.
   def exec_cmd mail_cmd, body
     if @configuration.test_run? then
       $log.debug "#{self.class} Pretending to pipe to #{mail_cmd}"
