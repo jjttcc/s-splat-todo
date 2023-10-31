@@ -974,6 +974,8 @@ run_extracted_comment_code() {
     local codefile=$(mktemp /tmp/$handle.code.XXXX)
     local result=0
     local parse_error='error encountered parsing the code' >&2
+
+    cd /var/tmp/ >/dev/null # (Ugly fix for odd git "could not lock config file" bug)
     if comp $handle|awk 'BEGIN { in_code = 0; }
         /^comment:/ {
             in_code = 1
@@ -1022,6 +1024,7 @@ run_extracted_comment_code() {
     else
         ls -lhd $codefile
     fi
+    cd -  >/dev/null        # (Rest of ugly fix - restore old $PWD)
     return $result
 }
 
