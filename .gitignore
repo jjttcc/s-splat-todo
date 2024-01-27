@@ -37,3 +37,4 @@ test/attachments
 .set-test-config
 /tools/
 Gemfile.lock
+scripts/.notes
