@@ -5,8 +5,8 @@
 s_init_addr=my.address@gmail.com
 s_ongoing_addr=my.address@gmail.com
 cal_email=my.address@gmail.com
-tod_editor=gvim
-tod_viewer=gview
+tod_editor='gvim -X'
+tod_viewer='gview -X'
 tabbed_viewer='gview -p'
 
 ############# non-essential: example convenience facilities  #############

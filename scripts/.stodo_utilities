@@ -16,6 +16,7 @@ s_ongoing_addr=default_email@default.org
 cal_email=default_email@default.org
 tod_editor=gvim
 tod_viewer=gview
+editor_opts="-X -geometry +0+0"
 tabbed_viewer='gview -p'
 # (-1 days ago means tomorrow)
 default_date='date --date="-1 days ago" +%Y-%m-%d'
@@ -818,6 +819,13 @@ alias ancpri=ancestors_with_priority
 alias runcmt=run_comment_code
 alias clearrem=rmrem
 
+# Run 'etod' (todo-corr) sequentially on the specified items.
+etods() {
+    for h; do
+        etod $h
+    done
+}
+
 #### Utilities
 
 # The description and handle (only) from the specified handles.
@@ -867,7 +875,8 @@ pgguts() {
 edit_and_install() {
     file=$1
     local result=0
-    $tod_editor -c 'set expandtab' -f $file # (-f: foreground)
+    cd_to_edit_dir
+    $tod_editor $editor_opts -c 'set expandtab' -f $file # (-f: foreground)
     if canceled $file; then
         echo "(Installation of $file has been canceled.)" >&2
         result=1
@@ -887,7 +896,7 @@ view_todo_file() {
     fi
     local file=$1
     local result=0
-    $tod_viewer -c 'set expandtab' $arg $file
+    $tod_viewer $editor_opts -c 'set expandtab' $arg $file
     return $result
 }
 
@@ -952,6 +961,25 @@ pager() {
     fi
     $p
 }
+
+# cd to the "edit directory", where a .vimrc file will be used, if it exists
+# in that directory, to make various "stodo-editing" tools (macros and/or
+# etc.) for the user's convenience. If this "cd" action fails, for whatever
+# reason, do nothing and don't complain (but return non-0).
+cd_to_edit_dir() {
+    local result=0
+    cd $(user_path) >/dev/null 2>&1
+    result=$?
+}
+alias cded=cd_to_edit_dir
+
+# "cd" back to previous directory (cd -).
+cd_back() {
+    local result=0
+    cd - >/dev/null 2>&1
+    result=$?
+}
+alias cdbk=cd_back
 
 #### Utilities - embedded programming
 
@@ -1168,3 +1196,46 @@ is_accessible_dir() {
     fi
     return $result
 }
+
+#### filters extracted from stodo-settings (i.e., "stodo settings")
+
+user_path() {
+    stodo set|awk '/^user_path/{print $NF}'
+}
+alias up=user_path
+
+backup_paths() {
+    stodo set|awk '/^backup_paths/{print $NF}'
+}
+alias bp=backup_paths
+
+config_path() {
+    stodo set|awk '/^config.file.path/{print $NF}'
+}
+alias cfp=config_path
+
+data_path() {
+    stodo set|awk '/^data_path/{print $NF}'
+}
+alias dp=data_path
+
+def_mail() {
+    stodo set|awk '/^default_email/{print $NF}'
+}
+alias dm=def_mail
+
+spec_path() {
+    stodo set|awk '/^spec_path/{print $NF}'
+}
+alias sp=spec_path
+
+user() {
+    stodo set|awk '/^user:/{print $NF}'
+}
+alias u=user
+
+#spec_path:                /home/jtc/.stodo/specs
+#templated_email_command:  mutt -s <subject> <addrs>
+#user:                     jtc
+#user_path:                /home/jtc/.stodo/user
+
