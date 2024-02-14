@@ -885,6 +885,7 @@ edit_and_install() {
             echo "$(date): $file copied to $stodo_spec_path"
         fi
     fi
+    cd_back
     return $result
 }
 
