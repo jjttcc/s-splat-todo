@@ -114,7 +114,6 @@ class Configuration
     ! data_manager.nil? && ! stodo_git.nil?
   end
   def initialize
-    setup_config_path
     settings = config_file_settings
     set_config_vars settings
     set_external_media_tools settings
@@ -148,7 +147,11 @@ class Configuration
     # (Initialize the log as soon as possible.)
     create_and_initialize_log
     if @git_path.nil? then
-      @git_path = File.join(data_path, DEFAUT_GIT_DIR)
+      if ! data_path.nil? then
+        @git_path = File.join(data_path, DEFAUT_GIT_DIR)
+      else
+        $log.warn "data_path is nil"
+      end
     end
     @git_executable = settings[GIT_EXE_PATH_TAG]
     if @git_executable.nil? then
@@ -220,8 +223,12 @@ class Configuration
   end
 
   def opened_config_file mode
+    if ! File.exist? CONFIG_FILE_PATH then
+      msg = "Fatal error: file #{CONFIG_FILE_PATH} does not exist."
+      raise msg
+    end
     begin
-      result = File.open(CONFIG_FILE_PATH, mode)
+        result = File.open(CONFIG_FILE_PATH, mode)
     rescue Exception => e
       raise "Fatal error: file #{CONFIG_FILE_PATH} could not be " +
         "opened for reading [#{e}]"

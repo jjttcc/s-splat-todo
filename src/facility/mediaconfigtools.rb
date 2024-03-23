@@ -44,6 +44,7 @@ module MediaConfigTools
     OPENXML     =  :openxml,
     EXECUTABLE  =  :executable,
     PLAIN_TEXT  =  :plain_text,
+    TEXT_DATA   =  :text_data,
     PDF         =  :pdf,
     VIDEO       =  :video,
     CODE        =  :code,

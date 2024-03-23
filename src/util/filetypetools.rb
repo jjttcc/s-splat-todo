@@ -30,6 +30,11 @@ module FileTypeTools
     PLAIN_TEXT  => [ Regexp.new("text/plain"),
                      Regexp.new("inode/x-empty"),
     ],
+=begin
+# to-do!!!!: finish plugging in "json..."
+    TEXT_DATA  => [ Regexp.new("application/json"),
+    ],
+=end
     PDF         => [ Regexp.new("application/pdf") ],
     ##### [need to fill in remaining video-format exprs] ####
     VIDEO       => [ Regexp.new("video/mp4"), Regexp.new("video/mpeg")
@@ -89,6 +94,9 @@ application/vnd.ms-excel; charset=binary
 application/msword; charset=binary
 application/x-pie-executable; charset=binary
 application/vnd.openxmlformats-officedocument.spreadsheetml.sheet; charset=binary
+
+application/json; charset=us-ascii
+
 text/plain; charset=us-ascii
 application/pdf; charset=binary
 audio/mpeg; charset=binary
