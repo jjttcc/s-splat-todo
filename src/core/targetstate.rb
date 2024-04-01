@@ -17,8 +17,10 @@ class TargetState
   def to_s
     result = value
     if value == COMPLETED || value == CANCELED then
-      label = value == COMPLETED ? 'completed on' : 'canceled on'
-      result += " (#{time_24hour(completion_time)})"
+#!!!! NOT USED, I THINK:
+#!!!! label = value == COMPLETED ? 'completed on' : 'canceled on'
+      result += " (start: #{time_24hour(creation_time)}, "
+      result += " end: #{time_24hour(completion_time)})"
     end
     result
   end
