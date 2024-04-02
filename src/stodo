@@ -269,6 +269,7 @@ report_help() {
   echo -e "  summary $s    summary report for the specified handles"
   echo -e "  complete $s   complete report for the specified handles"
   echo -e "  due $s        pending items with their \"due\" date"
+  echo -e "  duration $s   time duration of the item, in hours"
   echo -e "  remind $s     upcoming (first) reminder"
   echo -e "  remindh $s    upcoming (first) reminder" \
     "(with handle instead of title)"

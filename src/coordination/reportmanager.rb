@@ -28,7 +28,7 @@ class ReportManager
   end
 
   # List the handle for all targets that match 'criteria'.
-  def list_handles(criteria)
+  def list_handles criteria
     if criteria.null_criteria? then
       # (No criteria implies reporting on all targets.)
       targets = targets_for(nil)
@@ -44,14 +44,14 @@ class ReportManager
 
   # List all handles currently in the git repository.
   # ('criteria' is currently not used.)
-  def list_git_handles(criteria)
+  def list_git_handles criteria
     # (Ignore 'criteria' [might never be used].)
     Configuration.instance.stodo_git.list_handles
   end
 
   # Output all log entries for the items/handles specified by 'criteria'
   # currently in the git repository.
-  def show_git_log(criteria)
+  def show_git_log criteria
     handles = nil
     if ! criteria.null_criteria? then
       if criteria.handles_only? then
@@ -67,7 +67,7 @@ class ReportManager
 
   # Obtain the specified version (according to git_commit_id) of the
   # specified items (from criteria) and output their contents to stdout.
-  def show_git_items(criteria)
+  def show_git_items criteria
     commit_id = git_commit_id
     if commit_id.nil? || commit_id.empty? then
       raise "git-ret: #{no_commit_id_msg}"
@@ -85,7 +85,7 @@ class ReportManager
     Configuration.instance.stodo_git.show_git_version(commit_id, handles)
   end
 
-  def show_description(criteria)
+  def show_description criteria
     if criteria.null_criteria? then
       # (No criteria implies reporting on all targets.)
       targets = targets_for(nil)
@@ -101,7 +101,7 @@ class ReportManager
     end
   end
 
-  def show_t_description(criteria)
+  def show_t_description criteria
     if criteria.null_criteria? then
       # (No criteria implies reporting on all targets.)
       targets = targets_for(nil)
@@ -136,7 +136,7 @@ class ReportManager
   end
 
   # Report the handle of the parent of each target that matches 'criteria'.
-  def report_parent(criteria)
+  def report_parent criteria
     targets = targets_for_criteria(criteria)
     verbose = targets.count > 1
     targets.each do |t|
@@ -152,7 +152,7 @@ class ReportManager
   end
 
   # "Process" all attachments for the items specified in 'criteria'.
-  def report_attachments(criteria)
+  def report_attachments criteria
     config = Configuration.instance
     if criteria.null_criteria? then
       # No criteria specified implies retrieval of all items (targets).
@@ -200,6 +200,25 @@ class ReportManager
     end
   end
 
+  # Report the duration of self at this point in time in hours:
+  #   ! completion_time.nil? -> (completion_time - creation_time) / 360
+  #   completion_time.nil?   -> (now - creation_time) / 360
+  def report_duration criteria
+    targets = targets_for_criteria(criteria)
+    fmt_time = lambda do |t| t.strftime("%Y-%m-%d %H:%M") end
+    targets.each do |t|
+      start_time = t.creation_date
+      end_time = t.completion_date
+      if end_time.nil? then
+        end_time = Time.now
+      end
+      print "'#{t.handle}' duration in hours: "
+      printf "%.4f\n", (end_time - start_time) / 3600
+      printf "   (start_time: %s, end_time: %s)\n",
+        fmt_time.call(start_time), fmt_time.call(end_time)
+    end
+  end
+
   # List info about the targets with the specified handles and criteria.
   def report_complete criteria
     if criteria.null_criteria? then
@@ -239,7 +258,7 @@ class ReportManager
   end
 
   # List uncompleted/not-cancelled targets with their due dates.
-  def report_due(criteria)
+  def report_due criteria
     if criteria.null_criteria? then
       # (No criteria implies reporting on all targets.)
       targets = targets_for(nil)

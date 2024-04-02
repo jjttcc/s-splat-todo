@@ -20,7 +20,8 @@ class TargetState
 #!!!! NOT USED, I THINK:
 #!!!! label = value == COMPLETED ? 'completed on' : 'canceled on'
       result += " (start: #{time_24hour(creation_time)}, "
-      result += " end: #{time_24hour(completion_time)})"
+      result += "end: #{time_24hour(completion_time)}"
+      result += ")"
     end
     result
   end
@@ -100,7 +101,8 @@ class TargetState
   def invariant
     implies(value==IN_PROGRESS || value==SUSPENDED, completion_time==nil) &&
     implies(value==COMPLETED || value==CANCELED, completion_time!=nil) &&
-    ([IN_PROGRESS, SUSPENDED, CANCELED, COMPLETED].include? value)
+    ([IN_PROGRESS, SUSPENDED, CANCELED, COMPLETED].include? value) &&
+    ! creation_time.nil?
   end
 
   private

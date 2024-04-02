@@ -43,6 +43,10 @@ class ReportUtil
         result = Proc.new {
           reporter.report_complete(self.criteria)
         }
+      when /^dur/
+        result = Proc.new {
+          reporter.report_duration(self.criteria)
+        }
       when /^rem/
         case ARGV[0]
         when /rem.*all/ # all reminders

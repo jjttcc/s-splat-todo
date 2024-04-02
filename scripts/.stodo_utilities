@@ -177,6 +177,11 @@ compn() {
     fi
 }
 
+# duration report:
+dur() {
+    stodo rep duration $*
+}
+
 # Complete report for $1 and all of its descendants
 comptree() {
     if [ $# -eq 0 ]; then return; fi

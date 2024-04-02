@@ -139,6 +139,13 @@ class STodoTarget
     result
   end
 
+  # date and time self was completed or canceled
+  post 'result not nil' do |result| ! result.nil? end
+  def creation_date
+    result = state.creation_time
+    result
+  end
+
   # The descendant with handle 'handle' - nil if no such descendant
   pre '! handle.nil?' do |handle| ! handle.nil?  end
   def descendant handle
@@ -1110,6 +1117,7 @@ class STodoTarget
 
   def invariant
     reminders != nil
+    creation_time != nil
   end
 
 end
