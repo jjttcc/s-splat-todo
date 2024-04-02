@@ -1117,7 +1117,7 @@ class STodoTarget
 
   def invariant
     reminders != nil
-    creation_time != nil
+    creation_date != nil
   end
 
 end
