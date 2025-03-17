@@ -4,7 +4,6 @@ require 'calendarentry'
 require 'preconditionerror'
 require 'targetbuilder'
 require 'stodotargeteditor'
-require 'debug/session'
 
 # Basic manager of STodoTarget objects - creating, modifying/editing,
 # deleting, storing, etc.
@@ -145,6 +144,7 @@ class STodoManager
     ! self.target_builder.existing_targets.nil?
   end
   def add_new_targets
+#binding.irb
     target_builder.process_targets
     targets = target_builder.targets
     if ! targets.empty? then

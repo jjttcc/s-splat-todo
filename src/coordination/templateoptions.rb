@@ -1,5 +1,4 @@
 require 'ruby_contracts'
-require 'debug/session'
 
 class TemplateOptions
   include SpecTools, ErrorTools

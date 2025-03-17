@@ -21,12 +21,14 @@ class PeriodicDateParser
     @result = []
     datestring_array = []
     init_time_parsers
+#binding.irb
     timespecs.each do |ts|
       @result << reminder_from_spec(ts, expiration_date_time)
     end
   end
 
   def reminder_from_spec(timespec, expiration_date_time)
+#binding.irb
     first_time, period_type, period_count = first_time_period_type_count(
       timespec)
     result = PeriodicReminder.new(first_time, expiration_date_time,
@@ -42,6 +44,7 @@ class PeriodicDateParser
     period_spec = time_spec_for[PERIOD_SPEC_KEY]
     datetime_spec = time_spec_for[DATE_TIME_KEY]
     period_count = time_spec_for[PERIOD_COUNT_KEY].to_i
+#binding.irb
     parser = @time_parser_for[period_spec]
     if parser == nil then
       msg = "Could not parse date/time spec: #{spec}"
@@ -115,10 +118,13 @@ class PeriodicDateParser
   end
 
   def period_spec_table(spec)
+#!!!!to-do: Consider replacing this function with the use of an instance of a newly
+#!!!!designed class.
     result = {}
     datetime = ""
     words = spec.split.map { |w| w.downcase }
     period_found = false
+#binding.irb
     words.each do |word|
       if not IGNORE_WORD[word] then
         case word
@@ -131,6 +137,7 @@ class PeriodicDateParser
             result[PERIOD_COUNT_KEY] = word
           end
         when WEEKDAY_EXPR, PERIOD_EXPR
+# proposed: alteration to date and period setting logic!!!!
           result[PERIOD_SPEC_KEY] = word
           period_found = true
         else
@@ -142,6 +149,7 @@ class PeriodicDateParser
     if ! result[PERIOD_COUNT_KEY] then
       result[PERIOD_COUNT_KEY] = '1'
     end
+#binding.irb
     result
   end
 

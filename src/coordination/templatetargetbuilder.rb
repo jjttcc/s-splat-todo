@@ -1,6 +1,5 @@
 require 'targetbuilder'
 require 'stubbedspec'
-require 'debug/session'
 
 # Builder that takes one 'spec' and uses it to build (or modify) one
 # STodoTarget object.

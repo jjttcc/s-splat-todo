@@ -1,0 +1,79 @@
+#!/bin/env bash
+# vim: ts=4 sw=4 expandtab
+# for testing: assign examples of reminders to a set of variables
+
+monthfor() {
+    local m=$1
+    echo $m|awk 'BEGIN {
+        m[1] = "jan"
+        m[2] = "feb"
+        m[3] = "mar"
+        m[4] = "apr"
+        m[5] = "may"
+        m[6] = "jun"
+        m[7] = "jul"
+        m[8] = "aug"
+        m[9] = "sep"
+        m[10] = "oct"
+        m[11] = "nov"
+        m[12] = "dec"
+    }
+    {
+        print m['$m']
+    }'
+}
+
+year=$(date +%Y)
+nmth=$(date +%m)
+if [ $nmth -ge 10 ]; then
+    ((++year))
+    nmth=1
+fi
+month=$(monthfor $nmth)
+nxm=$(date +%m)
+((++nxm))
+nextmonth=$(monthfor $nxm)
+day1=3
+day2=11
+day3=23
+day4=28
+nextyear=$year
+((++nextyear))
+time1=8am
+time2=4pm
+time3=11:15
+time4=22:25
+dec1=December
+dec2=dec
+
+# date/time examples:
+basedate1="$nextmonth $day1, $year at $time1"
+basedate2="$nextmonth $day2, $year, $time2"
+basedate3="$year-$nxm-$day1 at $time1"
+nybasedate1="$month $day1, $nextyear at $time1"
+nybasedate2="$dec1 $day3, $nextyear, $time3"
+nybasedate3="$dec2 $day4, $nextyear at $time4"
+nybasedate4="$nextyear-$nmth-$day2, $time2"
+
+# period-spec examples:
+per1="every 3 days"
+per2="every 7 weeks"
+per3="weekly"
+per3="every week"
+
+# reminders for this year:
+i=0
+rem1="$basedate1";((++i))
+rem2="$basedate2";((++i))
+rem3="$basedate1, $per1";((++i))
+rem4="$basedate2, $per2";((++i))
+rem5="$basedate3, $per1";((++i))
+
+# reminders for next year:
+rem6="$nybasedate1";((++i))
+rem7="$nybasedate2";((++i))
+rem8="$nybasedate3";((++i))
+rem9="$nybasedate4";((++i))
+rem10="$nybasedate3, $per3";((++i))
+
+excount=$i

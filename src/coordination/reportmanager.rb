@@ -2,7 +2,6 @@ require 'ruby_contracts'
 require 'preconditionerror'
 require 'spectools'
 require 'timetools'
-require 'byebug'
 require 'stodogit'
 
 # Manager of reporting-related actions

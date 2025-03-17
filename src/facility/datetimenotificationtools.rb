@@ -45,7 +45,7 @@ module DateTimeNotificationTools
   end
 
   IGNORE_WORD = {}
-  ['starting', 'at', 'every'].each do |w|
+  ['starting', 'at', 'every', 'once', 'a'].each do |w|
     IGNORE_WORD[w] = true
   end
 

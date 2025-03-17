@@ -1,0 +1,48 @@
+Specification for reminders
+
+The help string for the 'change' command (i.e.: "stodo h change"; note:
+"stodo h add" is similar) lists the following vague specification for the
+string that defines one or more new reminders that are to the replace
+existing ones for an item:
+
+  -rem <remspec>       replace REMinder(s) with <remspec>
+  -arem <remspec>      append <remspec> to REMinder(s)
+where <remspec> is:
+   <remspec>           <date/time-expr1>[; <date/time-expr2>...]
+
+In other words, a reminder spec is one or more of <date/time-expr1>,
+separated by semi-colons. This document is an attempt at defining, or at
+least describing by example, an actual <date/time-expr> that specifies a
+single reminder.
+
+BNF:
+
+   <remspec>           ::= <date/time-expr1>[; <date/time-expr2>...]
+   <date/time-expr1>   ::= <date> [[, | at] <time>], <period-spec>
+   <date>              ::= <ymd> | <mdy> | <weekday-spec>
+   <ymd>               ::= <yyyy>-<mm>-<dd>
+   <mdy>               ::= <month> <int>, <yyyy>
+   <weekday-spec>      ::= [next] "monday" | "tuesday" | {etc}
+   <period-spec>       ::= <every-spec> | <period-ly> | <once-a-spec>
+   <every-spec>        ::= <every-n-spec> | <every-period-spec>
+   <every-n-spec>      ::= every <int> <period>[s]
+   <every-period-spec> ::= every <period>
+   <once-a-spec>       ::= once a <period>
+   <period-ly>         ::= minutely | hourly | daily | monthly | yearly
+   <period>            ::= minute, hour, day, month, year
+
+   <yyyy>              ::= {4 digits specifying a year}
+   <mm>                ::= {2 digits specifying a month}
+   <dd>                ::= {2 digits specifying a month}
+   <month>             ::= <fullmonth> | <abbrmonth>
+   <fullmonth>         ::= january | february | march | april | may | {etc}
+   <abbrmonth>         ::= jan | feb | mar | apr | jun | jul | aug | sep |
+                              oct | nov | dec
+   <int>               ::= {a positive integer value}
+
+
+Examples:
+
+  With <ymd>:
+
+    ...
