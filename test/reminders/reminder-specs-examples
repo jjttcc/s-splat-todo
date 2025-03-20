@@ -4,76 +4,137 @@
 
 monthfor() {
     local m=$1
+    local full=0
+    if [ "$2" ]; then
+        full=1
+    fi
     echo $m|awk 'BEGIN {
-        m[1] = "jan"
-        m[2] = "feb"
-        m[3] = "mar"
-        m[4] = "apr"
-        m[5] = "may"
-        m[6] = "jun"
-        m[7] = "jul"
-        m[8] = "aug"
-        m[9] = "sep"
-        m[10] = "oct"
-        m[11] = "nov"
-        m[12] = "dec"
+        full = '$full'
+        if (full) {
+            m[1] = "January"
+            m[2] = "February"
+            m[3] = "March"
+            m[4] = "April"
+            m[5] = "May"
+            m[6] = "June"
+            m[7] = "July"
+            m[8] = "August"
+            m[9] = "September"
+            m[10] = "October"
+            m[11] = "November"
+            m[12] = "December"
+        } else {
+            m[1] = "jan"
+            m[2] = "feb"
+            m[3] = "mar"
+            m[4] = "apr"
+            m[5] = "may"
+            m[6] = "jun"
+            m[7] = "jul"
+            m[8] = "aug"
+            m[9] = "sep"
+            m[10] = "oct"
+            m[11] = "nov"
+            m[12] = "dec"
+        }
     }
     {
         print m['$m']
     }'
 }
 
-year=$(date +%Y)
-nmth=$(date +%m)
-if [ $nmth -ge 10 ]; then
-    ((++year))
-    nmth=1
-fi
-month=$(monthfor $nmth)
-nxm=$(date +%m)
-((++nxm))
-nextmonth=$(monthfor $nxm)
-day1=3
-day2=11
-day3=23
-day4=28
-nextyear=$year
-((++nextyear))
-time1=8am
-time2=4pm
-time3=11:15
-time4=22:25
-dec1=December
-dec2=dec
+fullmonthfor() {
+    monthfor $1 1
+}
 
-# date/time examples:
-basedate1="$nextmonth $day1, $year at $time1"
-basedate2="$nextmonth $day2, $year, $time2"
-basedate3="$year-$nxm-$day1 at $time1"
-nybasedate1="$month $day1, $nextyear at $time1"
-nybasedate2="$dec1 $day3, $nextyear, $time3"
-nybasedate3="$dec2 $day4, $nextyear at $time4"
-nybasedate4="$nextyear-$nmth-$day2, $time2"
+init_date_times1() {
+    year=$(date +%Y)
+    nmth=$(date +%m)
+    if [ $nmth -ge 10 ]; then
+        ((++year))
+        nmth=1
+    fi
+    month=$(monthfor $nmth)
+    nxm=$(date +%m)
+    ((++nxm))
+    nextmonth=$(monthfor $nxm)
+    nextnextmonth=$(monthfor $(($nxm + 1)))
+    day1=3
+    day2=11
+    day3=23
+    day4=28
+    nextyear=$year
+    ((++nextyear))
+    time1=8am
+    time2=4pm
+    time3=11:15
+    time4=22:25
+    dec1=December
+    dec2=dec
+}
 
-# period-spec examples:
-per1="every 3 days"
-per2="every 7 weeks"
-per3="weekly"
-per3="every week"
+# Initialize various "base date" variables.
+init_base_dates() {
+    basedate1="$nextmonth $day1, $year at $time1"
+    basedate2="$nextnextmonth $day2, $year, $time2"
+    basedate3="$year-$nxm-$day1 at $time1"
+    nybasedate1="$month $day1, $nextyear at $time1"
+    nybasedate2="$dec1 $day3, $nextyear, $time3"
+    nybasedate3="$dec2 $day4, $nextyear at $time4"
+    nybasedate4="$nextyear-$nmth-$day2, $time2"
+}
 
-# reminders for this year:
-i=0
-rem1="$basedate1";((++i))
-rem2="$basedate2";((++i))
-rem3="$basedate1, $per1";((++i))
-rem4="$basedate2, $per2";((++i))
-rem5="$basedate3, $per1";((++i))
+# Initialize period-spec examples.
+init_per_specs() {
+    # period-spec examples:
+    per1="every 3 days"
+    per2="every 7 weeks"
+    per3="weekly"
+    per3="every week"
+}
 
-# reminders for next year:
-rem6="$nybasedate1";((++i))
-rem7="$nybasedate2";((++i))
-rem8="$nybasedate3";((++i))
-rem9="$nybasedate4";((++i))
-rem10="$nybasedate3, $per3";((++i))
+init_weekdays() {
+    mon=Monday
+    tue=Tuesday
+    wed=Wednesday
+    thu=Thursday
+    fri=Friday
+    sat=Saturday
+    sun=Sunday
+}
 
-excount=$i
+init_misc() {
+    tod=today
+    tom=tomorrow
+}
+
+# Initialize the reminder variables.
+init_rem_vars() {
+    init_date_times1
+    init_base_dates
+    init_per_specs
+    init_weekdays
+    init_misc
+    # reminders for this year:
+    i=0
+    rem1="$basedate1";((++i))
+    rem2="$basedate2";((++i))
+    rem3="$basedate1, $per1";((++i))
+    rem4="$basedate2, $per2";((++i))
+    rem5="$basedate3, $per1";((++i))
+
+    # reminders for next year:
+    rem6="$nybasedate1";((++i))
+    rem7="$nybasedate2";((++i))
+    rem8="$nybasedate3";((++i))
+    rem9="$nybasedate4";((++i))
+    rem10="$nybasedate3, $per3";((++i))
+
+    # complex reminders
+    rem11="next $tue, every 1 week; $tod, every 27 minutes;"
+    rem11="$rem11 $fri, every 17 days";((++i))
+
+    excount=$i
+}
+
+init_rem_vars

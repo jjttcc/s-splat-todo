@@ -1,5 +1,8 @@
 Specification for reminders
 
+TO-DO: Finish converting the BNF to EBNF - e.g., change <date> to date,
+<month> to month, etc.
+
 The help string for the 'change' command (i.e.: "stodo h change"; note:
 "stodo h add" is similar) lists the following vague specification for the
 string that defines one or more new reminders that are to the replace
@@ -15,30 +18,34 @@ separated by semi-colons. This document is an attempt at defining, or at
 least describing by example, an actual <date/time-expr> that specifies a
 single reminder.
 
-BNF:
+EBNF[1]:
 
-   <remspec>           ::= <date/time-expr1>[; <date/time-expr2>...]
-   <date/time-expr1>   ::= <date> [[, | at] <time>], <period-spec>
-   <date>              ::= <ymd> | <mdy> | <weekday-spec>
+   <remspec>           ::= <date/time-expr1> [ ";" <date/time-expr2>... ]
+   <date/time-expr1>   ::= <date> [ ( "," | "at" ) <time> ] "," <period-spec>
+   <date>              ::= <ymd> | <mdy> | <wkday>
    <ymd>               ::= <yyyy>-<mm>-<dd>
-   <mdy>               ::= <month> <int>, <yyyy>
-   <weekday-spec>      ::= [next] "monday" | "tuesday" | {etc}
+   <mdy>               ::= <month> int "," <yyyy>
+   <wkday>             ::= [ next ] "monday" | "tuesday" | ...
    <period-spec>       ::= <every-spec> | <period-ly> | <once-a-spec>
    <every-spec>        ::= <every-n-spec> | <every-period-spec>
-   <every-n-spec>      ::= every <int> <period>[s]
-   <every-period-spec> ::= every <period>
-   <once-a-spec>       ::= once a <period>
-   <period-ly>         ::= minutely | hourly | daily | monthly | yearly
-   <period>            ::= minute, hour, day, month, year
+   <every-n-spec>      ::= "every" int <period>[s]
+   <every-period-spec> ::= "every" <period>
+   <once-a-spec>       ::= "once a" <period>
+   <period-ly>         ::= "minutely" | "hourly" | "daily" | "monthly" | "yearly"
+   <period>            ::= "minute", "hour", "day", "month", "year"
 
-   <yyyy>              ::= {4 digits specifying a year}
-   <mm>                ::= {2 digits specifying a month}
-   <dd>                ::= {2 digits specifying a month}
+   <yyyy>              ::= int int int int
+   <mm>                ::= int [int]
+   <dd>                ::= int [int]
+   <time>              ::= <24-hour-time> | <informal-time>
+   <24-hour-time>      ::= int int ":" int int
+   <informal-time>     ::= int [int] ( "am" | "pm" )
    <month>             ::= <fullmonth> | <abbrmonth>
-   <fullmonth>         ::= january | february | march | april | may | {etc}
+   <fullmonth>         ::= january | february | march | april | may | ...
    <abbrmonth>         ::= jan | feb | mar | apr | jun | jul | aug | sep |
                               oct | nov | dec
-   <int>               ::= {a positive integer value}
+   digit               ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+   int                 ::= [+|-]digit{digit}
 
 
 Examples:
@@ -46,3 +53,7 @@ Examples:
   With <ymd>:
 
     ...
+
+Notes:
+
+[1] Started as BNF - now in the process of converting to EBNF.

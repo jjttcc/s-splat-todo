@@ -2,41 +2,65 @@
 # Note: To be run in the directory in which this script resides.
 # vim: ts=4 sw=4 expandtab
 
-. ./reminder-specs-examples
+# precondition: create 'selected_tests' globally (declare -A selected_tests).
+procargs() {
+    i=1
+    while [ $i -le $excount ]; do
+        selected_tests[$i]=false
+        ((++i))
+    done
+    for j; do
+        selected_tests[$j]=true
+    done
+    i=1
+    while [ $i -le $excount ]; do
+        echo "$i:	" ${selected_tests[$i]}
+        ((++i))
+    done
+}
 
-basehandle=remtest$$
-addt='stodo add task -h'
-reportdir=testrun-$$
+init() {
+    . ./reminder-specs-examples
 
-mkdir -p $reportdir
+    procargs $*
+    basehandle=remtest$$
+    addt='stodo add task -h'
+    reportdir=testrun-$$
+
+    mkdir -p $reportdir
+}
 
 runcmd() {
     local testnum=$1
     local rspec="$2"
     handle=$basehandle.$testnum
     echo testing: $addt $basehandle.$testnum -t \
-        \"add test[$i] with several reminders\" -ti 2036-01-01 -rem \"$rspec\"|
+        \"add reminder test[$i]\" -ti 2036-01-01 -rem \"$rspec\"|
             tee $reportdir/$handle.command
-    $addt $handle -t "add test[$i] with several reminders" \
+    $addt $handle -t "add reminder test[$i]" \
         -ti 2036-01-01 -rem "$rspec"
 }
 
-result=0
-i=1
-while [ $i -le $excount ]; do
-  if [ $i -eq 6 ]; then
-    echo "(next year)"
-  fi
-  remspec=$(eval echo "$"rem$i)
-  runcmd $i "$remspec"
-  status=$?
-  if [ $status -ne 0 ]; then
-      result=$status
-  else
-      stodo report complete $handle > $reportdir/$handle
-  fi
-  ((++i))
-done
+main() {
+    result=0
+    i=1
+    while [ $i -le $excount ]; do
+        remspec=$(eval echo "$"rem$i)
+        if ${selected_tests[$i]}; then
+            runcmd $i "$remspec"
+            status=$?
+            if [ $status -ne 0 ]; then
+                result=$status
+            else
+                stodo report complete $handle > $reportdir/$handle
+            fi
+        fi
+        ((++i))
+    done
 
-exit $result
+    exit $result
+}
 
+declare -A selected_tests
+init $*
+main
