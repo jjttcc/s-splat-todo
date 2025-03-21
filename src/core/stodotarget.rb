@@ -560,7 +560,6 @@ class STodoTarget
     @reminders = []
     self.last_op_changed_state = false
     if spec.is_template? || time != nil then
-#binding.irb
       # Build @reminders last because it depends on 'time' (which is an
       # attribute in descendant classes) being set/non-nil.
       rem = reminders_from_spec spec
@@ -687,7 +686,6 @@ class STodoTarget
       reminders_string = spec.reminders
     end
     if reminders_string != nil then
-#binding.irb
       begin
         result = scanned_reminder(reminders_string)
       rescue Exception => e
@@ -723,7 +721,6 @@ class STodoTarget
       end
     end
     if periodic_reminder_candidates.length > 0 then
-#binding.irb
       periodic_date_parser = PeriodicDateParser.new(
         periodic_reminder_candidates, time)
       periodic_reminders = periodic_date_parser.result
