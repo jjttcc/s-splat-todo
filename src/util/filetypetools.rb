@@ -30,11 +30,6 @@ module FileTypeTools
     PLAIN_TEXT  => [ Regexp.new("text/plain"),
                      Regexp.new("inode/x-empty"),
     ],
-=begin
-# to-do!!!!: finish plugging in "json..."
-    TEXT_DATA  => [ Regexp.new("application/json"),
-    ],
-=end
     PDF         => [ Regexp.new("application/pdf") ],
     ##### [need to fill in remaining video-format exprs] ####
     VIDEO       => [ Regexp.new("video/mp4"), Regexp.new("video/mpeg")

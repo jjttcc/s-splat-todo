@@ -69,7 +69,6 @@ class TargetBuilder
       begin
         s.existing_targets = self.existing_targets
         if new_target_needed(s) then
-#binding.irb
           t = new_target(s)
         else
           edit_target(s)
@@ -118,7 +117,6 @@ class TargetBuilder
   def initialize spec_collector
     @spec_collector = spec_collector
     @edited_targets = []
-#binding.irb
     @time_changed_for = {}
     self.processing_mode = CREATE_MODE
     init_target_factory
@@ -137,7 +135,6 @@ class TargetBuilder
         $log.warn warning
       end
     else
-#binding.irb
       # Build the "target".
       t = builder.call(spec)
       if t != nil && t.valid? then

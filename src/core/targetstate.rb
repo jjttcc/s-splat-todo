@@ -17,8 +17,6 @@ class TargetState
   def to_s
     result = value
     if value == COMPLETED || value == CANCELED then
-#!!!! NOT USED, I THINK:
-#!!!! label = value == COMPLETED ? 'completed on' : 'canceled on'
       result += " (start: #{time_24hour(creation_time)}, "
       result += "end: #{time_24hour(completion_time)}"
       result += ")"

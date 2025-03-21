@@ -65,7 +65,6 @@ if ARGV.length > 1 then
                                                manager.existing_targets)
     target_builder.set_processing_mode TemplateTargetBuilder::CREATE_MODE
     manager.target_builder = target_builder
-#binding.irb
     manager.add_new_targets
   when /^change*/
     require 'templateoptions'
