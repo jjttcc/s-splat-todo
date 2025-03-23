@@ -10,7 +10,8 @@ require 'targetstate'
 require 'attachment'
 require 'dateparser'
 require 'targetstatevalues'
-require 'periodicdateparser'
+require 'periodicreminderconstructor'
+require 'reminderspecscanner.rb'
 
 # Items - actions, projects, appointments, etc. - to keep track of, not
 # forget about, and/or complete
@@ -680,6 +681,7 @@ class STodoTarget
       implies(! spec.is_template?, time != nil)
   end
   def reminders_from_spec spec, append = false
+#binding.irb
     if append then
       reminders_string = spec.appended_reminders
     else
@@ -687,7 +689,7 @@ class STodoTarget
     end
     if reminders_string != nil then
       begin
-        result = scanned_reminder(reminders_string)
+        result = scanned_reminders(reminders_string)
       rescue Exception => e
         $log.warn "#{handle}: #{e} [stack trace:\n" +
           e.backtrace.join("\n") + ']'
@@ -704,29 +706,50 @@ class STodoTarget
     result
   end
 
-  def scanned_reminder(remspec)
+  def scanned_reminders(remspec)
     result = []
-    date_strings = remspec.split(REMINDER_DELIMITER)
-    date_parser = DateParser.new(date_strings, true)
-    dates = date_parser.result
-    periodic_reminder_candidates = []
-    for i in 0 .. dates.length - 1 do
-      d = dates[i]
-      if d != nil then
-        result << OneTimeReminder.new(d)
-      else
-        if date_strings[i].downcase != NONE then
-          periodic_reminder_candidates << date_strings[i]
-        end
-      end
-    end
-    if periodic_reminder_candidates.length > 0 then
-      periodic_date_parser = PeriodicDateParser.new(
-        periodic_reminder_candidates, time)
-      periodic_reminders = periodic_date_parser.result
-      result.concat(periodic_reminders)
+    rem_spec_strings = remspec.split(REMINDER_DELIMITER)
+    rem_spec_strings.each do |s|
+      result << reminder_from(s)
     end
     result
+  end
+
+  # A reminder (OneTimeReminder or PeriodicReminder) created from 'remspec'
+  pre '"remspec" eixsts' do |remspec| ! remspec.nil? end
+  def reminder_from(remspec)
+    result = nil
+    rss = ReminderSpecScanner.new(remspec)
+    if rss.period_spec.nil? then
+      result = one_time_reminder(rss.date_time)
+    else
+      result = periodic_reminder(rss)
+    end
+    result
+  end
+
+  # A OneTimeReminder constructed from 'date_time' - nil if 'date_time' is
+  # invalid
+  def one_time_reminder(date_time)
+    result = nil
+    if ! date_time.nil? then
+      datetimes = DateParser.new([date_time]).result
+      if datetimes.count > 0 then
+        result = OneTimeReminder.new(datetimes[0])
+      else
+        msg = "Invalid reminder date/time: '#{datetimes[0]}' [spec: " +
+          "#{remspec}"
+        $log.warn(msg)
+      end
+    end
+    result
+  end
+
+  pre 'rss is valid' do |rss| ! rss.nil? && ! rss.date_time.nil? &&
+    ! rss.period_spec.nil? && !  rss.period_count.nil?  end
+  def periodic_reminder(rss)
+    rem_constructor = PeriodicReminderConstructor.new(rss, time)
+    rem_constructor.result
   end
 
   ###  Initialization/modification utilities

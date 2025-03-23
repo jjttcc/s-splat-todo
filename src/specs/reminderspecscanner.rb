@@ -1,5 +1,7 @@
 require 'datetimenotificationtools'
 
+# Instances of this class, when created, scan the given reminder specs and
+# the date_time, period_count, and period_spec.
 class ReminderSpecScanner
   include DateTimeNotificationTools
 

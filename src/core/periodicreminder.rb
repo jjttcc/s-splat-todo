@@ -87,6 +87,9 @@ class PeriodicReminder < Reminder
   pre 'normalized period_type' do |fdt, edt, period_type|
     normalized_period_type(period_type) != nil
   end
+  pre 'period_count is integer' do |fdt, edt, type, period_count|
+    period_count.is_a?(Integer)
+  end
   def initialize(first_date_time, ending_date_time, period_type,
                  period_count, time_tolerance = DEFAULT_TOLERANCE)
     @date_time = first_date_time.clone.utc
