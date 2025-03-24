@@ -132,7 +132,7 @@ init_rem_vars() {
 
     # complex reminders
     rem11="next $tue, every 1 week; $tod, every 27 minutes;"
-    rem11="$rem11 $fri, every 17 days";((++i))
+    rem11="$rem11 next $fri, every 17 days";((++i))
 
     excount=$i
 }

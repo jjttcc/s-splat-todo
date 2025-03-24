@@ -29,9 +29,11 @@ class ReminderSpecScanner
       word_groups << p.split()
     end
     date_type = date_type_for(word_groups)
-    # period_count and period_spec, if they exist are always in the last
-    # element of word_groups.
-    @period_count, @period_spec = period_info(word_groups.last)
+    if word_groups.count > 1 then
+      # period_count and period_spec, if they exist are always in the last
+      # element of word_groups.
+      @period_count, @period_spec = period_info(word_groups.last)
+    end
     case date_type
     when YMD
       @date_time = date_time_from_ymd(word_groups, self.period_spec != nil)
@@ -44,9 +46,12 @@ class ReminderSpecScanner
 
   def date_type_for(groups)
     weekdays = ["monday", "tuesday", "wednesday", "thursday", "friday",
-                "saturday", "sunday"]
+                "saturday", "sunday", "today"]
     result = nil
-    if groups[1][0] =~ /^\d{4}$/ && groups[0].count == 2 then
+    if
+      groups.count > 1 &&
+      groups[1][0] =~ /^\d{4}$/ && groups[0].count == 2
+    then
       result = MDY
     elsif groups[0][0] =~ /^\d{4}-\d\d?-\d\d?$/ then
       result = YMD

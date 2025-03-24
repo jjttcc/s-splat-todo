@@ -681,7 +681,6 @@ class STodoTarget
       implies(! spec.is_template?, time != nil)
   end
   def reminders_from_spec spec, append = false
-#binding.irb
     if append then
       reminders_string = spec.appended_reminders
     else
