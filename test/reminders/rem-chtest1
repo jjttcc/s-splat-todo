@@ -1,0 +1,50 @@
+#!/bin/env bash
+# Run 'remtest1' to create some items with reminders, then change those
+# reminders to different ones.
+# Note: To be run in the directory in which this script resides.
+# vim: ts=4 sw=4 expandtab
+
+init() {
+    .  /home/jtc/.stodo_utilities   # for hgrep
+    . ./reminder-specs-examples
+    outfile=/tmp/remch-$$
+
+    chgt='stodo change'
+    reportdir=ch-testrun-$$
+    mkdir -p $reportdir
+}
+
+runcmd() {
+    local handle=$1
+    local rspec="$2"
+    echo testing: $chgt $handle -t \
+        \"change reminder test[$i]\" -rem \"$rspec\"|
+            tee $reportdir/$handle.command
+    $chgt $handle -t "change reminder test[$i]" \
+        -rem "$rspec"
+}
+
+main() {
+    result=0
+    i=1
+    SHOW_BASE_HANDLE=1 ./remtest1 $* >$outfile
+    basehandle=$(awk '/base-handle:/ {print $2}' $outfile)
+    handles="$(hgrep $basehandle|tac)"  # reversed
+    echo handles: $handles
+    for h in $handles; do
+        remspec=$(eval echo "$"rem$i)
+        runcmd $h "$remspec"
+        status=$?
+        if [ $status -ne 0 ]; then
+            result=$status
+        else
+            stodo report complete $h > $reportdir/$h
+        fi
+        ((++i))
+    done
+
+    exit $result
+}
+
+init $*
+main $*

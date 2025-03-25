@@ -29,6 +29,9 @@ init() {
 
     procargs $*
     basehandle=remtest$$
+    if [ "$SHOW_BASE_HANDLE" ]; then
+        echo "base-handle: $basehandle"
+    fi
     addt='stodo add task -h'
     reportdir=testrun-$$
 
