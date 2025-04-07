@@ -7,12 +7,17 @@
 # the category of reporting.)
 
 require 'ruby_contracts'
+require 'redis'
 require 'errortools'
 require 'configuration'
 require 'stodomanager'
 require 'reportmanager'
 require 'targetstateset'
 require 'searchcriteria'
+
+require 'application_configuration'
+
+puts "redis: #{$redis}"
 
 class ReportUtil
   include Contracts::DSL, SpecTools
@@ -275,6 +280,37 @@ class ReportUtil
 
 end
 
+def redis_read_test(broker)
+#binding.irb
+  o = broker.object('vim-tips')
+  $log.warn o.class
+  $log.warn "vim tips: #{o}"
+end
+
+def redis_write_test(manager, broker)
+#binding.irb
+  manager.existing_targets.each do |t|
+    object = t[1]   # (t[0] is the object's "handle".)
+    puts "object: #{object.handle}"
+#binding.irb
+    if broker.exists(object.handle) then
+      $log.warn "object with handle #{object.handle} is already stored."
+    else
+      $log.warn "object with handle #{object.handle} is NOT stored."
+      broker.set_object(object.handle, object)
+    end
+  end
+end
+
+#!!binding.irb
 manager = STodoManager.new
 reporter = ReportManager.new manager
+app_config = ApplicationConfiguration.new
+broker = app_config.application_message_broker
+redis_write_test(manager, broker)
+redis_read_test(broker)
 ReportUtil::execute(reporter).call
+#puts "==============="*5
+##puts self.class.display_all_loaded_custom_class # => [Foo, Bar]
+#puts "==============="*5
+
