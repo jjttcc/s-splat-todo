@@ -8,6 +8,7 @@ require 'spectools'
 require 'configtools'
 require 'mediaconfigtools'
 require 'stodogit'
+require 'application_configuration'
 
 # Configuration settings for the current run
 class Configuration
@@ -49,6 +50,7 @@ class Configuration
   # prefix to use for categories in some reports
   attr_reader :category_prefix
   attr_reader :data_manager
+  attr_reader :app_configuration
 
   # Should attachments be "viewed" (not modified) during this run?
   attr_reader :view_attachment
@@ -114,9 +116,11 @@ class Configuration
     ! data_manager.nil? && ! stodo_git.nil?
   end
   def initialize
+#!!binding.irb
     settings = config_file_settings
     set_config_vars settings
     set_external_media_tools settings
+    @app_configuration = ApplicationConfiguration.new
     set_internal_vars
     @test_run = ENV[STTESTRUN] != nil
     @data_manager = YamlStoreBasedDataManager.new(data_path, user)
@@ -320,6 +324,7 @@ class Configuration
 
   # Create the global $log object.
   def create_and_initialize_log
+#!!binding.irb
     begin
       final_path = ""
       if log_type == SYSLOG_TYPE then

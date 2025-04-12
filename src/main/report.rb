@@ -7,15 +7,17 @@
 # the category of reporting.)
 
 require 'ruby_contracts'
-require 'redis'
 require 'errortools'
 require 'configuration'
 require 'stodomanager'
 require 'reportmanager'
 require 'targetstateset'
 require 'searchcriteria'
+require 'redis_setup'
 
-require 'application_configuration'
+## For redis-related experimentation:
+#require 'redis'
+#require 'application_configuration'
 
 puts "redis: #{$redis}"
 
@@ -302,13 +304,41 @@ def redis_write_test(manager, broker)
   end
 end
 
-#!!binding.irb
+require 'redis_logger_device'
 manager = STodoManager.new
 reporter = ReportManager.new manager
 app_config = ApplicationConfiguration.new
+log = app_config.message_log
+errlog = app_config.error_log
+#binding.irb
+
+=begin
+redis = app_config.redis
+#redis.xadd('logger_stream', { "x" => "y" })
+redis.xadd('different-key102', { l1: "z" })
+added = redis.xread('different-key102', '0-0', count: 2)
+puts added
+=end
+
+=begin
+mainkey = "logger_stream#{$$}"
+redis_log = app_config.message_log(mainkey)
+logger = RedisLoggerDevice.new(redis_log, redis_log.key).logger
+=end
+#  def initialize(redis_log, stream_key, loggr = nil)
+setup_redis(service_name: 'report', debugging: true)
+$log.warn("test warn")
+$log.info("test info")
+$log.error("test error")
+$log.debug("test debug")
+$log.fatal("test fatal")
+$log.unknown("test unknown")
+testresult = $redis.xrevrange($log_key)
+puts "testresult:\n", testresult
 broker = app_config.application_message_broker
-redis_write_test(manager, broker)
-redis_read_test(broker)
+#exit 0
+#redis_write_test(manager, broker)
+#redis_read_test(broker)
 ReportUtil::execute(reporter).call
 #puts "==============="*5
 ##puts self.class.display_all_loaded_custom_class # => [Foo, Bar]

@@ -21,6 +21,11 @@ class MessageBrokerConfiguration
 
   public
 
+  # An instance of Redis - mostly (or entirely) for debugging
+  def self.redis
+    Redis.new(host: "localhost", port: REDIS_APP_PORT, password: REDIS_PW)
+  end
+
   # Broker for regular application-related messaging
   def self.application_message_broker
     redis = Redis.new(port: REDIS_APP_PORT, password: REDIS_PW)

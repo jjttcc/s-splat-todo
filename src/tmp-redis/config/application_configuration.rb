@@ -34,6 +34,11 @@ class ApplicationConfiguration
 
   attr_reader :log
 
+  # An instance of Redis - mostly (or entirely) for debugging (class method)
+  def self.redis
+    MessageBrokerConfiguration::redis
+  end
+
   # Broker for regular application-related messaging
   def application_message_broker
     MessageBrokerConfiguration::application_message_broker
@@ -51,6 +56,11 @@ class ApplicationConfiguration
 
   # General message-logging object
   def message_log(key = nil)
+    MessageBrokerConfiguration::message_log(key)
+  end
+
+  # General message-logging object - class-method version of the above
+  def self.message_log(key = nil)
     MessageBrokerConfiguration::message_log(key)
   end
 

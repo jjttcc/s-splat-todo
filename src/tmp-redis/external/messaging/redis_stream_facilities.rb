@@ -14,8 +14,8 @@ module RedisStreamFacilities
 
   attr_reader :redis_log, :object_key
 
-  def init_facilities(redis_port)
-    init_redis(redis_port)
+  def init_facilities(redis_port, redis_pw)
+    init_redis(redis_port, redis_pw)
     @object_key = DEFAULT_OBJECT_KEY
   end
 
@@ -28,8 +28,8 @@ module RedisStreamFacilities
   # defaults to DEFAULT_EXPIRATION_SECS).
   pre :port_exists do |redis_port| redis_port != nil end
   post :redis_lg  do self.redis_log != nil end
-  def init_redis(redis_port)
-    self.redis_log = Redis.new(port: redis_port)
+  def init_redis(redis_port, redis_pw)
+    self.redis_log = Redis.new(port: redis_port, password: redis_pw)
   end
 
 end

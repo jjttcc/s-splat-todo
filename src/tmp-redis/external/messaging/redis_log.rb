@@ -9,7 +9,7 @@ class RedisLog
 
   #####  Access
 
-  DEFAULT_EXPIRATION_SECS = 24 * 3600
+  DEFAULT_EXPIRATION_SECS = 24 * 3600 * 365
 
   attr_reader   :key
   attr_accessor :expiration_secs
@@ -20,8 +20,18 @@ class RedisLog
 
   #####  Basic operations
 
+  def debug__send_message(log_key: key, tag:, msg:)
+#binding.irb
+    redis_log.set(log_key, tag + msg)
+  end
+
   def send_message(log_key: key, tag:, msg:)
+#binding.irb
     redis_log.xadd(log_key, {tag => msg})
+#redis_log.xadd('different-key101', { "o" => "z" })
+#added = redis.xread('logger_stream', '0-0', count: 2)
+added = redis_log.xread(log_key, '0-0', count: 2)
+puts added
     redis_log.expire(log_key, expiration_secs)
   end
 
@@ -36,7 +46,8 @@ class RedisLog
     self.key = new_key
   end
 
-  protected
+#!!![debug]  protected
+  public
 
   attr_reader :redis_log
 
@@ -52,7 +63,7 @@ class RedisLog
   post :redis_lg  do self.redis_log != nil end
   def initialize(redis_port:, redis_pw:, key:,
                  expire_secs: DEFAULT_EXPIRATION_SECS)
-    init_facilities(redis_port)
+    init_facilities(redis_port, redis_pw)
     self.key = key
     self.expiration_secs = expire_secs
   end
