@@ -19,18 +19,12 @@ class RedisLogReader
     redis_log.xrange(key, count: count)
   end
 
-##!!!!!To-do: Consider adding some or all of the functionality available in
-##!!!!!'xread' - i.e.: consumer groups; use of saved ids (e.g., in a private
-##!!!!!array attribite) to be used in the next 'contents_for' call; ...
-##!!!!!(An abstract representation of this functionality will need to go
-##!!!!!into 'LogReader'.)  [Delete this comment "soon" if not <whatever>.]
-
   # If args_hash[:count] != nil, it will be used as a limit for the number
   # of entries retrieved per key; otherwise, there is no limit.
   # If args_hash[:block_msecs] != nil the operation will block, if needed,
   # for the specified number of milliseconds, to wait for input.
   # If args_hash[:new_only] is true, only "new" (i.e., anything that arrives
-  # after this method invocation[!!!check!!!]) content will be returned.
+  # after this method invocation) content will be returned.
   # If args_hash[:start_time].to_i returns a valid number, it will be used
   # as a start-time (i.e., UNIX "seconds-since-the-epoch") such that all
   # log entries before that date/time will be excluded.
@@ -51,8 +45,6 @@ class RedisLogReader
         if new_only then
           ids = key_list.map { LAST_ID }
         else
-          ###!!!!!Here is one place we would need to deal with the saved
-          #!!!!! "last-read-id(for-key)" if we implement that!!!!!!
           ids = key_list.map { FIRST_ID }
         end
         result = redis_log.xread(key_list, ids, count: count,

@@ -51,20 +51,3 @@ class RedisLoggerDevice
   end
 
 end
-=begin
-  public
-
-  attr_reader :logger
-
-  def write(arg)
-    puts "This is the arg: '#{arg}'"
-  end
-
-  def close
-  end
-
-  private
-
-  attr_writer :logger
-end
-=end

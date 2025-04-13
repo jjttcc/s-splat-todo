@@ -11,33 +11,29 @@ class RedisLog
 
   DEFAULT_EXPIRATION_SECS = 24 * 3600 * 365
 
-  attr_reader   :key
+  attr_reader   :key, :port
   attr_accessor :expiration_secs
 
   def contents(count: nil)
-    redis_log.xrange(key, count)
+#binding.irb
+    if count.nil? then
+      redis.xrange(key)
+    else
+      redis.xrange(key, count)
+    end
   end
 
   #####  Basic operations
 
-  def debug__send_message(log_key: key, tag:, msg:)
-#binding.irb
-    redis_log.set(log_key, tag + msg)
-  end
-
   def send_message(log_key: key, tag:, msg:)
 #binding.irb
-    redis_log.xadd(log_key, {tag => msg})
-#redis_log.xadd('different-key101', { "o" => "z" })
-#added = redis.xread('logger_stream', '0-0', count: 2)
-added = redis_log.xread(log_key, '0-0', count: 2)
-puts added
-    redis_log.expire(log_key, expiration_secs)
+    redis.xadd(log_key, {tag => msg})
+    redis.expire(log_key, expiration_secs)
   end
 
   def send_messages(log_key: key, messages_hash:)
-    redis_log.xadd(log_key, messages_hash)
-    redis_log.expire(log_key, expiration_secs)
+    redis.xadd(log_key, messages_hash)
+    redis.expire(log_key, expiration_secs)
   end
 
   #####  State-changing operations
@@ -46,25 +42,25 @@ puts added
     self.key = new_key
   end
 
-#!!![debug]  protected
-  public
+  protected
 
-  attr_reader :redis_log
+  attr_reader :redis
 
   private
 
-  attr_writer :redis_log, :key
+  attr_writer :redis, :key, :port
 
   # Initialize with the Redis-port, logging key, and, if supplied, the
   # number of seconds until each logged message is set to expire (which
   # defaults to DEFAULT_EXPIRATION_SECS).
   pre :port_exists do |hash| hash[:redis_port] != nil end
   pre :key_exists  do |hash| hash[:key] != nil end
-  post :redis_lg  do self.redis_log != nil end
+  post :redis_lg  do self.redis != nil end
   def initialize(redis_port:, redis_pw:, key:,
                  expire_secs: DEFAULT_EXPIRATION_SECS)
     init_facilities(redis_port, redis_pw)
     self.key = key
+    self.port = redis_port
     self.expiration_secs = expire_secs
   end
 

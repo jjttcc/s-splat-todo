@@ -13,7 +13,7 @@ class MessageBrokerConfiguration
   auth = BrokerAuthenticationData.new
 
   # redis application and administration ports
-  REDIS_APP_PORT, REDIS_ADMIN_PORT = 6379, 26379
+  REDIS_APP_PORT, REDIS_ADMIN_PORT = 16379, 26379
   # redis authentication info
   REDIS_PW = auth.broker_password
   # Default keys for logs

@@ -76,15 +76,11 @@ help() {
 }
 
 set_rubylib() {
-#re='redis-experiment'  ##!!! [old: remove]
-re='tmp-redis'
   moredirs="facility error configuration notification specs data"
   moredirs="$moredirs coordination util attributes"
-  moredirs="$moredirs $re/config $re/domain/services/admin"
-  moredirs="$moredirs $re/lib/messaging $re/domain/services/support"
-  moredirs="$moredirs $re/lib/util $re/domain/support $re/domain/facilities"
-  moredirs="$moredirs $re/domain/services/reporting $re/external/utility"
-  moredirs="$moredirs $re/external/messaging"
+  moredirs="$moredirs domain/services/reporting external/messaging"
+  moredirs="$moredirs lib/messaging domain/support"
+  moredirs="$moredirs lib/util"
   moredirs="$moredirs external/util"
   rubylib="RUBYLIB=$STEXEC_PATH/core"
   for d in $moredirs; do

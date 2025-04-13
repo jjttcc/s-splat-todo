@@ -294,7 +294,6 @@ def redis_write_test(manager, broker)
   manager.existing_targets.each do |t|
     object = t[1]   # (t[0] is the object's "handle".)
     puts "object: #{object.handle}"
-#binding.irb
     if broker.exists(object.handle) then
       $log.warn "object with handle #{object.handle} is already stored."
     else
@@ -310,31 +309,18 @@ reporter = ReportManager.new manager
 app_config = ApplicationConfiguration.new
 log = app_config.message_log
 errlog = app_config.error_log
-#binding.irb
 
-=begin
-redis = app_config.redis
-#redis.xadd('logger_stream', { "x" => "y" })
-redis.xadd('different-key102', { l1: "z" })
-added = redis.xread('different-key102', '0-0', count: 2)
-puts added
-=end
-
-=begin
-mainkey = "logger_stream#{$$}"
-redis_log = app_config.message_log(mainkey)
-logger = RedisLoggerDevice.new(redis_log, redis_log.key).logger
-=end
 #  def initialize(redis_log, stream_key, loggr = nil)
 setup_redis(service_name: 'report', debugging: true)
+#binding.irb
 $log.warn("test warn")
 $log.info("test info")
 $log.error("test error")
 $log.debug("test debug")
 $log.fatal("test fatal")
 $log.unknown("test unknown")
-testresult = $redis.xrevrange($log_key)
-puts "testresult:\n", testresult
+res = $redis_log.contents
+puts "testresult[1]:\n", res
 broker = app_config.application_message_broker
 #exit 0
 #redis_write_test(manager, broker)
