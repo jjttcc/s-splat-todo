@@ -1,4 +1,3 @@
-# !!!!!TO-DO: Move this class to its own file!!!!:
 # Matching results from a search of ReportComponent objects
 # 'matches':    Hash table containing the matching messages for which, for each
 #               element, the key is the message label and the value is the

@@ -216,6 +216,5 @@ class RedisMessageBroker
   @@redis_debug = false
 
   EXP_KEY = :ex
-#!!!  EXP_KEY = "ex"
 
 end

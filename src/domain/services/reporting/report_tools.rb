@@ -5,8 +5,7 @@ module ReportTools
 
   public
 
-#!!!!  # Disable, effectively, the 'label' feature in action_view.
-#!!!!  def label; nil end
+  def label; nil end
 
   COUNT_LIMIT  = 5
   BORDER       = "#{"=" * 76}\n"

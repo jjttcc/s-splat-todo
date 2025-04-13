@@ -116,7 +116,6 @@ class Configuration
     ! data_manager.nil? && ! stodo_git.nil?
   end
   def initialize
-#!!binding.irb
     settings = config_file_settings
     set_config_vars settings
     set_external_media_tools settings
@@ -324,7 +323,6 @@ class Configuration
 
   # Create the global $log object.
   def create_and_initialize_log
-#!!binding.irb
     begin
       final_path = ""
       if log_type == SYSLOG_TYPE then

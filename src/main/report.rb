@@ -6,6 +6,7 @@
 # this application, which can perhaps allow this action to be "fitted" into
 # the category of reporting.)
 
+#binding.irb
 require 'ruby_contracts'
 require 'errortools'
 require 'configuration'
@@ -14,6 +15,7 @@ require 'reportmanager'
 require 'targetstateset'
 require 'searchcriteria'
 require 'redis_setup'
+require 'objectinfo'
 
 ## For redis-related experimentation:
 #require 'redis'
@@ -310,7 +312,6 @@ app_config = ApplicationConfiguration.new
 log = app_config.message_log
 errlog = app_config.error_log
 
-#  def initialize(redis_log, stream_key, loggr = nil)
 setup_redis(service_name: 'report', debugging: true)
 #binding.irb
 $log.warn("test warn")
@@ -320,6 +321,7 @@ $log.debug("test debug")
 $log.fatal("test fatal")
 $log.unknown("test unknown")
 res = $redis_log.contents
+res2 = $redis_log.contents
 puts "testresult[1]:\n", res
 broker = app_config.application_message_broker
 #exit 0

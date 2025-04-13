@@ -1,13 +1,8 @@
-
-#!!!!rm?: PRODUCTION_VAR_NAME = 'TAT_PRODUCTION'
-=begin
-#!!!!needed?:
+PRODUCTION_VAR_NAME = 'STODO_PRODUCTION'
 if $is_production_run.nil? then
   $is_production_run =  ENV.has_key?(PRODUCTION_VAR_NAME)
 end
-=end
 
-#!!!!remove?: require 'service_configuration'
 require 'utility_configuration'
 require 'message_broker_configuration'
 require 'time_util'
@@ -106,17 +101,6 @@ class ApplicationConfiguration
     UtilityConfiguration::mem_usage
   end
 
-=begin
-# Remove, if possible:
-  # Service-management configuration
-  post :is_class do |result| result.is_a?(Class) end
-  post :is_srvc_conf do |result| result == ServiceConfiguration end
-  def service_management
-    ServiceConfiguration
-  end
-=end
-
-  # Service-management configuration
   post :is_module do |result| result.is_a?(Module) end
   def time_utilities
     TimeUtil
@@ -133,7 +117,7 @@ class ApplicationConfiguration
 
   EOD_ENV_VAR = 'TIINGO_TOKEN'
   DATA_PATH_ENV_VAR = 'MAS_RUNDIR'
-#!!!!rm?: DEBUG_ENV_VAR = 'TAT_DEBUG'
+  DEBUG_ENV_VAR = 'STODO_DEBUG'
 
   def data_retrieval_token
     result = ENV[EOD_ENV_VAR]

@@ -285,7 +285,6 @@ module MessagingFacilities
   pre  :config_exists do |configuration| configuration != nil end
   post :brokers_set do broker != nil && admin_broker != nil end
   def initialize_message_brokers(configuration)
-#!!!!configuration - do we need to set 'log'?!!!!!!!
     @broker = configuration.application_message_broker
     @admin_broker = configuration.administrative_message_broker
     @object_expiration_seconds = DEFAULT_OBJECT_EXPIRATION
