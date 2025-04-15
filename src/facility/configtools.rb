@@ -114,6 +114,8 @@ https://stackoverflow.com/questions/1386291/git-git-dir-not-working-as-expected
   DEFAUT_GIT_DIR   = 'git'
   # The standard ".git" repository directory:
   GIT_REPO_DIR     = '.git'
+  # The key to a list of all service names used as keys for admin logging:
+  SERVICE_NAMES_KEY    = 'redis-service-names'
   ### config tags
   SPEC_PATH_TAG        = 'specpath'
   DB_TYPE_TAG          = 'database_type'

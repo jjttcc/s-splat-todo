@@ -13,14 +13,7 @@ require 'stodomanager'
 require 'reportmanager'
 require 'targetstateset'
 require 'searchcriteria'
-require 'redis_setup'
 require 'objectinfo'
-
-## For redis-related experimentation:
-#require 'redis'
-#require 'application_configuration'
-
-puts "redis: #{$redis}"
 
 class ReportUtil
   include Contracts::DSL, SpecTools
@@ -106,6 +99,14 @@ class ReportUtil
       when /^attach/
         result = Proc.new {
           reporter.report_attachments(criteria)
+        }
+      when /^service/   # service names
+        result = Proc.new {
+          reporter.report_service_names
+        }
+      when /^logkey/    # logging keys for a particular service
+        result = Proc.new {
+          reporter.report_logkeys(criteria)
         }
       end
     end
@@ -307,9 +308,8 @@ end
 manager = STodoManager.new(service_name: 'report', debugging: true)
 reporter = ReportManager.new manager
 
-# debug:
+# debugging of logging:
 logconfig = Configuration.instance.log_config
-# end-debug
 redis_log = logconfig.admin_redis_log
 rlo = ObjectInfo.new(redis_log)
 $log.warn("test warn")
@@ -320,9 +320,10 @@ $log.fatal("test fatal")
 $log.unknown("test unknown")
 res = redis_log.contents
 res2 = redis_log.contents
-puts "testresult[1]:\n", res
+#puts "testresult[1]:\n", res
 #broker = ApplicationConfiguration.application_message_broker
 ##exit 0
 #redis_write_test(manager, broker)
 #redis_read_test(broker)
+# end-debugging
 ReportUtil::execute(reporter).call

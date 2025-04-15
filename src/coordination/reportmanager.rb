@@ -272,6 +272,16 @@ class ReportManager
     puts targets_due.join("\n")
   end
 
+  def report_service_names
+    config = Configuration.instance
+    puts config.log_config.service_names
+  end
+
+  def report_logkeys(criteria)
+    config = Configuration.instance
+    puts config.log_config.logkeys(criteria.handles[0])
+  end
+
   private
 
   def initialize manager

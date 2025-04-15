@@ -284,6 +284,9 @@ report_help() {
     "\"acknowledge\"\n${long_s}the designated item as their parent"
   echo -e "  emanc-desc $s all descendants of the designated item that are" \
     "\n$s$s      emancipated children"
+  echo -e "  service  $s   report all logged service names"
+  echo -e "  logkey   $s   report all log keys that match <criteria> - e.g.:"
+  echo -e "$s              stodo report logkey 'report.*'"
   echo -e "Where <criteria> is either:"
   echo -e "  <type-spec>"
   echo -e "  <space-separated list of handles> - e.g., handle1 handle2 ..."

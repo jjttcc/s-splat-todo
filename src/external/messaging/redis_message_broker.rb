@@ -13,8 +13,19 @@ class RedisMessageBroker
     result
   end
 
-  # The set previously built via 'replace_set(key, args)' and/or
-  # 'add_set(key, args)'
+  # The members of the set previously built via 'replace_set(key, args)'
+  # and/or 'add_set(key, args)'
+  # Array<String>
+  pre  :ptrn_exists do |pattern| ! pattern.nil? end
+  post :result_exists do |result| ! result.nil? && result.is_a?(Array) end
+  def keys(pattern)
+    result = redis.keys pattern
+    result
+  end
+
+  # The members of the set previously built via 'replace_set(key, args)'
+  # and/or 'add_set(key, args)'
+  # Array<String>
   post :result_exists do |result| ! result.nil? && result.is_a?(Array) end
   def retrieved_set(key)
     result = redis.smembers key
@@ -74,7 +85,7 @@ class RedisMessageBroker
 
   # Does the object with key 'key' exist?
   def exists(key)
-    redis.exists(key) > 0
+    redis.exists?(key)
   end
 
   # The number of members in the set identified by 'key'
@@ -93,6 +104,11 @@ class RedisMessageBroker
   # Note: This query is relatively expensive.
   def queue_contains(key, value)
     redis.lrange(key, 0, -1).include?(value)
+  end
+
+  # Does the set with key 'key' contain 'value'?
+  def set_has(key, value)
+    redis.sismember(key, value)
   end
 
   public  ###  Element change

@@ -24,7 +24,7 @@ class Configuration
   attr_reader :service_name
   # Name of the stodo service using the configuration
   attr_reader :debugging
-  # The RedisLogConfig object - for debugging
+  # The RedisLogConfig object - for reporting and debugging
   attr_reader :log_config
 
   public  ### admin-related class methods
@@ -388,6 +388,8 @@ class Configuration
     end
   end
 
+  # Instantiate self.log_config as a RedisLogConfig object, which will
+  # set up logging, including setting $log to a redis-based Logger, etc.
   def configure_redis_log
     self.log_config = RedisLogConfig.new(service_name, debugging)
   end
