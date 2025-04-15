@@ -29,7 +29,14 @@ class STodoAdministrator
 
   private
 
-  def initialize
+  def initialize(service_name: 'admin', debugging: false)
+    # First, set these class attributes in Configuration.
+    Configuration.service_name = service_name
+    Configuration.debugging = debugging
+    # The above Configuration class attributes will be used here (in
+    # Configuration.initialize) to set the corresponding singleton
+    # attributes):
+    Configuration.instance
     initialize_method_map
   end
 

@@ -5,5 +5,5 @@ require 'configuration'
 require 'stodomanager'
 
 
-manager = STodoManager.new
+manager = STodoManager.new(service_name: 'ongoing-processing')
 manager.perform_ongoing_processing

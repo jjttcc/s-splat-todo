@@ -192,13 +192,24 @@ class STodoManager
 
   post 'existing_targets set' do ! self.existing_targets.nil? end
   post 'configuration set' do !self.configuration.nil? end
-  def initialize tgt_builder = nil
+  # Note: If Configuration.instance will be called before STodoManager.new,
+  # Configuration.service_name and Configuration.debugging need to be set
+  # before calling Configuration.instance.
+  def initialize(target_builder: nil, service_name: "", debugging: false)
+    if Configuration.service_name.nil? then
+      # First, set these class attributes in Configuration.
+      Configuration.service_name = service_name
+      Configuration.debugging = debugging
+    end
+    # The above Configuration class attributes will be used here (in
+    # Configuration.initialize) to set the corresponding singleton
+    # attributes):
     @configuration = Configuration.instance
     @data_manager = @configuration.data_manager
     @existing_targets = @data_manager.restored_targets
     @mailer = Mailer.new @configuration
     @calendar = CalendarEntry.new @configuration
-    init_new_targets tgt_builder
+    init_new_targets target_builder
   end
 
   def editor

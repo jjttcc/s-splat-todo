@@ -39,6 +39,12 @@ class ApplicationConfiguration
     MessageBrokerConfiguration::application_message_broker
   end
 
+  # Broker for regular application-related messaging - class-method
+  # version of the above
+  def self.application_message_broker
+    MessageBrokerConfiguration::application_message_broker
+  end
+
   # Broker for administrative-level messaging
   def administrative_message_broker
     MessageBrokerConfiguration::administrative_message_broker

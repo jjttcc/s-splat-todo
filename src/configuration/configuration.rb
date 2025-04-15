@@ -9,6 +9,8 @@ require 'configtools'
 require 'mediaconfigtools'
 require 'stodogit'
 require 'application_configuration'
+require 'redis_log_config'
+
 
 # Configuration settings for the current run
 class Configuration
@@ -16,9 +18,42 @@ class Configuration
   include ConfigTools, MediaConfigTools, FileTest, FileUtils
   include Contracts::DSL
 
-  public
+  public  ### admin-related attributes
 
-  ###  Access
+  # Name of the stodo service using the configuration
+  attr_reader :service_name
+  # Name of the stodo service using the configuration
+  attr_reader :debugging
+  # The RedisLogConfig object - for debugging
+  attr_reader :log_config
+
+  public  ### admin-related class methods
+
+  def self.service_name=(name)
+    @@service_name = name
+  end
+
+  def self.debugging=(name)
+    @@debugging = name
+  end
+
+  def self.service_name
+    result = nil
+    if defined?(@@service_name) then
+      result = @@service_name
+    end
+    result
+  end
+
+  def self.debugging
+    result = nil
+    if defined?(@@debugging) then
+      result = @@debugging
+    end
+    result
+  end
+
+  public  ###  Access
 
   # user name/id
   attr_reader :user
@@ -101,7 +136,7 @@ class Configuration
     LOGPATH = DEFAULT_LOG_PATH
   end
 
-  ###  Status report
+  public ###  Status report
 
   # Are assertions - design by contract (DBC) - enabled?
   def assertions_enabled?
@@ -111,11 +146,14 @@ class Configuration
   private
 
   attr_writer :view_attachment, :edit_attachment
+  attr_writer :service_name, :debugging, :log_config
 
   post 'important objects exist' do
     ! data_manager.nil? && ! stodo_git.nil?
   end
   def initialize
+    self.service_name = @@service_name
+    self.debugging = @@debugging
     settings = config_file_settings
     set_config_vars settings
     set_external_media_tools settings
@@ -325,9 +363,11 @@ class Configuration
   def create_and_initialize_log
     begin
       final_path = ""
-      if log_type == SYSLOG_TYPE then
+      if log_type == SYSLOG_TYPE_TAG then
         $log = Syslog::Logger.new('stodo')
-      else
+      elsif log_type == REDIS_TYPE_TAG then
+        configure_redis_log
+      else    # assume FILELOG_TYPE_TAG (default)
         if log_path && ! log_path.empty? then
           final_path = log_path
         else
@@ -336,7 +376,9 @@ class Configuration
         $log = Logger.new(final_path)
       end
     rescue Exception => e
-      raise "Creation of log file (#{final_path}} failed: #{e}"
+      ltype = "#{log_type} "
+      if ltype.nil? || ltype.empty? then ltype = "" end
+      raise "Creation of #{ltype}log (#{final_path}} failed: #{e}"
     end
     $debug = ENV[STDEBUG] != nil
     if ENV[STLOG_LEVEL] then
@@ -344,6 +386,10 @@ class Configuration
     else
       $log.level = $debug? Logger::DEBUG: Logger::WARN
     end
+  end
+
+  def configure_redis_log
+    self.log_config = RedisLogConfig.new(service_name, debugging)
   end
 
 end

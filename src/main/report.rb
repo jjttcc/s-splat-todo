@@ -6,7 +6,6 @@
 # this application, which can perhaps allow this action to be "fitted" into
 # the category of reporting.)
 
-#binding.irb
 require 'ruby_contracts'
 require 'errortools'
 require 'configuration'
@@ -284,15 +283,15 @@ class ReportUtil
 
 end
 
+# [temporary - for testing redis connection]
 def redis_read_test(broker)
-#binding.irb
   o = broker.object('vim-tips')
   $log.warn o.class
   $log.warn "vim tips: #{o}"
 end
 
+# [temporary - for testing redis connection]
 def redis_write_test(manager, broker)
-#binding.irb
   manager.existing_targets.each do |t|
     object = t[1]   # (t[0] is the object's "handle".)
     puts "object: #{object.handle}"
@@ -305,30 +304,25 @@ def redis_write_test(manager, broker)
   end
 end
 
-require 'redis_logger_device'
-manager = STodoManager.new
+manager = STodoManager.new(service_name: 'report', debugging: true)
 reporter = ReportManager.new manager
-app_config = ApplicationConfiguration.new
-log = app_config.message_log
-errlog = app_config.error_log
 
-setup_redis(service_name: 'report', debugging: true)
-#binding.irb
+# debug:
+logconfig = Configuration.instance.log_config
+# end-debug
+redis_log = logconfig.admin_redis_log
+rlo = ObjectInfo.new(redis_log)
 $log.warn("test warn")
 $log.info("test info")
 $log.error("test error")
 $log.debug("test debug")
 $log.fatal("test fatal")
 $log.unknown("test unknown")
-res = $redis_log.contents
-res2 = $redis_log.contents
+res = redis_log.contents
+res2 = redis_log.contents
 puts "testresult[1]:\n", res
-broker = app_config.application_message_broker
-#exit 0
+#broker = ApplicationConfiguration.application_message_broker
+##exit 0
 #redis_write_test(manager, broker)
 #redis_read_test(broker)
 ReportUtil::execute(reporter).call
-#puts "==============="*5
-##puts self.class.display_all_loaded_custom_class # => [Foo, Bar]
-#puts "==============="*5
-

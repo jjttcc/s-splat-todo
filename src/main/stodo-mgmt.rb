@@ -45,7 +45,7 @@ def handles_from_args arguments
 end
 
 if ARGV.length > 1 then
-  manager = STodoManager.new
+  manager = STodoManager.new(service_name: 'management', debugging: true)
   command = ARGV[0]; arguments = ARGV[1..-1]
   case command
   when /^ch.*par/, /^clone/, /^remove_d/, /^ch.*han/  # two+-arg commands
