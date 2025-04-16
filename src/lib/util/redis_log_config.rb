@@ -23,16 +23,23 @@ class RedisLogConfig
 
   # All administration service names
   def service_names
-    admin_broker.retrieved_set(SERVICE_NAMES_KEY)
+    admin_broker.set_members(SERVICE_NAMES_KEY)
   end
 
   # All "stream keys" used for logging that match 'pattern' - all keys if
   # 'pattern' is empty or nil
-  def logkeys(pattern = "*")
+  def log_keys(pattern = "*")
     if pattern.nil? || pattern.empty? then
       pattern = '*'
     end
     admin_broker.keys(pattern)
+  end
+
+  def log_messages(key = "*")
+    if key.nil? || key.empty? then
+      key = '*'
+    end
+    admin_redis_log.contents(skey: key)
   end
 
   private

@@ -108,6 +108,10 @@ class ReportUtil
         result = Proc.new {
           reporter.report_logkeys(criteria)
         }
+      when /^log.*m.*g/ # log entries for a specified key
+        result = Proc.new {
+          reporter.report_logmsgs(criteria)
+        }
       end
     end
     if result == nil then
@@ -312,12 +316,12 @@ reporter = ReportManager.new manager
 logconfig = Configuration.instance.log_config
 redis_log = logconfig.admin_redis_log
 rlo = ObjectInfo.new(redis_log)
-$log.warn("test warn")
-$log.info("test info")
-$log.error("test error")
-$log.debug("test debug")
-$log.fatal("test fatal")
-$log.unknown("test unknown")
+$log.warn("warning3")
+$log.info("information3")
+$log.error("error3")
+$log.debug("debug3")
+$log.fatal("fatal3")
+$log.unknown("unknown3")
 res = redis_log.contents
 res2 = redis_log.contents
 #puts "testresult[1]:\n", res

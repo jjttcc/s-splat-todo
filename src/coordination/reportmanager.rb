@@ -279,7 +279,12 @@ class ReportManager
 
   def report_logkeys(criteria)
     config = Configuration.instance
-    puts config.log_config.logkeys(criteria.handles[0])
+    puts config.log_config.log_keys(criteria.handles[0])
+  end
+
+  def report_logmsgs(criteria)
+    config = Configuration.instance
+    puts config.log_config.log_messages(key: criteria.handles[0])
   end
 
   private

@@ -14,7 +14,7 @@ class RedisLog
   attr_reader   :key, :port
   attr_accessor :expiration_secs
 
-  def contents(count: nil)
+  def contents(skey: key, count: nil)
     if count.nil? then
       redis.xrange(key)
     else

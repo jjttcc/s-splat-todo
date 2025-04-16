@@ -287,6 +287,7 @@ report_help() {
   echo -e "  service  $s   report all logged service names"
   echo -e "  logkey   $s   report all log keys that match <criteria> - e.g.:"
   echo -e "$s              stodo report logkey 'report.*'"
+  echo -e "  logmsgs  $s   output all log messages for <criteria> (as the key)"
   echo -e "Where <criteria> is either:"
   echo -e "  <type-spec>"
   echo -e "  <space-separated list of handles> - e.g., handle1 handle2 ..."

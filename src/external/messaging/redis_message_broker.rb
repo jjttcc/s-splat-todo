@@ -32,6 +32,8 @@ class RedisMessageBroker
     result
   end
 
+  alias_method :set_members, :retrieved_set
+
   # The next element (head) in the queue with key 'key' (typically,
   # inserted via 'queue_messages')
   post :nil_if_empty do |res, key| implies(queue_count(key) == 0, res.nil?) end
