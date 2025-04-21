@@ -95,7 +95,12 @@ class Configuration
   # The "global" git-repository object
   attr_reader :stodo_git
 
-  VERSION =  '1.0.108'
+  public  ###  Settable attributes
+
+  # id for the current user-specified request
+  attr_accessor :request_id
+
+  VERSION =  '1.0.109'
   PROGNAME = 'stodo'
 
   # stodo version identifier
@@ -154,6 +159,7 @@ class Configuration
   def initialize
     self.service_name = @@service_name
     self.debugging = @@debugging
+    self.request_id = ""
     settings = config_file_settings
     set_config_vars settings
     set_external_media_tools settings
@@ -391,7 +397,7 @@ class Configuration
   # Instantiate self.log_config as a RedisLogConfig object, which will
   # set up logging, including setting $log to a redis-based Logger, etc.
   def configure_redis_log
-    self.log_config = RedisLogConfig.new(service_name, debugging)
+    self.log_config = RedisLogConfig.new(service_name, self, debugging)
   end
 
 end

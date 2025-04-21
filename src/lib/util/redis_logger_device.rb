@@ -9,7 +9,6 @@ class RedisLoggerDevice
   attr_reader :logger, :redis_log, :stream_key
 
   def write(message)
-#    binding.irb
 # example 'message':
 #W, [2025-04-09T17:03:56.421626 #3333547]  WARN -- : a logger device
     message =~ /([a-zA-Z], *[^:]*:..:[^:]*): (.*)/

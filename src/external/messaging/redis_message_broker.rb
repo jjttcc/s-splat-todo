@@ -108,6 +108,11 @@ class RedisMessageBroker
     redis.lrange(key, 0, -1).include?(value)
   end
 
+  # Does the set with key 'key' exist?
+  def set_exists(key)
+    exists(key)
+  end
+
   # Does the set with key 'key' contain 'value'?
   def set_has(key, value)
     redis.sismember(key, value)
@@ -193,6 +198,8 @@ class RedisMessageBroker
     end
     result
   end
+
+  alias_method :append_to_set, :add_set
 
   # Add, with 'key', the specified set with items 'args'.  If the set
   # (with 'key') already exists, remove the old set first before creating

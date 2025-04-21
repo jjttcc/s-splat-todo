@@ -16,3 +16,4 @@ spec_collector = FileBasedSpecGatherer.new
 target_builder = TargetBuilder.new spec_collector
 manager = STodoManager.new(target_builder: target_builder)
 manager.perform_initial_processing
+$log.warn("test init-proc")

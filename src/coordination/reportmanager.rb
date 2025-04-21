@@ -272,19 +272,27 @@ class ReportManager
     puts targets_due.join("\n")
   end
 
+  # Report service names used for logging.
   def report_service_names
     config = Configuration.instance
     puts config.log_config.service_names
   end
 
+  # Report "log keys", created during logging, that match 'criteria'.
   def report_logkeys(criteria)
     config = Configuration.instance
     puts config.log_config.log_keys(criteria.handles[0])
   end
 
+  # Report the list of all log keys for the current user.
+  def report_logkey_list(criteria)
+    config = Configuration.instance
+    puts config.log_config.log_key_list(criteria)
+  end
+
   def report_logmsgs(criteria)
     config = Configuration.instance
-    puts config.log_config.log_messages(key: criteria.handles[0])
+    puts config.log_config.log_messages(criteria.handles[0])
   end
 
   private

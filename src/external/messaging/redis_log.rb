@@ -14,12 +14,18 @@ class RedisLog
   attr_reader   :key, :port
   attr_accessor :expiration_secs
 
-  def contents(skey: key, count: nil)
-    if count.nil? then
-      redis.xrange(key)
-    else
-      redis.xrange(key, count)
+  # contents of the log with key 'skey' - empty array if the log is empty
+  # or no log exists with key 'skey'
+  def contents(skey = self.key, count = nil)
+    result = []
+    if redis.exists(skey) > 0 && redis.type(skey) == "stream" then
+      if count.nil? then
+        result = redis.xrange(skey)
+      else
+        result = redis.xrange(skey, count)
+      end
     end
+    result
   end
 
   #####  Basic operations

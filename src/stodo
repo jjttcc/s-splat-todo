@@ -285,8 +285,9 @@ report_help() {
   echo -e "  emanc-desc $s all descendants of the designated item that are" \
     "\n$s$s      emancipated children"
   echo -e "  service  $s   report all logged service names"
-  echo -e "  logkey   $s   report all log keys that match <criteria> - e.g.:"
-  echo -e "$s              stodo report logkey 'report.*'"
+  echo -e "  lklist   $s   list all logkey categories"
+  echo -e "  logkey   $s   report all log keys for the specified category -"
+  echo -e "$s              e.g.: stodo report logkey 'user.report'"
   echo -e "  logmsgs  $s   output all log messages for <criteria> (as the key)"
   echo -e "Where <criteria> is either:"
   echo -e "  <type-spec>"
@@ -380,6 +381,9 @@ admin_help() {
   echo -e "  exp[ort] <h>... <path>  Export the specified items (with \c"
   echo -e "handles <h>...),\n${lgap}as well as the items' descendants, to \c"
   echo -e "a file\n${lgap}named 'stodo_data.store', in the specified <path>"
+  echo -e "  reqid                   Create, store, and ouptut a request\c"
+  echo -e "id for grouping\n${lgap}log entries for later retrieval."
+  echo -e "  rmrid <reqid>           Delete the specified request id."
 }
 
 backup_help() {

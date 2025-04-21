@@ -108,6 +108,10 @@ class ReportUtil
         result = Proc.new {
           reporter.report_logkeys(criteria)
         }
+      when /^lkl/       # lklist - list of log keys for user
+        result = Proc.new {
+          reporter.report_logkey_list(criteria)
+        }
       when /^log.*m.*g/ # log entries for a specified key
         result = Proc.new {
           reporter.report_logmsgs(criteria)
@@ -316,14 +320,14 @@ reporter = ReportManager.new manager
 logconfig = Configuration.instance.log_config
 redis_log = logconfig.admin_redis_log
 rlo = ObjectInfo.new(redis_log)
-$log.warn("warning3")
-$log.info("information3")
-$log.error("error3")
-$log.debug("debug3")
-$log.fatal("fatal3")
-$log.unknown("unknown3")
+pid = $$
+$log.warn("i-am-report:warning#{pid}")
+$log.info("i-am-report:information#{pid}")
+$log.error("i-am-report:error#{pid}")
+$log.debug("i-am-report:debug#{pid}")
+$log.fatal("i-am-report:fatal#{pid}")
+$log.unknown("i-am-report:unknown#{pid}")
 res = redis_log.contents
-res2 = redis_log.contents
 #puts "testresult[1]:\n", res
 #broker = ApplicationConfiguration.application_message_broker
 ##exit 0

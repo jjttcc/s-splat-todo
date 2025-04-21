@@ -93,4 +93,5 @@ if ARGV.length > 1 then
     end
     manager.close_edit
   end
+$log.warn("test mgmt[1]")
 end
