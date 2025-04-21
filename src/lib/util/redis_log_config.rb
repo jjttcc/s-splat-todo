@@ -67,13 +67,13 @@ class RedisLogConfig
   pre :service_name_exists do |sname| ! sname.nil? end
   def initialize(service_name, config, debugging)
     init_config(config)
-    self.log_key = log_key_for(service_name, config)
+    self.log_key = log_key_for(service_name)
     # Set up to use the redis database for admin logging.
     self.admin_redis_log =
       MessageBrokerConfiguration.admin_message_log(log_key)
     self.admin_broker =
       MessageBrokerConfiguration.administrative_message_broker
-    register_log_key(service_name, config, log_key)
+    register_log_key(service_name, log_key)
     if
       ! admin_broker.exists(SERVICE_NAMES_KEY) ||
       ! admin_broker.set_has(SERVICE_NAMES_KEY, service_name)
@@ -118,7 +118,7 @@ class RedisLogConfig
     nil
   end
 
-  def log_key_for(service_name, config)
+  def log_key_for(service_name)
     date_time = Time.now.strftime("%Y%m%d.%H%M%S.%9N")
     result = "#{config.user}.#{service_name}.#{date_time}"
   end
@@ -127,7 +127,7 @@ class RedisLogConfig
   # Register the new 'log_key' as a stream key by adding it to a set whose
   # key, k, is "#{config.user}.#{service_name}". And register that k as a
   # member of a set whose key is config.user.
-  def register_log_key(service_name, config, log_key)
+  def register_log_key(service_name, log_key)
     key = "#{config.user}.#{service_name}"
     reqid = current_request_id
     if reqid then

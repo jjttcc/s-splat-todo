@@ -66,7 +66,7 @@ if ARGV.length > 1 then
     target_builder.set_processing_mode TemplateTargetBuilder::CREATE_MODE
     manager.target_builder = target_builder
     manager.add_new_targets
-  when /^change*/
+  when /^change/
     require 'templateoptions'
     handle = arguments[0]
     $log.debug "arguments: #{arguments}, handle: #{handle}"
@@ -80,6 +80,8 @@ if ARGV.length > 1 then
                                               manager.existing_targets, spec)
     manager.target_builder = target_editor
     manager.update_targets(options)
+  when /^st.*tr/
+    manager.start_transaction
   else
     require 'templateoptions'
     opts = opts_from_args(arguments)

@@ -534,7 +534,8 @@ class ReportManager
     private
     def initialize(t, all = false, print_handle)
       if t == nil or t.reminders.empty? then
-        raise "code defect - invalid target: #{t.inspect}"
+        file_line = "\n(file #{__FILE__}, line #{__LINE__})"
+        raise "code defect - invalid target: #{t.inspect}" + file_line
       end
       @target = t
       @use_all_reminders = all

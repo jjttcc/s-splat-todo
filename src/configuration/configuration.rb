@@ -278,7 +278,7 @@ class Configuration
         result = File.open(CONFIG_FILE_PATH, mode)
     rescue Exception => e
       raise "Fatal error: file #{CONFIG_FILE_PATH} could not be " +
-        "opened for reading [#{e}]"
+        "opened for reading [#{e}]\n(file #{__FILE__}, line #{__LINE__})"
     end
     result
   end
@@ -384,7 +384,8 @@ class Configuration
     rescue Exception => e
       ltype = "#{log_type} "
       if ltype.nil? || ltype.empty? then ltype = "" end
-      raise "Creation of #{ltype}log (#{final_path}} failed: #{e}"
+      file_line = "\n(file #{__FILE__}, line #{__LINE__})"
+      raise "Creation of #{ltype}log (#{final_path}} failed: #{e}" + file_line
     end
     $debug = ENV[STDEBUG] != nil
     if ENV[STLOG_LEVEL] then

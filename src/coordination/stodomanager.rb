@@ -186,6 +186,12 @@ class STodoManager
     @data_manager.store_targets(self.existing_targets)
   end
 
+  # Begin a transaction:
+  #   ......
+  def start_transaction
+    $log.warn("!!!temporary - stub!!!!")
+  end
+
   private
 
   ###    Initialization

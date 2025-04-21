@@ -43,6 +43,10 @@ mainhelp() {
     echo -e "  set[tings]     ${gap}show current configuration/Settings"
     echo -e "  temp [<type> ...]  output a to-do item Template \c"
     echo -e "(for target type <type>)"
+    echo -e "  starttran          Start a transaction"
+    echo -e "${longgap}Note: transactions are currently only used for"
+    echo -e "${longgap}grouping log entries together for later retrieval."
+    echo -e "  endtran            End the current transaction."
     echo -e "  backup [opts] ${gap} back up data files"
     echo -e "  proca <h>...       process attachments for items with \c"
     echo -e "handles <h>..."
@@ -381,9 +385,6 @@ admin_help() {
   echo -e "  exp[ort] <h>... <path>  Export the specified items (with \c"
   echo -e "handles <h>...),\n${lgap}as well as the items' descendants, to \c"
   echo -e "a file\n${lgap}named 'stodo_data.store', in the specified <path>"
-  echo -e "  reqid                   Create, store, and ouptut a request\c"
-  echo -e "id for grouping\n${lgap}log entries for later retrieval."
-  echo -e "  rmrid <reqid>           Delete the specified request id."
 }
 
 backup_help() {
