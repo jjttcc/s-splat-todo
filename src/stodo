@@ -205,7 +205,7 @@ print_version() {
 
 print_settings() {
   checkpath $admin
-  run $admin settings
+  STODO_SUPPRESS_TR=1 run $admin settings
 }
 
 install_specfile() {
@@ -541,11 +541,11 @@ case $1 in
     do_report attach $proca_handles
     ;;
   st*tr*)
-    do_edit start-transaction
+    STODO_SUPPRESS_TR=1 do_edit start-transaction
     shift;
     ;;
   en*tr*)
-    do_edit end-transaction
+    STODO_SUPPRESS_TR=1 do_edit end-transaction
     shift;
     ;;
   tr*ms*)

@@ -3,7 +3,7 @@ require 'ruby_contracts'
 # Operations and tools related to transactions and transaction-related
 # logging
 class TransactionLog
-  include Contracts::DSL
+  include Contracts::DSL, SpecTools
 
   public  ### Attributes
 
@@ -59,7 +59,11 @@ class TransactionLog
   public  ###  Basic operations
 
   # Begin the transaction.
+  pre  :not_in_transaction do ! in_transaction end
+  post :in_transaction do in_transaction end
   def start_transaction
+puts 'starting transaction'   #!!!!!
+#binding.irb
     transaction_id = "trx:" + TimeUtil.current_nano_date_time
     transaction_logging_device.add_msgs_to_queue(transaction_id_queue_key,
                                                  transaction_id)
@@ -68,8 +72,13 @@ class TransactionLog
   end
 
   # End the transaction.
+  post :not_in_transaction do ! in_transaction end
   def end_transaction
-    transaction_logging_device.delete_object(current_transaction_key)
+puts 'ending transaction'   #!!!!!
+#binding.irb
+    if in_transaction then
+      transaction_logging_device.delete_object(current_transaction_key)
+    end
   end
 
   # Add the specified logging 'key' to the queue identified by
@@ -112,13 +121,31 @@ class TransactionLog
   post :user_set do |result, logdev, msglogdev, user|
     self.user == user
   end
+  post :in_transaction_unless_suppressed do
+    implies(ENV[SUPPRESS_TRANSACTION].nil?, in_transaction)
+  end
   def initialize(trx_logging_device, msg_logging_device, user)
     self.transaction_logging_device = trx_logging_device
     self.message_logging_device = msg_logging_device
     self.user = user
+#binding.irb
+    if ENV[SUPPRESS_TRANSACTION].nil? then
+      wrap_transaction
+    end
   end
 
   private
+
+  # If we're not in a transaction, start one (start_transaction), and
+  # then ensure that the transaction is closed (end_transaction) when the
+  # process exits.
+  post :in_transaction do in_transaction end
+  def wrap_transaction
+    if ! in_transaction then
+      start_transaction
+      at_exit { end_transaction }
+    end
+  end
 
   pre :good_user do ! self.user.nil? && ! self.user.empty? end
   def transaction_id_queue_key

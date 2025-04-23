@@ -39,6 +39,7 @@ module SpecTools
   ST_REJECT_BADATTCHMTS = 'STODO_REJECT_BADATTCHMTS'
   ST_ATTCH_ACTION       = 'ST_ATTCH_ACTION'
   ST_COMMIT_ID          = 'ST_COMMIT_ID'
+  SUPPRESS_TRANSACTION  = 'STODO_SUPPRESS_TR'
 
   # tags/patterns from spec with special meaning
   INITIAL_EMAIL_PTRN = Regexp.new('\[initial\]')

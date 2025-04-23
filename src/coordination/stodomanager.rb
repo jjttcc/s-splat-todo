@@ -189,10 +189,12 @@ class STodoManager
   # Begin a transaction:
   def start_transaction
     translog = configuration.transaction_log
-    # Note: $log.* operations should not be invoked before
-    # 'translog.start_transaction' is called.
-    translog.start_transaction
-    $log.warn("[starting transaction - translog: #{translog}]")
+    if ! translog.in_transaction then
+      # Note: $log.* operations should not be invoked before
+      # 'translog.start_transaction' is called.
+      translog.start_transaction
+      $log.warn("[starting transaction - translog: #{translog}]")
+    end
   end
 
   # End a transaction:
