@@ -187,9 +187,28 @@ class STodoManager
   end
 
   # Begin a transaction:
-  #   ......
   def start_transaction
-    $log.warn("!!!temporary - stub!!!!")
+    translog = configuration.transaction_log
+    # Note: $log.* operations should not be invoked before
+    # 'translog.start_transaction' is called.
+    translog.start_transaction
+    $log.warn("[starting transaction - translog: #{translog}]")
+  end
+
+  # End a transaction:
+  def end_transaction
+    translog = configuration.transaction_log
+    $log.warn("[ending transaction - translog: #{translog}]")
+    translog.end_transaction
+    $log.warn("[ended transaction - translog: #{translog}]")
+  end
+
+  # End a transaction:
+  def display_transaction_messages
+    translog = configuration.transaction_log
+    $log.warn("[ending transaction - translog: #{translog}]")
+    translog.end_transaction
+    $log.warn("[ended transaction - translog: #{translog}]")
   end
 
   private

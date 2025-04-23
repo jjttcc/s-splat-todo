@@ -53,6 +53,23 @@ class Configuration
     result
   end
 
+  public  ### admin-related methods
+
+  # The 'administrative' log device
+  def admin_log
+    log_config.admin_log
+  end
+
+  # The 'administrative' message broker
+  def admin_broker
+    log_config.admin_broker
+  end
+
+  # The transaction logging object
+  def transaction_log
+    log_config.transaction_log
+  end
+
   public  ###  Access
 
   # user name/id
@@ -96,9 +113,6 @@ class Configuration
   attr_reader :stodo_git
 
   public  ###  Settable attributes
-
-  # id for the current user-specified request
-  attr_accessor :request_id
 
   VERSION =  '1.0.109'
   PROGNAME = 'stodo'
@@ -148,6 +162,11 @@ class Configuration
     ENV['ENABLE_ASSERTION']
   end
 
+  # Is the system, for 'user' currently in a transaction?
+  def in_transaction
+    transaction_log.in_transaction
+  end
+
   private
 
   attr_writer :view_attachment, :edit_attachment
@@ -159,7 +178,6 @@ class Configuration
   def initialize
     self.service_name = @@service_name
     self.debugging = @@debugging
-    self.request_id = ""
     settings = config_file_settings
     set_config_vars settings
     set_external_media_tools settings
@@ -384,8 +402,9 @@ class Configuration
     rescue Exception => e
       ltype = "#{log_type} "
       if ltype.nil? || ltype.empty? then ltype = "" end
-      file_line = "\n(file #{__FILE__}, line #{__LINE__})"
-      raise "Creation of #{ltype}log (#{final_path}} failed: #{e}" + file_line
+      detail = e.backtrace.join("\n")
+      raise "Creation of #{ltype}log (#{final_path}} failed: '#{e.message}\n" +
+        detail
     end
     $debug = ENV[STDEBUG] != nil
     if ENV[STLOG_LEVEL] then

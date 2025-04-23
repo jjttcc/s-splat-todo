@@ -5,9 +5,24 @@ require 'ruby_contracts'
 module TimeUtil
   include Contracts::DSL
 
+  # Current date and time
   post :exists do |result| result != nil end
   def self.current_date_time
     DateTime.current
+  end
+
+  # Current date and time with nanoseconds, as a string -
+  # In the format:
+  #   <yyyymmdd><separator><hhmmss><separator><fractional-seconds>
+  def self.current_nano_date_time(separator = '.')
+    Time.now.strftime("%Y%m%d#{separator}%H%M%S#{separator}%9N")
+  end
+
+  # Current date and time with microseconds, as a string -
+  # In the format:
+  #   <yyyymmdd><separator><hhmmss><separator><fractional-seconds>
+  def self.current_micro_date_time(separator = '.')
+    Time.now.strftime("%Y%m%d#{separator}%H%M%S#{separator}%6N")
   end
 
   pre  :tz_good do |tz| ! tz.nil? end

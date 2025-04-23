@@ -111,7 +111,9 @@ class STodoAdministrator
   def print_settings *dummy
     config = Configuration.instance
     dbc_status = (config.assertions_enabled?)? "ENABLED": "DISABLED"
+    trx_status = config.in_transaction ? "YES": "NO"
     printf("%-26s%s\n", "assertions:", dbc_status);
+    printf("%-26s%s\n", "in transaction:", trx_status);
     config.settings.sort.each do |set|
       printf("%-26s%s\n", "#{set[0]}:", set[1]);
     end

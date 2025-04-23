@@ -50,6 +50,12 @@ class ApplicationConfiguration
     MessageBrokerConfiguration::administrative_message_broker
   end
 
+  # Broker for administrative-level messaging - class-method
+  # version of the above
+  def self.administrative_message_broker
+    MessageBrokerConfiguration::administrative_message_broker
+  end
+
   # Broker application-related publish/subscribe-based messaging
   def pubsub_broker
     MessageBrokerConfiguration::pubsub_broker
@@ -67,6 +73,11 @@ class ApplicationConfiguration
 
   # Administrative message-logging object
   def admin_message_log(key = nil)
+    MessageBrokerConfiguration::admin_message_log(key)
+  end
+
+  # Administrative message-logging object - class-method version of the above
+  def self.admin_message_log(key = nil)
     MessageBrokerConfiguration::admin_message_log(key)
   end
 

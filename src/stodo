@@ -47,6 +47,11 @@ mainhelp() {
     echo -e "${longgap}Note: transactions are currently only used for"
     echo -e "${longgap}grouping log entries together for later retrieval."
     echo -e "  endtran            End the current transaction."
+    echo -e "  tranmsgs <tr-id>   Output all messages that were logged \c"
+    echo -e "during transaction"
+    echo -e "${longgap}with id <tr-id> (default: the last transaction)"
+    echo -e "  tranids            Output all transaction ids in the \c"
+    echo -e "database."
     echo -e "  backup [opts] ${gap} back up data files"
     echo -e "  proca <h>...       process attachments for items with \c"
     echo -e "handles <h>..."
@@ -534,6 +539,22 @@ case $1 in
     shift;
     pre_process_attachments $*
     do_report attach $proca_handles
+    ;;
+  st*tr*)
+    do_edit start-transaction
+    shift;
+    ;;
+  en*tr*)
+    do_edit end-transaction
+    shift;
+    ;;
+  tr*ms*)
+    do_report display-transaction-messages $*
+    shift;
+    ;;
+  tr*id*)
+    do_report display-transaction-ids $*
+    shift;
     ;;
   git-l[is]*|gitl[is]*)           # (will cause git-action - NO repo change)
     shift

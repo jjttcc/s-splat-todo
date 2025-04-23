@@ -112,6 +112,14 @@ class ReportUtil
         result = Proc.new {
           reporter.report_logkey_list(criteria)
         }
+      when /^display.*trans.*mess/
+        result = Proc.new {
+          reporter.report_tranaction_logs(criteria.handles[1])
+        }
+      when /^display.*trans.*id/
+        result = Proc.new {
+          reporter.report_tranaction_ids
+        }
       when /^log.*m.*g/ # log entries for a specified key
         result = Proc.new {
           reporter.report_logmsgs(criteria)
@@ -318,7 +326,18 @@ reporter = ReportManager.new manager
 
 # debugging of logging:
 logconfig = Configuration.instance.log_config
-redis_log = logconfig.admin_redis_log
+redis_log = logconfig.admin_log
+trlog = logconfig.transaction_log
+if trlog.in_transaction then
+  trid = trlog.current_transaction
+  s = "We are in a transaction with id: #{trid}"
+  puts s
+  $log.warn(s)
+else
+  s = "We are NOT in a transaction"
+  puts s
+  $log.warn(s)
+end
 rlo = ObjectInfo.new(redis_log)
 pid = $$
 $log.warn("i-am-report:warning#{pid}")

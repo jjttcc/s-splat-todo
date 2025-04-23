@@ -295,6 +295,19 @@ class ReportManager
     puts config.log_config.log_messages(criteria.handles[0])
   end
 
+  def report_tranaction_logs(transaction_id)
+    config = Configuration.instance
+    log_entries = config.transaction_log.log_messages(transaction_id)
+#!!!to-do: format this:
+    puts "#{log_entries.count} log entries:\n" + log_entries.join("\n")
+  end
+
+  def report_tranaction_ids
+    config = Configuration.instance
+    ids = config.transaction_log.transaction_ids
+    puts "#{ids.count} ids:\n" + ids.join("\n")
+  end
+
   private
 
   def initialize manager

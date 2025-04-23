@@ -44,7 +44,7 @@ def handles_from_args arguments
   result
 end
 
-if ARGV.length > 1 then
+if ARGV.length > 0 then
   manager = STodoManager.new(service_name: 'management', debugging: true)
   command = ARGV[0]; arguments = ARGV[1..-1]
   case command
@@ -80,8 +80,12 @@ if ARGV.length > 1 then
                                               manager.existing_targets, spec)
     manager.target_builder = target_editor
     manager.update_targets(options)
-  when /^st.*tr/
+  when /start-transaction/
     manager.start_transaction
+  when /end-transaction/
+    manager.end_transaction
+  when /display-transaction-messages/
+    manager.display_transaction_messages
   else
     require 'templateoptions'
     opts = opts_from_args(arguments)

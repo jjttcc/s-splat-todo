@@ -8,13 +8,13 @@ class RedisMessageBroker
   public  ###  Access
 
   # The message previously added via 'set_message(key, msg)'
+  pre 'key_exists' do |key| ! key.nil? end
   def retrieved_message(key)
     result = redis.get key
     result
   end
 
-  # The members of the set previously built via 'replace_set(key, args)'
-  # and/or 'add_set(key, args)'
+  # The redis 'keys' operation - all keys matching 'pattern'
   # Array<String>
   pre  :ptrn_exists do |pattern| ! pattern.nil? end
   post :result_exists do |result| ! result.nil? && result.is_a?(Array) end
@@ -26,6 +26,7 @@ class RedisMessageBroker
   # The members of the set previously built via 'replace_set(key, args)'
   # and/or 'add_set(key, args)'
   # Array<String>
+  pre 'key_exists' do |key| ! key.nil? end
   post :result_exists do |result| ! result.nil? && result.is_a?(Array) end
   def retrieved_set(key)
     result = redis.smembers key
@@ -36,6 +37,7 @@ class RedisMessageBroker
 
   # The next element (head) in the queue with key 'key' (typically,
   # inserted via 'queue_messages')
+  pre 'key_exists' do |key| ! key.nil? end
   post :nil_if_empty do |res, key| implies(queue_count(key) == 0, res.nil?) end
   def queue_head(key)
     result = nil
@@ -48,6 +50,7 @@ class RedisMessageBroker
 
   # The last element (tail) in the queue with key 'key' (typically,
   # inserted via 'queue_messages')
+  pre 'key_exists' do |key| ! key.nil? end
   post :nil_if_empty do |res, key| implies(queue_count(key) == 0, res.nil?) end
   def queue_tail(key)
     result = nil
@@ -60,12 +63,14 @@ class RedisMessageBroker
 
   # All elements of the queue identified with 'key', in their original
   # order - The queue's state is not changed.
+  pre 'key_exists' do |key| ! key.nil? end
   def queue_contents(key)
     # ('.reverse' because the list representation reverses the elements' order.)
     redis.lrange(key, 0, -1).reverse
   end
 
   # The object stored with 'key' - nil if there is no object at 'key'
+  pre 'key_exists' do |key| ! key.nil? end
   def object(key, admin = false)
     result = nil
     guts = retrieved_message(key)
@@ -91,6 +96,7 @@ class RedisMessageBroker
   end
 
   # The number of members in the set identified by 'key'
+  pre 'key_exists' do |key| ! key.nil? end
   post :result_exists do |result| ! result.nil? && result >= 0 end
   def cardinality(key)
     result = redis.scard key
@@ -98,12 +104,14 @@ class RedisMessageBroker
   end
 
   # The count (size) of the queue with key 'key'
+  pre 'key_exists' do |key| ! key.nil? end
   def queue_count(key)
     redis.llen(key)
   end
 
   # Does the queue with key 'key' contain at least one instance of 'value'?
   # Note: This query is relatively expensive.
+  pre 'key_exists' do |key| ! key.nil? end
   def queue_contains(key, value)
     redis.lrange(key, 0, -1).include?(value)
   end
@@ -114,6 +122,7 @@ class RedisMessageBroker
   end
 
   # Does the set with key 'key' contain 'value'?
+  pre 'key_exists' do |key| ! key.nil? end
   def set_has(key, value)
     redis.sismember(key, value)
   end
@@ -123,6 +132,7 @@ class RedisMessageBroker
   # Set (insert) a keyed message
   # If 'expire_secs' is not nil, set the time-to-live for 'key' to
   # expire_secs seconds.
+  pre 'key_exists' do |key| ! key.nil? end
   pre :sane_expire do |k, m, exp|
     implies(exp != nil, exp.is_a?(Numeric) && exp >= 0) end
   def set_message(key, msg, expire_secs = nil)
@@ -143,6 +153,7 @@ class RedisMessageBroker
   # Set (insert) 'object' with 'key'
   # If 'expire_secs' is not nil, set the time-to-live for 'key' to
   # expire_secs seconds.
+  pre 'key_exists' do |key| ! key.nil? end
   pre :sane_expire do |k, m, exp|
     implies(exp != nil, exp.is_a?(Numeric) && exp >= 0) end
   # post :object_stored do |result, key, o|
@@ -153,10 +164,12 @@ class RedisMessageBroker
   end
 
   # Add 'msgs' (a String, if 1 message, or an array of Strings) to the end of
-  # the queue (implemented as a list) with key 'key'.
+  # the queue (implemented as a list) with key 'key'. If the queue does not
+  # yet exist, create it with 'key' as the key.
   # If 'expire_secs' is not nil, set the time-to-live for the set to
   # 'expire_secs' seconds.
   # Return the resulting size of the queue.
+  pre 'key_exists' do |key| ! key.nil? end
   pre :sane_expire do |k, m, exp|
     implies(exp != nil, exp.is_a?(Numeric) && exp >= 0) end
   def queue_messages(key, msgs, expire_secs = nil)
@@ -166,6 +179,8 @@ class RedisMessageBroker
     end
     result
   end
+
+  alias_method :add_msgs_to_queue, :queue_messages
 
   # Move the next (head) element from the queue @ key1 to the tail of the
   # queue @ key2.  If key1 == key2, move the head to the tail of the same
@@ -189,6 +204,7 @@ class RedisMessageBroker
   # If 'expire_secs' is not nil, set the time-to-live for the set to
   # 'expire_secs' seconds.
   # Return the resulting count value (of items actually added) from Redis.
+  pre 'key_exists' do |key| ! key.nil? end
   pre :sane_expire do |k, a, exp|
     implies(exp != nil, exp.is_a?(Numeric) && exp >= 0) end
   def add_set(key, args, expire_secs = nil)
@@ -205,6 +221,7 @@ class RedisMessageBroker
   # (with 'key') already exists, remove the old set first before creating
   # the new one.
   # Return the resulting count value (of items actually added) from Redis.
+  pre 'key_exists' do |key| ! key.nil? end
   def replace_set(key, args)
     redis.del key
     redis.sadd key, args
@@ -213,6 +230,7 @@ class RedisMessageBroker
   public  ###  Removal
 
   # Remove members 'args' from the set specified by 'key'.
+  pre 'key_exists' do |key| ! key.nil? end
   def remove_from_set(key, args)
     redis.srem key, args
   end
@@ -220,18 +238,21 @@ class RedisMessageBroker
   # Remove the next-element/head (i.e., dequeue) of the queue with key 'key'
   # (typically, inserted via 'queue_messages').  Return the value of that
   # element - nil if the queue is empty or does not exist.
+  pre 'key_exists' do |key| ! key.nil? end
   def remove_next_from_queue(key)
     redis.rpop(key)
   end
 
   # Remove all occurrences of 'value' from the queue with key 'key'.
   # Return the number of removed elements.
+  pre 'key_exists' do |key| ! key.nil? end
   def remove_from_queue(key, value)
     redis.lrem(key, 0, value)
   end
 
   # Delete the object (message inserted via 'set_message', set added via
   # 'add_set', or etc.) with the specified key.
+  pre 'key_exists' do |key| ! key.nil? end
   def delete_object(key)
     redis.del key
   end
