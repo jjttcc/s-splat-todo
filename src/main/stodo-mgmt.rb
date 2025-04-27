@@ -84,8 +84,6 @@ if ARGV.length > 0 then
     manager.start_transaction
   when /end-transaction/
     manager.end_transaction
-  when /display-transaction-messages/
-    manager.display_transaction_messages
   else
     require 'templateoptions'
     opts = opts_from_args(arguments)

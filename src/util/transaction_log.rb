@@ -2,7 +2,7 @@ require 'ruby_contracts'
 
 # Operations and tools related to transactions and transaction-related
 # logging
-class TransactionLog
+class TransactionManager
   include Contracts::DSL, SpecTools
 
   public  ### Attributes
@@ -25,7 +25,7 @@ class TransactionLog
     result = []
     trid = transaction_id
     if trid.nil? then
-      trid = transaction_logging_device.queue_tail(transaction_id_queue_key)
+      trid = previous_queued_transaction
     end
     if ! trid.nil? then
       result = transaction_logging_device.queue_contents(trid)
@@ -33,7 +33,9 @@ class TransactionLog
   end
 
   # All logged messages associated with 'transaction_id'
-#!!!to-do: Document the structure of 'result'.
+  # If 'transaction_id' is nil, the logged messages for the last logged
+  # transaction.
+  # structure of 'result': Array<Array<String, Hash>>
   def log_messages(transaction_id = nil)
     result = []
     lkeys = log_keys(transaction_id)
@@ -62,8 +64,6 @@ class TransactionLog
   pre  :not_in_transaction do ! in_transaction end
   post :in_transaction do in_transaction end
   def start_transaction
-puts 'starting transaction'   #!!!!!
-#binding.irb
     transaction_id = "trx:" + TimeUtil.current_nano_date_time
     transaction_logging_device.add_msgs_to_queue(transaction_id_queue_key,
                                                  transaction_id)
@@ -74,8 +74,6 @@ puts 'starting transaction'   #!!!!!
   # End the transaction.
   post :not_in_transaction do ! in_transaction end
   def end_transaction
-puts 'ending transaction'   #!!!!!
-#binding.irb
     if in_transaction then
       transaction_logging_device.delete_object(current_transaction_key)
     end
@@ -93,18 +91,6 @@ puts 'ending transaction'   #!!!!!
     end
   end
 
-=begin
-  def write(message)
-# example 'message':
-#W, [2025-04-09T17:03:56.421626 #3333547]  WARN -- : a logger device
-    message =~ /([a-zA-Z], *[^:]*:..:[^:]*): (.*)/
-    header = $1
-    msg = $2
-    # save 'msg' to the redis log.
-    redis_log.send_message(log_key: stream_key, tag: header, msg: msg)
-  end
-=end
-
   protected
 
   attr_writer   :user, :transaction_logging_device
@@ -118,6 +104,9 @@ puts 'ending transaction'   #!!!!!
   post :transaction_logging_device_set do |result, logdev|
     self.transaction_logging_device == logdev
   end
+  post :message_logging_device_set do |result, ld, mlogdev|
+    self.message_logging_device == mlogdev
+  end
   post :user_set do |result, logdev, msglogdev, user|
     self.user == user
   end
@@ -128,7 +117,6 @@ puts 'ending transaction'   #!!!!!
     self.transaction_logging_device = trx_logging_device
     self.message_logging_device = msg_logging_device
     self.user = user
-#binding.irb
     if ENV[SUPPRESS_TRANSACTION].nil? then
       wrap_transaction
     end
@@ -142,6 +130,11 @@ puts 'ending transaction'   #!!!!!
   post :in_transaction do in_transaction end
   def wrap_transaction
     if ! in_transaction then
+      if @cached_previous_queued_transaction.nil? then
+        # Ensure that this transaction that we are starting below is
+        # not reported as the 'previous_queued_transaction':
+        @cached_previous_queued_transaction = previous_queued_transaction
+      end
       start_transaction
       at_exit { end_transaction }
     end
@@ -154,6 +147,15 @@ puts 'ending transaction'   #!!!!!
 
   def current_transaction_key
     "#{user}-current-transaction"
+  end
+
+  # The id of the last transaction logged in the database
+  def previous_queued_transaction
+    if ! @cached_previous_queued_transaction.nil? then
+      @cached_previous_queued_transaction
+    else
+      transaction_logging_device.queue_tail(transaction_id_queue_key)
+    end
   end
 
 end

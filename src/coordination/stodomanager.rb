@@ -205,14 +205,6 @@ class STodoManager
     $log.warn("[ended transaction - translog: #{translog}]")
   end
 
-  # End a transaction:
-  def display_transaction_messages
-    translog = configuration.transaction_log
-    $log.warn("[ending transaction - translog: #{translog}]")
-    translog.end_transaction
-    $log.warn("[ended transaction - translog: #{translog}]")
-  end
-
   private
 
   ###    Initialization

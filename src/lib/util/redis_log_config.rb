@@ -76,7 +76,7 @@ class RedisLogConfig
       ApplicationConfiguration.admin_message_log(log_key)
     self.admin_broker =
       ApplicationConfiguration.administrative_message_broker
-    self.transaction_log = TransactionLog.new(admin_broker, admin_log,
+    self.transaction_log = TransactionManager.new(admin_broker, admin_log,
                                               config.user)
     register_log_key(service_name, log_key)
     if

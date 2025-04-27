@@ -347,10 +347,10 @@ $log.debug("i-am-report:debug#{pid}")
 $log.fatal("i-am-report:fatal#{pid}")
 $log.unknown("i-am-report:unknown#{pid}")
 res = redis_log.contents
-#puts "testresult[1]:\n", res
+#!!!!puts "testresult[1]:\n", res
 #broker = ApplicationConfiguration.application_message_broker
 ##exit 0
 #redis_write_test(manager, broker)
-#redis_read_test(broker)
+#!!!!redis_read_test(broker)
 # end-debugging
 ReportUtil::execute(reporter).call
