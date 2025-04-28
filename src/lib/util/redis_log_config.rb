@@ -1,6 +1,6 @@
 require 'application_configuration'
 require 'redis_logger_device'
-require 'transaction_log'
+require 'transaction_manager'
 
 # redis-based logging configuration
 # Note: The global variable $log is set to a redis-based Logger instance
@@ -21,7 +21,7 @@ class RedisLogConfig
   attr_reader :log_key
   # Object used to store meta info about logging
   attr_reader :admin_broker
-  attr_reader :transaction_log
+  attr_reader :transaction_manager
 
   public  ### Look-up services
 
@@ -57,11 +57,11 @@ class RedisLogConfig
 
   private
 
-  attr_writer :log, :admin_log, :log_key, :admin_broker, :transaction_log
+  attr_writer :log, :admin_log, :log_key, :admin_broker, :transaction_manager
   attr_accessor :config
 
   # Initialize public attributes: 'log_key', 'admin_log', 'log',
-  # 'transaction_log'.
+  # 'transaction_manager'.
   # Initialize private attributes: 'admin_broker'
   # Set 'log_key' to "#{service_name}.#{<yyyymmdd>.<hhmmss>.<microseconds>}"
   # Add 'log_key' to the "#{service_name}-entries" queue.
@@ -76,7 +76,7 @@ class RedisLogConfig
       ApplicationConfiguration.admin_message_log(log_key)
     self.admin_broker =
       ApplicationConfiguration.administrative_message_broker
-    self.transaction_log = TransactionManager.new(admin_broker, admin_log,
+    self.transaction_manager = TransactionManager.new(admin_broker, admin_log,
                                               config.user)
     register_log_key(service_name, log_key)
     if
@@ -87,7 +87,7 @@ class RedisLogConfig
       admin_broker.add_set(SERVICE_NAMES_KEY, service_name)
     end
     self.log = RedisLoggerDevice.new(admin_log, admin_log.key,
-                                    transaction_log).logger
+                                    transaction_manager).logger
     $log = log
     if debugging then
       pw = ENV["REDISCLI_AUTH"]

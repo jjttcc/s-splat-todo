@@ -297,13 +297,13 @@ class ReportManager
 
   def report_tranaction_logs(transaction_id)
     config = Configuration.instance
-    log_entries = config.transaction_log.log_messages(transaction_id)
+    log_entries = config.transaction_manager.log_messages(transaction_id)
     puts "#{log_entries.count} log entries:\n" + log_entries.join("\n")
   end
 
   def report_tranaction_ids
     config = Configuration.instance
-    ids = config.transaction_log.transaction_ids
+    ids = config.transaction_manager.transaction_ids
     puts "#{ids.count} ids:\n" + ids.join("\n")
   end
 

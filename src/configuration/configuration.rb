@@ -67,8 +67,8 @@ class Configuration
   end
 
   # The transaction logging object
-  def transaction_log
-    log_config.transaction_log
+  def transaction_manager
+    log_config.transaction_manager
   end
 
   public  ###  Access
@@ -165,7 +165,7 @@ class Configuration
 
   # Is the system, for 'user' currently in a transaction?
   def in_transaction
-    transaction_log.in_transaction
+    transaction_manager.in_transaction
   end
 
   private

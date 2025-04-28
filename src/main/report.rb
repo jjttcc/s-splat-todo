@@ -327,7 +327,7 @@ reporter = ReportManager.new manager
 # debugging of logging:
 logconfig = Configuration.instance.log_config
 redis_log = logconfig.admin_log
-trlog = logconfig.transaction_log
+trlog = logconfig.transaction_manager
 if trlog.in_transaction then
   trid = trlog.current_transaction
   s = "We are in a transaction with id: #{trid}"
