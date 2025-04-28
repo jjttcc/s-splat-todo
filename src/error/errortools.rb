@@ -28,6 +28,8 @@ module ErrorTools
     end
   end
 
+  alias_method :check, :assert
+
   def assert_invariant(msg = "", &block)
     if ! yield then
       trace = caller.join("\n")

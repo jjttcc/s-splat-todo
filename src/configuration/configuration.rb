@@ -2,6 +2,7 @@ require 'ruby_contracts'
 require 'singleton'
 require 'logger'
 require 'syslog/logger'
+require 'errortools'
 require 'fileutils'
 require 'yamlstorebaseddatamanager'
 require 'spectools'
@@ -15,7 +16,7 @@ require 'redis_log_config'
 # Configuration settings for the current run
 class Configuration
   include Singleton
-  include ConfigTools, MediaConfigTools, FileTest, FileUtils
+  include ConfigTools, MediaConfigTools, FileTest, FileUtils, ErrorTools
   include Contracts::DSL
 
   public  ### admin-related attributes
@@ -406,16 +407,21 @@ class Configuration
       raise "Creation of #{ltype}log (#{final_path}} failed: '#{e.message}\n" +
         detail
     end
+    check('$log exists') {! $log.nil?}
     $debug = ENV[STDEBUG] != nil
     if ENV[STLOG_LEVEL] then
       $log.level = ENV[STLOG_LEVEL]
+    elsif assertions_enabled? then
+      $log.level = Logger::DEBUG
     else
       $log.level = $debug? Logger::DEBUG: Logger::WARN
     end
+$log.debug("debugging messages are on")
   end
 
   # Instantiate self.log_config as a RedisLogConfig object, which will
   # set up logging, including setting $log to a redis-based Logger, etc.
+  post :log do ! $log.nil? && $log.is_a?(Logger) end
   def configure_redis_log
     self.log_config = RedisLogConfig.new(service_name, self, debugging)
   end
