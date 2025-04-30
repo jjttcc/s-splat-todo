@@ -5,12 +5,14 @@ require 'syslog/logger'
 require 'errortools'
 require 'fileutils'
 require 'yamlstorebaseddatamanager'
+require 'redisbaseddatamanager'
 require 'spectools'
 require 'configtools'
 require 'mediaconfigtools'
 require 'stodogit'
 require 'application_configuration'
 require 'redis_log_config'
+require 'redis_db_config'
 
 
 # Configuration settings for the current run
@@ -27,6 +29,8 @@ class Configuration
   attr_reader :debugging
   # The RedisLogConfig object - for reporting and debugging
   attr_reader :log_config
+  # The RedisDBConfig object - for reporting and debugging
+  attr_reader :db_config
 
   public  ### admin-related class methods
 
@@ -90,6 +94,8 @@ class Configuration
   attr_reader :log_path
   # type of device to use for logging
   attr_reader :log_type
+  # type of database to be used
+  attr_reader :database_type
   # path to the git executable (e.g.: /bin/git)
   attr_reader :git_executable
   # default/backup email address
@@ -171,7 +177,7 @@ class Configuration
   private
 
   attr_writer :view_attachment, :edit_attachment
-  attr_writer :service_name, :debugging, :log_config
+  attr_writer :service_name, :debugging, :log_config, :db_config
 
   post 'important objects exist' do
     ! data_manager.nil? && ! stodo_git.nil?
@@ -185,7 +191,8 @@ class Configuration
     @app_configuration = ApplicationConfiguration.new
     set_internal_vars
     @test_run = ENV[STTESTRUN] != nil
-    @data_manager = YamlStoreBasedDataManager.new(data_path, user)
+    initialize_database
+#!!!!    @data_manager = YamlStoreBasedDataManager.new(data_path, user)
     @stodo_git = initialized_stodo_git
   end
 
@@ -210,6 +217,7 @@ class Configuration
       @log_path = lp + File::SEPARATOR + LOG_BASE
     end
     @log_type = settings[LOG_TYPE_TAG]
+    @database_type = settings[DB_TYPE_TAG]
     # (Initialize the log as soon as possible.)
     create_and_initialize_log
     if @git_path.nil? then
@@ -392,7 +400,7 @@ class Configuration
         $log = Syslog::Logger.new('stodo')
       elsif log_type == REDIS_TYPE_TAG then
         configure_redis_log
-      else    # assume FILELOG_TYPE_TAG (default)
+      else    # assume FILE_TYPE_TAG (default)
         if log_path && ! log_path.empty? then
           final_path = log_path
         else
@@ -417,6 +425,20 @@ class Configuration
       $log.level = $debug? Logger::DEBUG: Logger::WARN
     end
 $log.debug("debugging messages are on")
+  end
+
+  def initialize_database
+#!!!binding.irb
+    if database_type == REDIS_TYPE_TAG then
+      self.db_config = RedisDBConfig.new(self)
+      @data_manager = db_config.data_manager
+#      @data_manager = RedisBasedDataManager.new(user)
+    else
+      check('file db type') do
+        database_type == FILE_TYPE_TAG || database_type == nil
+      end
+      @data_manager = YamlStoreBasedDataManager.new(data_path, user)
+    end
   end
 
   # Instantiate self.log_config as a RedisLogConfig object, which will

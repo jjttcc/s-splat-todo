@@ -2,7 +2,11 @@ require 'ruby_contracts'
 require 'yaml/store'
 require 'securerandom'
 require 'errortools'
+require 'memorandum'
+require 'project'
+require 'scheduledevent'
 
+# Data manager that uses YAML::Store for its implementation
 class YamlStoreBasedDataManager
   include ErrorTools
   include Contracts::DSL
@@ -10,6 +14,8 @@ class YamlStoreBasedDataManager
   public
 
   LAST_UPDATE_TAG = :last_update
+  # Name of the database file:
+  STORED_OBJECTS_FILENAME = 'stodo_data.store'
   # Path of last performed temporary backup:
   attr_reader :last_temp_backup_path
 
@@ -101,13 +107,18 @@ class YamlStoreBasedDataManager
 
   private
 
-  STORED_OBJECTS_FILENAME = 'stodo_data.store'
   attr_writer :last_temp_backup_path
 
+  # If 'data_path' is a file, assume it's the database file; otherwise
+  # (it's a directory), use it to determine the database file's path,
+  # with STORED_OBJECTS_FILENAME as the file name.
   def initialize(data_path, user)
-    @data_path = data_path
     @user = user
-    @stored_fpath = @data_path + File::SEPARATOR + STORED_OBJECTS_FILENAME
+    if File.file?(data_path) then
+      @stored_fpath = data_path
+    else
+      @stored_fpath = data_path + File::SEPARATOR + STORED_OBJECTS_FILENAME
+    end
     @store = YAML::Store.new(@stored_fpath)
     @store.ultra_safe = true
   end

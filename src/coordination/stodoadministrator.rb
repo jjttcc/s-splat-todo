@@ -14,6 +14,7 @@ class STodoAdministrator
   # Execute the specified command
   pre 'arg != nil' do |cmd_args| ! cmd_args.nil? end
   def execute(command_with_args)
+#!!!binding.irb
     command = command_with_args[0]
     method = @method_for[command]
     if method == nil then
@@ -46,6 +47,7 @@ class STodoAdministrator
       'version' => :print_version,
       'settings' => :print_settings,
       'export' => :export,
+      'migrate' => :migrate,
     }
   end
 
@@ -99,6 +101,26 @@ class STodoAdministrator
      require basename
    end
     config.data_manager.export(handles, path, true)
+  end
+
+  # Migrate the specified data file to the redis database.
+  pre 'args != nil' do |args| ! args.nil? end
+  def migrate args
+binding.irb
+    config = Configuration.instance
+    if ! args.empty? then
+      path = args[0]
+    else
+      msg = "Missing argument to 'migrate' command."
+      $log.warn msg
+      raise msg
+    end
+    old_data_manager = YamlStoreBasedDataManager.new(path, config.user)
+    targets = old_data_manager.restored_targets
+#!!!   ['project', 'memorandum', 'scheduledevent'].each do |basename|
+#!!!     require basename
+#!!!   end
+    config.data_manager.store_targets(targets)
   end
 
   # Print application version information.

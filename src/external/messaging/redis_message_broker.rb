@@ -71,7 +71,7 @@ class RedisMessageBroker
 
   # The object stored with 'key' - nil if there is no object at 'key'
   pre 'key_exists' do |key| ! key.nil? end
-  def object(key, admin = false)
+  def object(key)
     result = nil
     guts = retrieved_message(key)
     if guts != nil then

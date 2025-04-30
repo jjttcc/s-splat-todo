@@ -307,6 +307,13 @@ def redis_read_test(broker)
   $log.warn "vim tips: #{o}"
 end
 
+# (hacking)
+def write_redis_db(config, manager)
+#!!!binding.irb
+  db = config.db_config.data_manager
+  db.store_targets(manager.existing_targets)
+end
+
 # [temporary - for testing redis connection]
 def redis_write_test(manager, broker)
   manager.existing_targets.each do |t|
@@ -325,7 +332,9 @@ manager = STodoManager.new(service_name: 'report', debugging: true)
 reporter = ReportManager.new manager
 
 # debugging of logging:
-logconfig = Configuration.instance.log_config
+binding.irb
+config = Configuration.instance
+logconfig = config.log_config
 redis_log = logconfig.admin_log
 trlog = logconfig.transaction_manager
 if trlog.in_transaction then
@@ -353,4 +362,5 @@ res = redis_log.contents
 #redis_write_test(manager, broker)
 #!!!!redis_read_test(broker)
 # end-debugging
+#write_redis_db(config, manager)
 ReportUtil::execute(reporter).call

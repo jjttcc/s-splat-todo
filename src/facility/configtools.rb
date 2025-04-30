@@ -135,7 +135,7 @@ https://stackoverflow.com/questions/1386291/git-git-dir-not-working-as-expected
   CATEGORY_PREFIX_TAG  = 'categoryprefix'
   SYSLOG_TYPE_TAG      = 'syslog'
   REDIS_TYPE_TAG       = 'redis'
-  FILELOG_TYPE_TAG     = 'file'
+  FILE_TYPE_TAG        = 'file'
   DEFAULT_CAT_PREFIX   = 'cat:'
   ATTCH_ACTION_EDIT    = 'edit'
   ATTCH_ACTION_VIEW    = 'view'

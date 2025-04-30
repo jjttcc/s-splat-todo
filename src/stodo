@@ -18,6 +18,7 @@ mainhelp() {
     longgap="                     "
     echo -e "Usage: $progname <command>\n\ncommands:"
     echo -e "  help [<x>]${gap}     show help (on topic <x>, if provided)"
+    echo -e "${longgap}(help '?': display list of topics)"
     echo -e "  new|init ${gap}      look for and process new or changed \c"
     echo "to-do items"
     echo -e "  notify ${gap}        send pending notifications to-do items"
@@ -61,6 +62,9 @@ mainhelp() {
 }
 
 indepth_help() {
+  topics='report add del git change clear_d[escendants] template state '\
+'admin backup proca'
+
   case "$1" in
     rep*) report_help ;;
     add*) add_help ;;
@@ -73,6 +77,12 @@ indepth_help() {
     admin) admin_help ;;
     back*) backup_help ;;
     proca*) process_attachment_help ;;
+    '?')
+      echo "help topics:"
+      for t in $topics; do
+        echo "   $t"
+      done
+      ;;
   esac
 }
 
@@ -98,6 +108,8 @@ set_rubylib() {
   eval export $rubylib
 }
 
+# Check that args ($*) are all valid executable files and set
+# STEXEC_PATH accordingly.
 checkpath() {
   for f in $*; do
     STEXEC_PATH=
@@ -113,6 +125,25 @@ checkpath() {
   done
   if [ -z "$rubylib" ]; then
     set_rubylib
+  fi
+}
+
+# Check that $1 exists, is a regular file, and is readable.
+check_rfile_path() {
+  if [ $# -eq 0 ]; then
+    echo "coding error: missing argument to 'check_rfile_path'" >&2
+    exit 1
+  fi
+  local file=$1
+  if [ ! -e "$file" ]; then
+    echo "fatal: '$file' does not exist" >&2
+    exit 2
+  elif [ ! -r "$file" ]; then
+    echo "fatal: '$file' is not readable" >&2
+    exit 3
+  elif [ ! -f "$file" ]; then
+    echo "fatal: '$file' is not a regular file" >&2
+    exit 4
   fi
 }
 
@@ -196,6 +227,17 @@ do_backup() {
 do_export() {
   checkpath $admin
   run $admin export $*
+}
+
+do_migrate() {
+  if [ $# -eq 0 ]; then
+    echo "missing <path> argument to 'stodo migrate'"
+    exit 99
+  fi
+  check_rfile_path $1
+  checkpath $admin
+  local path=$1
+  run $admin migrate $path
 }
 
 print_version() {
@@ -390,6 +432,8 @@ admin_help() {
   echo -e "  exp[ort] <h>... <path>  Export the specified items (with \c"
   echo -e "handles <h>...),\n${lgap}as well as the items' descendants, to \c"
   echo -e "a file\n${lgap}named 'stodo_data.store', in the specified <path>"
+  echo -e "  migrate <path>          Migrate legacy file database, <path>, \c"
+  echo -e "to redis."
 }
 
 backup_help() {
@@ -588,6 +632,10 @@ case $1 in
   exp*)
     shift;
     do_export $*
+    ;;
+  mig*)
+    shift
+    do_migrate $1
     ;;
   v*|-v)
     print_version

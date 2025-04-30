@@ -1,8 +1,9 @@
 # Facilities - utility methods, etc. - related to use of a message broker
 # Note: 'initialize_message_brokers' must be called before calling any other
-# public method of this interface; and a 'log' method (which is called by
+# public method of this interface;
+# (Obsolete?: "and a 'log' method (which is called by
 # 'initialize_message_brokers') that returns an object that performs logging
-# must be defined
+# must be defined")
 module MessagingFacilities
   include Contracts::DSL
 
