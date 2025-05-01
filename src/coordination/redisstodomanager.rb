@@ -1,38 +1,24 @@
 require 'ruby_contracts'
-require 'mailer'
-require 'calendarentry'
-require 'preconditionerror'
-require 'targetbuilder'
-require 'stodotargeteditor'
+require 'stodomanager'
 
 # Basic manager of STodoTarget objects - creating, modifying/editing,
 # deleting, storing, etc.
-class STodoManager
+class RedisSTodoManager < STodoManager
   include ErrorTools, Contracts::DSL
 
   public
 
   ###  Access
 
-  attr_reader :configuration, :mailer, :calendar
-
-  # "STodoTarget"s that are currently stored in the database
-  attr_reader :existing_targets
-
-  # Object responsible for building and/or updating STodoTarget objects
-  attr_accessor :target_builder
-
-  # Does persistent data need updating (has it been changed)?
-  attr_accessor :dirty
-
-  ###  Element change
-
-  def target_builder=(t)
-    @target_builder = t
+=begin
+  def existing_targets
+    "to be defined"
   end
+=end
 
   ###  Basic operations
 
+=begin
   # Process any pending "STodoTarget"s - i.e., those that are specified to
   # be created and/or existing "STodoTarget"s to be edited.
   # Call `initiate' on the resulting new or edited targets and save the
@@ -56,7 +42,9 @@ class STodoManager
       @data_manager.store_targets(all_targets)
     end
   end
+=end
 
+=begin
   # Perform any "ongoing processing" (i.e., call
   # STodoTarget#perform_ongoing_processing) required for existing_targets.
   pre 'existing_targets != nil' do self.existing_targets != nil end
@@ -85,7 +73,9 @@ class STodoManager
       @data_manager.store_targets(self.existing_targets)
     end
   end
+=end
 
+=begin
   # Output a "template" for each element of 'target_builder.targets'.
   pre 'target_builder set' do ! self.target_builder.nil? end
   def output_template
@@ -110,7 +100,9 @@ class STodoManager
       puts "#spec-path: #{Configuration.instance.spec_path}"
     end
   end
+=end
 
+=begin
   # Perform `command' on the target with handle `handle'.
   pre 'args valid' do |handle, command|
     ! handle.nil? && ! command.nil? && ! handle.empty? && ! command.empty?
@@ -126,23 +118,22 @@ class STodoManager
       $log.error editor.last_failure_message
     else
       if editor.change_occurred then
-        update_database
+        @data_manager.store_targets(self.existing_targets)
       end
     end
   end
+=end
 
+=begin
   # Finalize any editing actions begun by 'edit_target'.
   # (For example, run pending git-commit.)
   def close_edit
     editor.close_edit
   end
+=end
 
   # Add the newly-created targets specified by target_builder.targets -
   # to persistent store.
-  pre 'target_builder set' do ! target_builder.nil? end
-  pre 'tbuilder.existing_targets set' do
-    ! self.target_builder.existing_targets.nil?
-  end
   def add_new_targets
 #!!binding.irb
     target_builder.process_targets
@@ -151,9 +142,10 @@ class STodoManager
       targets.each do |t|
         repo = configuration.stodo_git
         $log.debug "[add_new_targets] adding #{t.handle}"
-        self.existing_targets[t.handle] = t
+        @data_manager.store_target(t)
+#!!!        self.existing_targets[t.handle] = t
         if ! t.parent_handle.nil? then
-          p = self.existing_targets[t.parent_handle]
+          p = @data_manager.target_for(t.parent_handle)
           if p then
             p.add_child t
           else
@@ -168,7 +160,7 @@ class STodoManager
         end
       end
       initiate_new_targets targets
-      @data_manager.store_targets(self.existing_targets)
+#!!!      @data_manager.store_targets(self.existing_targets)
     end
   end
 
@@ -184,26 +176,14 @@ class STodoManager
       repo = configuration.stodo_git
       repo.update_items_and_commit(edits, options.commit_message, true)
     end
-    @data_manager.store_targets(self.existing_targets)
+    @data_manager.store_targets(edits, true)
   end
 
-  # Begin a transaction:
-  def start_transaction
-    translog = configuration.transaction_manager
-    if ! translog.in_transaction then
-      # Note: $log.* operations should not be invoked before
-      # 'translog.start_transaction' is called.
-      translog.start_transaction
-      $log.warn("[starting transaction - translog: #{translog}]")
+  def editor
+    if @editor == nil then
+      @editor = STodoTargetEditor.new(@data_manager)
     end
-  end
-
-  # End a transaction:
-  def end_transaction
-    translog = configuration.transaction_manager
-    $log.warn("[ending transaction - translog: #{translog}]")
-    translog.end_transaction
-    $log.warn("[ended transaction - translog: #{translog}]")
+    @editor
   end
 
   private
@@ -215,7 +195,7 @@ class STodoManager
   # Note: If Configuration.instance will be called before STodoManager.new,
   # Configuration.service_name and Configuration.debugging need to be set
   # before calling Configuration.instance.
-  def initialize(target_builder: nil, service_name: "", debugging: false)
+  def no_called_initialize(target_builder: nil, service_name: "", debugging: false)
     if Configuration.service_name.nil? then
       # First, set these class attributes in Configuration.
       Configuration.service_name = service_name
@@ -230,30 +210,6 @@ class STodoManager
     @mailer = Mailer.new @configuration
     @calendar = CalendarEntry.new @configuration
     init_new_targets target_builder
-  end
-
-  def editor
-    if @editor == nil then
-      @editor = STodoTargetEditor.new(self.existing_targets)
-    end
-    @editor
-  end
-
-  # Set target-related attributes to initial (empty) value
-  post 'target_builder set' do |tgt_bldr| self.target_builder == tgt_bldr end
-  post 'no targets yet' do
-    self.target_builder.nil? || self.target_builder.targets.nil?
-  end
-  post 'target-related attributes not nil' do
-    ! (@new_targets.nil? || @edited_targets.nil?)
-  end
-  post 'target-related attributes empty' do
-    @new_targets.empty? && @edited_targets.empty?
-  end
-  def init_new_targets tgt_builder
-    @new_targets = {}
-    @edited_targets = {}
-    self.target_builder = tgt_builder
   end
 
   ###    Implementation
@@ -322,37 +278,13 @@ class STodoManager
     end
   end
 
-  # Call 'initiate' on each new target in 'targets'.
-  def initiate_new_targets targets
-    email = Email.new(mailer)
-    targets.each do |t|
-      t.add_notifier(email)
-      t.initiate(calendar, self)
-    end
-  end
-
-  # Have new targets been created or existing targets been edited?
-  def processing_required
-    (@new_targets != nil and ! @new_targets.empty?) or
-    (@edited_targets != nil and ! @edited_targets.empty?)
-  end
-
-  def report_new_conflict target1, target2
-    msg = "The same handle, #{target1.handle}, was found in 2 or more new " +
-      "items: item1: #{target1.title}/#{target1.formal_type}, item2: " +
-      "#{target2.title}/#{target2.formal_type}"
-    $log.warn msg
-  end
-
-  # If 't' has a 'parent_handle', find its parent and add 't', via
-  # 'add_child", to the parent's children.
   def add_child(t)
     p, abort_add = t.parent_handle, false
     $log.debug "[add_child] t, p: '#{t.handle}', '#{p}'"
     if p then
       candidate_parent = @new_targets[p]
       if not candidate_parent then
-        candidate_parent = self.existing_targets[p]
+        candidate_parent = @data_manager.target_for(p)
         if candidate_parent then
           $log.debug "#{t.handle}'s parent found among old targets: " +
             "'#{candidate_parent.title}'"
@@ -393,7 +325,7 @@ class STodoManager
   end
 
   def update_database
-    @data_manager.store_targets(self.existing_targets)
+    # null-op
   end
 
 end

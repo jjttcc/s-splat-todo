@@ -36,24 +36,8 @@ class RedisDBConfig
     self.config = config
     broker = ApplicationConfiguration.application_message_broker
     ###Note: Will need to add config.app_name:
-    self.data_manager = RedisBasedDataManager.new(broker, config.user)
-  end
-
-
-  def log_key_for(service_name)
-    date_time = TimeUtil.current_nano_date_time
-    result = "#{config.user}.#{service_name}.#{date_time}"
-  end
-
-  # Register the new 'log_key' as a stream key by adding it to a set whose
-  # key, k, is "#{config.user}.#{service_name}". And register that k as a
-  # member of a set whose key is config.user.
-  def register_log_key(service_name, log_key)
-    key = "#{config.user}.#{service_name}"
-    if ! admin_broker.set_has(config.user, key) then
-      admin_broker.append_to_set(config.user, key)
-    end
-    admin_broker.append_to_set(key, log_key)
+    self.data_manager = RedisBasedDataManager.new(broker, config.user,
+                                                 config.app_name)
   end
 
 end

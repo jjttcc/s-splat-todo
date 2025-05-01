@@ -31,7 +31,7 @@ module MessagingFacilities
   end
 
   # The set previously built via 'replace_set(key, args)' and/or
-  # 'add_set(key, args)'
+  # 'add_to_set(key, args)'
   post :result_existsB do |result| ! result.nil? && result.is_a?(Array) end
   def retrieved_set(key, admin = false)
     if admin then
@@ -196,11 +196,11 @@ module MessagingFacilities
   # message broker, set the time-to-live for 'key' to 'expire_secs' seconds.
   pre :sane_expire do |k, a, exp|
     implies(exp != nil, exp.is_a?(Numeric) && exp >= 0) end
-  def add_set(key, args, expire_secs = nil, admin = false)
+  def add_to_set(key, args, expire_secs = nil, admin = false)
     if admin then
-      admin_broker.add_set key, args, expire_secs
+      admin_broker.add_to_set key, args, expire_secs
     else
-      broker.add_set key, args, expire_secs
+      broker.add_to_set key, args, expire_secs
     end
   end
 
@@ -250,7 +250,7 @@ module MessagingFacilities
   end
 
   # Delete the object (message inserted via 'set_message', set added via
-  # 'add_set', or etc.) with the specified key.
+  # 'add_to_set', or etc.) with the specified key.
   def delete_object(key, admin = false)
     if admin then
       admin_broker.delete_object key

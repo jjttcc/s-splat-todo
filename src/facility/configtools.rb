@@ -119,6 +119,7 @@ https://stackoverflow.com/questions/1386291/git-git-dir-not-working-as-expected
   ### config tags
   SPEC_PATH_TAG        = 'specpath'
   DB_TYPE_TAG          = 'database_type'
+  APPNAME_TAG          = 'app_name'
   DATA_PATH_TAG        = 'datapath'
   USER_PATH_TAG        = 'userpath'
   LOG_PATH_TAG         = 'logpath'

@@ -1,4 +1,5 @@
 require 'ruby_contracts'
+require 'errortools'
 
 # Data manager that uses Redis for its implementation
 #!!!!Note: may need to use redis transactions:
@@ -6,7 +7,7 @@ require 'ruby_contracts'
 #  https://redis.io/ebook/part-2-core-concepts/chapter-4-keeping-data-safe-and-ensuring-performance/4-4-redis-transactions/
 #  https://medium.com/redis-with-raphael-de-lio/understanding-transactions-in-redis-how-to-3220e83f215c
 class RedisBasedDataManager
-  include Contracts::DSL
+  include Contracts::DSL, ErrorTools
 
   public  ###  Access
 
@@ -14,38 +15,83 @@ class RedisBasedDataManager
 
   attr_reader  :user
 
-  public  ###  Basic operations
+  public  ###  Basic operations - Query
 
-  # Write `targets' out to persistent store.
-  def store_targets(targets)
-    keys = []
-# (start-transaction)
-    targets.each do |t|
-      object = t[1]   # (t[0] is the object's "handle".)
-      puts "object: #{object.handle}"
-      if database.exists(object.handle) then
-        $log.warn "object with handle #{object.handle} is already stored."
-      else
-        $log.warn "object with handle #{object.handle} is NOT stored."
-        key = key_for(object.handle)
-        keys << key
-        database.set_object(key, object)
-      end
-    end
-binding.irb
-    database.replace_set(db_key, keys)
-# (end-transaction)
+  # A hash table of all the keys in the database (for this user/app)
+  # (stripped of the prepended string from 'key_for') for fast searching,
+  # with all value components set to true
+#!!!!to-do: switch to use 'keys' for handle search instead of using
+#!!!! restored_targets, which loads all objects.
+  def keys
+    result = database.set_members(db_key).map do |k|
+      unornamented(k)
+    end.to_h { |k| [k, true] }
+    result
   end
+
+  alias_method :handles, :keys
 
   # "STodoTarget"s restored from persistent store.
   def restored_targets
-#!!!binding.irb
     result = {}
     keys = database.set_members(db_key)
     keys.each do |k|
-      result[k] = database.object(k)
+      result[unornamented(k)] = database.object(k)
     end
     result
+  end
+
+  # "STodoTarget" whose handle is 'handle'
+  def target_for(handle)
+    result = database.object(key_for(handle))
+  end
+
+  # Array-operator version of 'target_for'
+  def [](handle)
+    result = database.object(key_for(handle))
+  end
+
+  public  ###  Removal
+
+  # Delete the object whose key is based on 'handle' from the database.
+  def delete(handle)
+    key = key_for(handle)
+    database.delete_object(key)
+    database.remove_from_set(db_key, key)
+  end
+
+  public  ###  Basic operations - Write
+
+  # Write `targets' out to persistent store.
+  def store_targets(targets, replace = false)
+#!!!    keys = []
+# (start-transaction)
+    if targets.is_a?(Hash) then
+      targets.each do |handle, object|
+        check("handles correspond") { object.handle == handle }
+        store_target(object, replace)
+      end
+    else
+      check('"targets" is an array') { targets.is_a?(Array) }
+      targets.each do |object|
+        store_target(object, replace)
+      end
+    end
+#!!!    database.replace_set(db_key, keys)
+# (end-transaction)
+  end
+
+  # Store STodoTarget 't' in the databae. Iff 'replace', then replace the
+  # old object (with the key formed from t.handle) if it is already in the
+  # database.
+  def store_target(t, replace = true)
+    key = key_for(t.handle)
+    if database.exists(key) and ! replace then
+      $log.debug "object with handle #{t.handle} is already stored."
+    else
+      database.set_object(key, t)
+    end
+    database.add_to_set(db_key, key)
   end
 
   private   ###  Implementation
@@ -54,8 +100,23 @@ binding.irb
   # not nil, "#{self.app_name}." is prepended to the above
   def key_for(s)
     result = "#{user}.#{s}"
-    if ! app_name.nil? then
+    if ! app_name.nil? && ! app_name.empty? then
       result = "#{self.app_name}.#{result}"
+    end
+    result
+  end
+
+  # The value of 'key' after stripping the prepended strings (app_name,
+  # user)
+  def unornamented(key)
+    striplength = user.length + 1   # + 1 for '.'
+    if ! app_name.nil? && ! app_name.empty? then
+      striplength = striplength + app_name.length + 1
+    end
+    if key.length > striplength then
+      result = key[striplength .. -1]
+    else
+      result = key
     end
     result
   end
@@ -71,8 +132,7 @@ binding.irb
   pre  :user_exists do |user| ! user.nil? end
   post :db_set do |res, db| self.database == db end
   post :user_set do |res, user| self.database == user end
-  def initialize(db, user, appname = nil)
-#!!!binding.irb
+  def initialize(db, user, appname = '')
     self.database = db
     self.user = user
     self.app_name = appname

@@ -2,9 +2,6 @@ require 'ruby_contracts'
 require 'yaml/store'
 require 'securerandom'
 require 'errortools'
-require 'memorandum'
-require 'project'
-require 'scheduledevent'
 
 # Data manager that uses YAML::Store for its implementation
 class YamlStoreBasedDataManager

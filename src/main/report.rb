@@ -309,7 +309,6 @@ end
 
 # (hacking)
 def write_redis_db(config, manager)
-#!!!binding.irb
   db = config.db_config.data_manager
   db.store_targets(manager.existing_targets)
 end
@@ -328,23 +327,23 @@ def redis_write_test(manager, broker)
   end
 end
 
-manager = STodoManager.new(service_name: 'report', debugging: true)
+Configuration.service_name = 'report'
+config = Configuration.instance
+manager = config.new_stodo_manager(service_name: 'report', debugging: true)
+#manager = STodoManager.new(service_name: 'report', debugging: true)
 reporter = ReportManager.new manager
 
+#!!!config = Configuration.instance
 # debugging of logging:
-binding.irb
-config = Configuration.instance
 logconfig = config.log_config
 redis_log = logconfig.admin_log
 trlog = logconfig.transaction_manager
 if trlog.in_transaction then
   trid = trlog.current_transaction
   s = "We are in a transaction with id: #{trid}"
-  puts s
   $log.warn(s)
 else
   s = "We are NOT in a transaction"
-  puts s
   $log.warn(s)
 end
 rlo = ObjectInfo.new(redis_log)

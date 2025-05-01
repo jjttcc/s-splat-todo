@@ -1,3 +1,5 @@
+require 'spectools'
+
 # Objects that extract needed fields (subject, addresses, body, ...) from
 # an Email in order to send the resulting email message.
 class Mailer

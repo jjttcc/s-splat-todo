@@ -6,6 +6,7 @@ require 'errortools'
 require 'fileutils'
 require 'yamlstorebaseddatamanager'
 require 'redisbaseddatamanager'
+require 'redisstodomanager'
 require 'spectools'
 require 'configtools'
 require 'mediaconfigtools'
@@ -75,6 +76,17 @@ class Configuration
     log_config.transaction_manager
   end
 
+  # A new STodoManager instance
+  def new_stodo_manager(srv_name, debug = true)
+    if database_type == REDIS_TYPE_TAG then
+#      result = STodoManager.new(service_name: srv_name, debugging: debug)
+      result = RedisSTodoManager.new(service_name: srv_name, debugging: debug)
+    else
+      result = STodoManager.new(service_name: srv_name, debugging: debug)
+    end
+    result
+  end
+
   public  ###  Access
 
   # user name/id
@@ -96,6 +108,8 @@ class Configuration
   attr_reader :log_type
   # type of database to be used
   attr_reader :database_type
+  # the user-defined application name ('app_name' config setting)
+  attr_reader :app_name
   # path to the git executable (e.g.: /bin/git)
   attr_reader :git_executable
   # default/backup email address
@@ -184,7 +198,11 @@ class Configuration
   end
   def initialize
     self.service_name = @@service_name
-    self.debugging = @@debugging
+    if defined? @@debugging then
+      self.debugging = @@debugging
+    else
+      self.debugging = false
+    end
     settings = config_file_settings
     set_config_vars settings
     set_external_media_tools settings
@@ -218,6 +236,7 @@ class Configuration
     end
     @log_type = settings[LOG_TYPE_TAG]
     @database_type = settings[DB_TYPE_TAG]
+    @app_name = settings[APPNAME_TAG]
     # (Initialize the log as soon as possible.)
     create_and_initialize_log
     if @git_path.nil? then
@@ -428,11 +447,9 @@ $log.debug("debugging messages are on")
   end
 
   def initialize_database
-#!!!binding.irb
     if database_type == REDIS_TYPE_TAG then
       self.db_config = RedisDBConfig.new(self)
       @data_manager = db_config.data_manager
-#      @data_manager = RedisBasedDataManager.new(user)
     else
       check('file db type') do
         database_type == FILE_TYPE_TAG || database_type == nil

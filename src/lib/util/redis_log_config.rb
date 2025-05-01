@@ -84,7 +84,7 @@ class RedisLogConfig
       ! admin_broker.set_has(SERVICE_NAMES_KEY, service_name)
     then
       # Add 'service_name' to the list of "stodo" services:
-      admin_broker.add_set(SERVICE_NAMES_KEY, service_name)
+      admin_broker.add_to_set(SERVICE_NAMES_KEY, service_name)
     end
     self.log = RedisLoggerDevice.new(admin_log, admin_log.key,
                                     transaction_manager).logger
@@ -111,9 +111,9 @@ class RedisLogConfig
   def register_log_key(service_name, log_key)
     key = "#{config.user}.#{service_name}"
     if ! admin_broker.set_has(config.user, key) then
-      admin_broker.append_to_set(config.user, key)
+      admin_broker.add_to_set(config.user, key)
     end
-    admin_broker.append_to_set(key, log_key)
+    admin_broker.add_to_set(key, log_key)
   end
 
 end

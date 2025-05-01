@@ -24,7 +24,7 @@ class RedisMessageBroker
   end
 
   # The members of the set previously built via 'replace_set(key, args)'
-  # and/or 'add_set(key, args)'
+  # and/or 'add_to_set(key, args)'
   # Array<String>
   pre 'key_exists' do |key| ! key.nil? end
   post :result_exists do |result| ! result.nil? && result.is_a?(Array) end
@@ -159,6 +159,7 @@ class RedisMessageBroker
   # post :object_stored do |result, key, o|
   #   object(key) != nil && object(key) === o end
   def set_object(key, object, expire_secs = nil)
+#!!binding.irb
     serialized_object = Oj.dump(object)
     set_message(key, serialized_object, expire_secs)
   end
@@ -207,15 +208,13 @@ class RedisMessageBroker
   pre 'key_exists' do |key| ! key.nil? end
   pre :sane_expire do |k, a, exp|
     implies(exp != nil, exp.is_a?(Numeric) && exp >= 0) end
-  def add_set(key, args, expire_secs = nil)
+  def add_to_set(key, args, expire_secs = nil)
     result = redis.sadd key, args
     if expire_secs != nil then
       redis.expire key, expire_secs
     end
     result
   end
-
-  alias_method :append_to_set, :add_set
 
   # Add, with 'key', the specified set with items 'args'.  If the set
   # (with 'key') already exists, remove the old set first before creating
@@ -251,7 +250,7 @@ class RedisMessageBroker
   end
 
   # Delete the object (message inserted via 'set_message', set added via
-  # 'add_set', or etc.) with the specified key.
+  # 'add_to_set', or etc.) with the specified key.
   pre 'key_exists' do |key| ! key.nil? end
   def delete_object(key)
     redis.del key
