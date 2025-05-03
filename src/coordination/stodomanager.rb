@@ -25,6 +25,18 @@ class STodoManager
   # Does persistent data need updating (has it been changed)?
   attr_accessor :dirty
 
+  ###  Queries
+
+  # All targets for which the passed-in block yields 'true' for the
+  # target's handle
+  # Array<STodoTarget>
+  def selected_targets
+    result = existing_targets.values.select do |obj|
+      yield obj.handle
+    end
+    result
+  end
+
   ###  Element change
 
   def target_builder=(t)
@@ -53,7 +65,7 @@ class STodoManager
         self.target_builder.spec_collector.initial_cleanup @edited_targets
       end
       all_targets = self.existing_targets.merge(@new_targets)
-      @data_manager.store_targets(all_targets)
+      update_database(all_targets)
     end
   end
 
@@ -82,7 +94,7 @@ class STodoManager
         repo.update_items git_items
         repo.commit "updated #{repo.update_count} items"
       end
-      @data_manager.store_targets(self.existing_targets)
+      update_database
     end
   end
 
@@ -168,7 +180,7 @@ class STodoManager
         end
       end
       initiate_new_targets targets
-      @data_manager.store_targets(self.existing_targets)
+      update_database
     end
   end
 
@@ -184,7 +196,7 @@ class STodoManager
       repo = configuration.stodo_git
       repo.update_items_and_commit(edits, options.commit_message, true)
     end
-    @data_manager.store_targets(self.existing_targets)
+    update_database
   end
 
   # Begin a transaction:
@@ -226,7 +238,7 @@ class STodoManager
     # attributes):
     @configuration = Configuration.instance
     @data_manager = @configuration.data_manager
-    @existing_targets = @data_manager.restored_targets
+    initialize_existing_targets
     @mailer = Mailer.new @configuration
     @calendar = CalendarEntry.new @configuration
     init_new_targets target_builder
@@ -237,6 +249,10 @@ class STodoManager
       @editor = STodoTargetEditor.new(self.existing_targets)
     end
     @editor
+  end
+
+  def initialize_existing_targets
+    @existing_targets = @data_manager.restored_targets
   end
 
   # Set target-related attributes to initial (empty) value
@@ -392,8 +408,12 @@ class STodoManager
     end
   end
 
-  def update_database
-    @data_manager.store_targets(self.existing_targets)
+  def update_database(targets = nil)
+    if ! targets.nil? then
+      @data_manager.store_targets(targets)
+    else
+      @data_manager.store_targets(self.existing_targets)
+    end
   end
 
 end

@@ -31,24 +31,51 @@ class RedisBasedDataManager
 
   alias_method :handles, :keys
 
-  # "STodoTarget"s restored from persistent store.
+  # All "STodoTarget"s, with handle as key, restored from persistent store.
+  # A hash table - key is the associated handle.
+  # Hash<String, STodoTarget>
   def restored_targets
     result = {}
     keys = database.set_members(db_key)
     keys.each do |k|
-      result[unornamented(k)] = database.object(k)
+      begin
+        t = database.object(k)
+        if ! t.nil? then
+          result[unornamented(k)] = t
+          set_db(t)
+        end
+      rescue Exception => e
+#!!!may2b:binding.irb
+        $log.warn(e)
+      end
     end
+    result
+  end
+
+  # All "STodoTarget"s, restored from persistent store.
+  # Array<STodoTarget>
+  def values
+    result = restored_targets.values
     result
   end
 
   # "STodoTarget" whose handle is 'handle'
   def target_for(handle)
     result = database.object(key_for(handle))
+    if ! result.nil? then
+      set_db(result)
+    end
+    result
   end
 
-  # Array-operator version of 'target_for'
-  def [](handle)
-    result = database.object(key_for(handle))
+  alias_method :[], :target_for
+
+  def []=(new_handle, target)
+#!!!!![Still in progress]!!!!
+    if target.handle != new_handle then
+      target.handle = new_handle
+    end
+    store_target(target)
   end
 
   public  ###  Removal
@@ -89,12 +116,28 @@ class RedisBasedDataManager
     if database.exists(key) and ! replace then
       $log.debug "object with handle #{t.handle} is already stored."
     else
-      database.set_object(key, t)
+      begin
+        database.set_object(key, t)
+      rescue Exception => e
+#!!!may2a:binding.irb
+        $log.warn("database.set_object failed: #{e}")
+      end
     end
     database.add_to_set(db_key, key)
   end
 
+  alias_method :update_target, :store_target
+
   private   ###  Implementation
+
+  # Set "target"'s db attribute to 'self'.
+  pre :tgt_not_nil do |tgt| ! tgt.nil? end
+  def set_db(target)
+#!!!may2b:binding.irb
+    if defined? (target.db=()) then
+      target.db = self
+    end
+  end
 
   # The string 's' with "#{self.user}." prepended to it and, if app_name is
   # not nil, "#{self.app_name}." is prepended to the above

@@ -357,6 +357,7 @@ class ReportManager
     else
       result = manager.existing_targets.values
     end
+#!!!may2:binding.irb
     if sorted then
       result.sort! do |a, b|
         time_comparison(a, b)
@@ -366,6 +367,24 @@ class ReportManager
   end
 
   def targets_for_criteria criteria, sorted = true
+#!!!may2:binding.irb
+    result = targets_for(criteria.handles, sorted)
+    if ! criteria.null_criteria? && ! criteria.handles_only? then
+#      apply_criteria = selection_method(criteria)
+      apply_criteria = comparison_method(criteria)
+      result = manager.selected_targets do |h|
+#        criteria.handle_exprs.any? do |e|
+#          result = h =~ /#{e}/
+#          result
+#        end
+#binding.irb
+        apply_criteria.call(h, criteria)
+      end
+    end
+    result
+  end
+
+  def old___targets_for_criteria criteria, sorted = true
     result = targets_for(criteria.handles, sorted)
     if ! criteria.null_criteria? && ! criteria.handles_only? then
       apply_criteria = comparison_method(criteria)
@@ -393,9 +412,16 @@ class ReportManager
       crit.title_exprs.any? { |e|
       Regexp.new(e, Regexp::IGNORECASE).match(tgt.title) }
     }
-    hnd_cmp = lambda {|tgt, crit|
-      crit.handle_exprs.any? { |e|
-      Regexp.new(e, Regexp::IGNORECASE).match(tgt.handle) }
+#    hnd_cmp = lambda {|tgt, crit|
+    hnd_cmp = lambda {|h, crit|
+#      crit.handle_exprs.any? { |e|
+#!!!      Regexp.new(e, Regexp::IGNORECASE).match(tgt.handle) }
+        r = crit.handle_exprs.any? do |e|
+#binding.irb
+          result = h =~ /#{e}/
+          result
+        end
+        r
     }
     des_cmp = lambda {|tgt, crit|
       crit.description_exprs.any? { |e|

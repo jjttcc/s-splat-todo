@@ -16,6 +16,15 @@ class RedisSTodoManager < STodoManager
   end
 =end
 
+  ###  Queries
+
+  def selected_targets
+    handles = @data_manager.keys.select do |h|
+      yield h
+    end
+    result = handles.keys.map { |h| @data_manager.target_for(h) }
+  end
+
   ###  Basic operations
 
 =begin
@@ -190,6 +199,10 @@ class RedisSTodoManager < STodoManager
 
   ###    Initialization
 
+  def initialize_existing_targets
+    @existing_targets = @data_manager
+  end
+
   post 'existing_targets set' do ! self.existing_targets.nil? end
   post 'configuration set' do !self.configuration.nil? end
   # Note: If Configuration.instance will be called before STodoManager.new,
@@ -324,7 +337,7 @@ class RedisSTodoManager < STodoManager
     end
   end
 
-  def update_database
+  def update_database(targets = nil)
     # null-op
   end
 

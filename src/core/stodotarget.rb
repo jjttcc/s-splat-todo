@@ -35,8 +35,9 @@ class STodoTarget
   alias :detail :comment
   attr_reader :notification_subject, :full_notification_message,
     :notification_email_addrs, :short_notification_message
+  # database object for updating, if there is one
+  attr_accessor :db
 
-  attr_writer :parent_handle
   attr_writer :handle         # Needed for cloning
 
   ST_CURRENT_HANDLE = 'STODO_HDL'
@@ -196,7 +197,7 @@ class STodoTarget
   public    ###  Status report
 
   # Did the last invocation of a method that can change this object's
-  # state, and is documented as updating this query, acutally change the
+  # state, and is documented as updating this query, actually change the
   # state of 'self'?
   attr_reader :last_op_changed_state
 
@@ -269,12 +270,18 @@ class STodoTarget
 
   public    ###  Element change
 
+  def parent_handle=(h)
+    @parent_handle = h
+    update
+  end
+
   # Add a STodoTarget object to 'children'.
   pre 't != nil and t.parent_handle == handle' do |t|
     ! t.nil? && t.parent_handle == handle
   end
   def add_child(t)
     @children << t
+    update
   end
 
   # Add a notifier to the list of notifiers to be used by `initiate' and
@@ -283,6 +290,7 @@ class STodoTarget
   pre 'n != nil' do |n| n != nil end
   def add_notifier n
     @notifiers << n
+    update
   end
 
   # Set self's fields from the non-nil fields in spec.
@@ -293,11 +301,13 @@ class STodoTarget
   def modify_fields spec, target_list
     main_modify_fields spec, target_list
     post_modify_fields spec
+    update
   end
 
   # Ensure that 'last_removed_descendant' is not set - i.e., is nil
   def clear_last_removed_descendant
     self.last_removed_descendant = nil
+    update    #!!!???
   end
 
   # Change self's handle to 'h'.
@@ -307,10 +317,12 @@ class STodoTarget
   pre 'h != old handle' do |h| h != self.handle end
   post 'handle == h' do |result, h| self.handle == h end
   def change_handle h
+    remove    # Remove the old 'self' with now obsolete handle.
     self.handle = h
     self.children.each do |c|
       c.parent_handle = self.handle
     end
+    update
   end
 
   public    ###  Removal
@@ -318,6 +330,7 @@ class STodoTarget
   # Remove child `t' from 'children'.
   def remove_child t
     @children.delete(t)
+    update
   end
 
   # Remove all of self's 'descendants' except for those indicated by
@@ -340,6 +353,7 @@ class STodoTarget
     if ! new_childlist.empty? then
       @children = new_childlist
     end
+    update
   end
 
   # Search among 'descendants' to find the descendant with 'handle'. If it
@@ -363,6 +377,7 @@ class STodoTarget
     else
       detach child
       self.last_removed_descendant = child
+      update
     end
   end
 
@@ -411,6 +426,7 @@ class STodoTarget
     orig.notifiers.each do |o|
       @notifiers << o.dup
     end
+    update
   end
 
   public    ###  Hash-related queries
@@ -462,6 +478,9 @@ class STodoTarget
         self.last_op_changed_state = c.last_op_changed_state
       end
     end
+    if ! last_op_changed_state then
+      update
+    end
   end
 
   # For each child, c, of 'self' if c.parent_handle is either blank or is the
@@ -481,6 +500,9 @@ class STodoTarget
           self.last_op_changed_state = c.last_op_changed_state
         end
       end
+    end
+    if ! last_op_changed_state then
+      update
     end
   end
 
@@ -518,6 +540,7 @@ class STodoTarget
 
   # Make any needed changes before the persistent attributes are saved.
   def prepare_for_db_write
+#!!!may2a:binding.irb
     @notifiers = []
     @email_spec = ""
     @notification_subject = ""
@@ -529,14 +552,35 @@ class STodoTarget
     if defined?(@commit) then
       remove_instance_variable(:@commit)
     end
+    @db = nil
+    if defined?(@app_name) then
+      remove_instance_variable(:@app_name)
+    end
+    if defined?(@database) then
+      remove_instance_variable(:@database)
+    end
+    if defined?(@redis) then
+      remove_instance_variable(:@redis)
+    end
+    if defined?(@db_key) then
+      remove_instance_variable(:@db_key)
+    end
+    if defined?(@user) then
+      remove_instance_variable(:@user)
+    end
     @reminders.each do |r|
       r.prepare_for_db_write
     end
   end
 
-  private
+  # Force a database update - to be used if a client changed self's
+  # internal state.
+  # If 'db.nil?', do nothing.
+  def force_update
+    update
+  end
 
-  ###  Assignment (<attribute>= methods)
+  private   ###  Assignment (<attribute>= methods)
 
   attr_writer   :last_removed_descendant
   attr_writer   :last_op_changed_state
@@ -544,9 +588,7 @@ class STodoTarget
     :categories, :state, :attachments, :references, :commit
   attr_accessor :email_spec
 
-  private
-
-  ###  Initialization
+  private   ###  Initialization
 
   post 'invariant' do invariant end
   def initialize spec
@@ -574,7 +616,10 @@ class STodoTarget
           "be ignored (#{rems})"
       end
     end
+    self.db = nil
   end
+
+  private   ###  Implementation
 
   def set_fields spec
     @children = Set.new
@@ -880,6 +925,23 @@ class STodoTarget
   end
 
   ### Implementation - utilities/tools
+
+  # If ! db.nil?, update self via db.
+  def update
+#!!!may2a:binding.irb
+    if ! db.nil? then
+      tmp_db = db
+      prepare_for_db_write
+      tmp_db.update_target(self)
+    end
+  end
+
+  # If ! db.nil?, remove self from db.
+  def remove
+    if ! db.nil? then
+      db.delete(self.handle)
+    end
+  end
 
   # Assign the specified 'spec' value to the attribute with name
   # 'attr_name', with the following guard:
