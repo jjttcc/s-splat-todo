@@ -156,7 +156,6 @@ class STodoManager
     ! self.target_builder.existing_targets.nil?
   end
   def add_new_targets
-#!!binding.irb
     target_builder.process_targets
     targets = target_builder.targets
     if ! targets.empty? then

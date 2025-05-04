@@ -144,7 +144,6 @@ class RedisSTodoManager < STodoManager
   # Add the newly-created targets specified by target_builder.targets -
   # to persistent store.
   def add_new_targets
-#!!binding.irb
     target_builder.process_targets
     targets = target_builder.targets
     if ! targets.empty? then
@@ -174,7 +173,6 @@ class RedisSTodoManager < STodoManager
   end
 
   # Ensure that the specified targets are updated in persistent store.
-  pre 'target_builder set' do ! self.target_builder.nil? end
   def update_targets options
     if ! target_builder.targets_prepared? then
       target_builder.prepare_targets

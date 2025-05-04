@@ -295,9 +295,7 @@ class STodoTarget
 
   # Set self's fields from the non-nil fields in spec.
   pre 'valid_spec' do |spec| ! spec.nil? && self.handle == spec.handle end
-  pre 'target_list valid' do |spec, target_list|
-    ! target_list.nil? && target_list.is_a?(Hash)
-  end
+  pre 'target_list valid' do |spec, target_list| ! target_list.nil? end
   def modify_fields spec, target_list
     main_modify_fields spec, target_list
     post_modify_fields spec
@@ -540,7 +538,6 @@ class STodoTarget
 
   # Make any needed changes before the persistent attributes are saved.
   def prepare_for_db_write
-#!!!may2a:binding.irb
     @notifiers = []
     @email_spec = ""
     @notification_subject = ""
@@ -664,9 +661,9 @@ class STodoTarget
   pre '"spec" is valid' do |spec, target_list|
       ! spec.nil? && self.handle == spec.handle
   end
-  pre 'target_list is valid' do |spec, target_list|
-      ! target_list.nil? && target_list.is_a?(Hash)
-  end
+#!!rm?:  pre 'target_list is valid' do |spec, target_list|
+#!!rm?:      ! target_list.nil? && target_list.is_a?(Hash)
+#!!rm?:  end
   post 'parent nil if empty spec' do |result, spec, target_list|
     implies(spec.parent == "", self.parent_handle.nil?)
   end
@@ -928,7 +925,6 @@ class STodoTarget
 
   # If ! db.nil?, update self via db.
   def update
-#!!!may2a:binding.irb
     if ! db.nil? then
       tmp_db = db
       prepare_for_db_write

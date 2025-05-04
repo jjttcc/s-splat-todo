@@ -72,7 +72,6 @@ class RedisMessageBroker
   # The object stored with 'key' - nil if there is no object at 'key'
   pre 'key_exists' do |key| ! key.nil? end
   def object(key)
-#!!!may2b:binding.irb
     result = nil
     guts = retrieved_message(key)
     if guts != nil then
@@ -160,7 +159,6 @@ class RedisMessageBroker
   # post :object_stored do |result, key, o|
   #   object(key) != nil && object(key) === o end
   def set_object(key, object, expire_secs = nil)
-#!!!may2b:binding.irb
     serialized_object = Oj.dump(object)
     set_message(key, serialized_object, expire_secs)
   end

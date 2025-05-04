@@ -357,7 +357,6 @@ class ReportManager
     else
       result = manager.existing_targets.values
     end
-#!!!may2:binding.irb
     if sorted then
       result.sort! do |a, b|
         time_comparison(a, b)
@@ -367,7 +366,6 @@ class ReportManager
   end
 
   def targets_for_criteria criteria, sorted = true
-#!!!may2:binding.irb
     result = targets_for(criteria.handles, sorted)
     if ! criteria.null_criteria? && ! criteria.handles_only? then
 #      apply_criteria = selection_method(criteria)
@@ -377,7 +375,6 @@ class ReportManager
 #          result = h =~ /#{e}/
 #          result
 #        end
-#binding.irb
         apply_criteria.call(h, criteria)
       end
     end
@@ -417,7 +414,6 @@ class ReportManager
 #      crit.handle_exprs.any? { |e|
 #!!!      Regexp.new(e, Regexp::IGNORECASE).match(tgt.handle) }
         r = crit.handle_exprs.any? do |e|
-#binding.irb
           result = h =~ /#{e}/
           result
         end

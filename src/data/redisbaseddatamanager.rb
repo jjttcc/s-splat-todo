@@ -45,7 +45,6 @@ class RedisBasedDataManager
           set_db(t)
         end
       rescue Exception => e
-#!!!may2b:binding.irb
         $log.warn(e)
       end
     end
@@ -119,7 +118,6 @@ class RedisBasedDataManager
       begin
         database.set_object(key, t)
       rescue Exception => e
-#!!!may2a:binding.irb
         $log.warn("database.set_object failed: #{e}")
       end
     end
@@ -133,7 +131,6 @@ class RedisBasedDataManager
   # Set "target"'s db attribute to 'self'.
   pre :tgt_not_nil do |tgt| ! tgt.nil? end
   def set_db(target)
-#!!!may2b:binding.irb
     if defined? (target.db=()) then
       target.db = self
     end

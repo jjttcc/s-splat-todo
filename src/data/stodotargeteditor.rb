@@ -388,7 +388,6 @@ class STodoTargetEditor
     ! result.nil? && [true, false].include?(result)
   end
   def execute_guarded_state_change(target, statechg)
-#!!!may2:binding.irb
       current_state = target.state
       old_state = current_state.value
       valid = false
