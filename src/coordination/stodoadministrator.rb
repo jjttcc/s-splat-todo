@@ -45,6 +45,7 @@ class STodoAdministrator
       'backup' => :perform_data_backup,
       'version' => :print_version,
       'settings' => :print_settings,
+      'trans_stat' => :print_transaction_status,
       'export' => :export,
       'migrate' => :migrate,
     }
@@ -138,6 +139,13 @@ class STodoAdministrator
     config.settings.sort.each do |set|
       printf("%-26s%s\n", "#{set[0]}:", set[1]);
     end
+  end
+
+  # Print application settings - configuration - information.
+  def print_transaction_status *dummy
+    config = Configuration.instance
+    answer = (config.in_transaction)? "in": "NOT currently in"
+    puts "The system is #{answer} a transaction."
   end
 
 end

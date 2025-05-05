@@ -338,6 +338,7 @@ reporter = ReportManager.new manager
 logconfig = config.log_config
 redis_log = logconfig.admin_log
 trlog = logconfig.transaction_manager
+s = ""
 if trlog.in_transaction then
   trid = trlog.current_transaction
   s = "We are in a transaction with id: #{trid}"
@@ -348,13 +349,15 @@ else
 end
 rlo = ObjectInfo.new(redis_log)
 pid = $$
+=begin
 $log.warn("i-am-report:warning#{pid}")
 $log.info("i-am-report:information#{pid}")
 $log.error("i-am-report:error#{pid}")
 $log.debug("i-am-report:debug#{pid}")
 $log.fatal("i-am-report:fatal#{pid}")
 $log.unknown("i-am-report:unknown#{pid}")
-res = redis_log.contents
+=end
+#res = redis_log.contents
 #!!!!puts "testresult[1]:\n", res
 #broker = ApplicationConfiguration.application_message_broker
 ##exit 0

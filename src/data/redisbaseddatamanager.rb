@@ -31,6 +31,11 @@ class RedisBasedDataManager
 
   alias_method :handles, :keys
 
+  # Is the key 'handle' in the database?
+  def has_key?(handle)
+    result = keys[handle]
+  end
+
   # All "STodoTarget"s, with handle as key, restored from persistent store.
   # A hash table - key is the associated handle.
   # Hash<String, STodoTarget>

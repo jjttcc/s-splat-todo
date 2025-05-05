@@ -661,9 +661,7 @@ class STodoTarget
   pre '"spec" is valid' do |spec, target_list|
       ! spec.nil? && self.handle == spec.handle
   end
-#!!rm?:  pre 'target_list is valid' do |spec, target_list|
-#!!rm?:      ! target_list.nil? && target_list.is_a?(Hash)
-#!!rm?:  end
+  pre 'target_list is valid' do |spec, target_list| ! target_list.nil? end
   post 'parent nil if empty spec' do |result, spec, target_list|
     implies(spec.parent == "", self.parent_handle.nil?)
   end
@@ -885,7 +883,9 @@ class STodoTarget
   pre 'refs exist' do ! self.references.nil? end
   pre 'spec exists' do |spec| ! spec.nil? end
   pre 'extargets exist' do |spec| ! spec.existing_targets.nil? end
-  pre 'extargets is-hash' do |spec| spec.existing_targets.is_a?(Hash) end
+  pre 'extargets is-hash' do |spec|
+    spec.existing_targets.respond_to?(:has_key?)
+  end
   def check_references spec
     ex_targets = spec.existing_targets
     myhandle = self.handle
