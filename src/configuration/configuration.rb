@@ -73,7 +73,9 @@ class Configuration
 
   # The transaction logging object
   def transaction_manager
-    log_config.transaction_manager
+    if ! log_config.nil? then
+      log_config.transaction_manager
+    end
   end
 
   # A new STodoManager instance
@@ -187,7 +189,11 @@ class Configuration
 
   # Is the system, for 'user' currently in a transaction?
   def in_transaction
-    transaction_manager.in_transaction
+    if ! transaction_manager.nil? then
+      transaction_manager.in_transaction
+    else
+      false
+    end
   end
 
   private
