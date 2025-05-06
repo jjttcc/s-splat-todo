@@ -90,7 +90,6 @@ class RedisLogConfig
                                     transaction_manager).logger
     $log = log
     if debugging then
-#!!!!not used - remove:      pw = ENV["REDISCLI_AUTH"]
       $redis = ApplicationConfiguration.redis
     end
   end

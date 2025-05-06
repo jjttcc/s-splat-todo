@@ -78,8 +78,10 @@ class Configuration
 
   # A new STodoManager instance
   def new_stodo_manager(srv_name, debug = true)
+    if srv_name.nil? then
+      srv_name = service_name
+    end
     if database_type == REDIS_TYPE_TAG then
-#      result = STodoManager.new(service_name: srv_name, debugging: debug)
       result = RedisSTodoManager.new(service_name: srv_name, debugging: debug)
     else
       result = STodoManager.new(service_name: srv_name, debugging: debug)
@@ -210,7 +212,6 @@ class Configuration
     set_internal_vars
     @test_run = ENV[STTESTRUN] != nil
     initialize_database
-#!!!!    @data_manager = YamlStoreBasedDataManager.new(data_path, user)
     @stodo_git = initialized_stodo_git
   end
 

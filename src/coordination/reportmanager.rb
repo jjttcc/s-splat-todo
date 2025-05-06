@@ -26,19 +26,17 @@ class ReportManager
     end
   end
 
-  # List the handle for all targets that match 'criteria'.
+  # List the all handles that match 'criteria'.
   def list_handles criteria
     if criteria.null_criteria? then
-      # (No criteria implies reporting on all targets.)
-      targets = targets_for(nil)
+      # (No criteria implies reporting all handles.)
+      handles = handles_for(nil)
     elsif criteria.handles_only? then
-      targets = targets_for(criteria.handles)
+      handles = handles_for(criteria.handles)
     else
-      targets = targets_for_criteria(criteria)
+      handles = handles_for_criteria(criteria)
     end
-    targets.each do |t|
-      puts "#{t.handle}"
-    end
+    handles.each do |h| puts "#{h}" end
   end
 
   # List all handles currently in the git repository.
@@ -365,18 +363,53 @@ class ReportManager
     result
   end
 
+  # All valid/existing handles that match one of 'handles.
+  # All handles if 'handles' is nil.
+  # Sorted, if sorted == true
+  def handles_for handles, sorted = true
+    if handles != nil && handles.length > 0 then
+      result = []
+#      handles.each do |h|
+#        if manager.existing_targets[h] then
+#          result << manager.existing_targets[h]
+#        end
+#      end
+      result = handles.select do |h|
+        manager.existing_targets.has_key?(h)
+      end
+    else
+      result = manager.existing_targets.keys
+    end
+    if sorted then
+      result.sort! do |a, b|
+        time_comparison(a, b)
+      end
+    end
+    result
+  end
+
   def targets_for_criteria criteria, sorted = true
-    result = targets_for(criteria.handles, sorted)
     if ! criteria.null_criteria? && ! criteria.handles_only? then
 #      apply_criteria = selection_method(criteria)
       apply_criteria = comparison_method(criteria)
       result = manager.selected_targets do |h|
-#        criteria.handle_exprs.any? do |e|
-#          result = h =~ /#{e}/
-#          result
-#        end
         apply_criteria.call(h, criteria)
       end
+    else
+      result = targets_for(criteria.handles, sorted)
+    end
+    result
+  end
+
+  def handles_for_criteria criteria, sorted = true
+    if ! criteria.null_criteria? && ! criteria.handles_only? then
+#      apply_criteria = selection_method(criteria)
+      apply_criteria = comparison_method(criteria)
+      result = manager.selected_handles do |h|
+        apply_criteria.call(h, criteria)
+      end
+    else
+      result = handles_for(criteria.handles, sorted)
     end
     result
   end

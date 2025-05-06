@@ -18,14 +18,19 @@ class RedisBasedDataManager
   public  ###  Basic operations - Query
 
   # A hash table of all the keys in the database (for this user/app)
-  # (stripped of the prepended string from 'key_for') for fast searching,
-  # with all value components set to true
-#!!!!to-do: switch to use 'keys' for handle search instead of using
-#!!!! restored_targets, which loads all objects.
-  def keys
+  # for fast searching, with all value components set to true
+  def key_table
     result = database.set_members(db_key).map do |k|
       unornamented(k)
     end.to_h { |k| [k, true] }
+    result
+  end
+
+  # All keys in the database (for this user/app)
+  def keys
+    result = database.set_members(db_key).map do |k|
+      unornamented(k)
+    end
     result
   end
 
@@ -33,7 +38,7 @@ class RedisBasedDataManager
 
   # Is the key 'handle' in the database?
   def has_key?(handle)
-    result = keys[handle]
+    result = key_table[handle]
   end
 
   # All "STodoTarget"s, with handle as key, restored from persistent store.
@@ -75,7 +80,7 @@ class RedisBasedDataManager
   alias_method :[], :target_for
 
   def []=(new_handle, target)
-#!!!!![Still in progress]!!!!
+#!!!!!TEST!!!!
     if target.handle != new_handle then
       target.handle = new_handle
     end
@@ -95,7 +100,6 @@ class RedisBasedDataManager
 
   # Write `targets' out to persistent store.
   def store_targets(targets, replace = false)
-#!!!    keys = []
 # (start-transaction)
     if targets.is_a?(Hash) then
       targets.each do |handle, object|
@@ -108,7 +112,6 @@ class RedisBasedDataManager
         store_target(object, replace)
       end
     end
-#!!!    database.replace_set(db_key, keys)
 # (end-transaction)
   end
 

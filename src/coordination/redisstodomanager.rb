@@ -25,6 +25,12 @@ class RedisSTodoManager < STodoManager
     result = handles.keys.map { |h| @data_manager.target_for(h) }
   end
 
+  def selected_handles
+    handles = @data_manager.keys.select do |h|
+      yield h
+    end
+  end
+
   ###  Basic operations
 
 =begin
@@ -151,7 +157,6 @@ class RedisSTodoManager < STodoManager
         repo = configuration.stodo_git
         $log.debug "[add_new_targets] adding #{t.handle}"
         @data_manager.store_target(t)
-#!!!        self.existing_targets[t.handle] = t
         if ! t.parent_handle.nil? then
           p = @data_manager.target_for(t.parent_handle)
           if p then
@@ -168,8 +173,14 @@ class RedisSTodoManager < STodoManager
         end
       end
       initiate_new_targets targets
-#!!!      @data_manager.store_targets(self.existing_targets)
     end
+  end
+
+  def save_new_targets
+    @new_targets.values.each do |t|
+      t.prepare_for_db_write    # nil out or remove un-persistent attributes.
+    end
+    @data_manager.store_targets(@new_targets, false)
   end
 
   # Ensure that the specified targets are updated in persistent store.

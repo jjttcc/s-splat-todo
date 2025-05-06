@@ -37,6 +37,15 @@ class STodoManager
     result
   end
 
+  # All handles in the database for which the passed-in block yields 'true'
+  # Array<STodoTarget>
+  def selected_handles
+    result = existing_targets.keys.select do |key|
+      yield key
+    end
+    result
+  end
+
   ###  Element change
 
   def target_builder=(t)
@@ -64,8 +73,7 @@ class STodoManager
       if ! @edited_targets.empty? then
         self.target_builder.spec_collector.initial_cleanup @edited_targets
       end
-      all_targets = self.existing_targets.merge(@new_targets)
-      update_database(all_targets)
+      save_new_targets
     end
   end
 
@@ -405,6 +413,12 @@ class STodoManager
         $log.warn "target #{t.handle} has a nonexistent parent: #{p}"
       end
     end
+  end
+
+  # Save any new 'STodoTarget's (@new_targets) to the database.
+  def save_new_targets
+    all_targets = self.existing_targets.merge(@new_targets)
+    update_database(all_targets)
   end
 
   def update_database(targets = nil)

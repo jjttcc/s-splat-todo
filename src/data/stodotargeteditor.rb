@@ -20,7 +20,7 @@ class STodoTargetEditor
     @last_command_failed = false
     self.change_occurred = false
     clean_handle = handle.split(/#{DEFAULT_COMPONENT_SEPARATOR}/)[0]
-    if @target_for[clean_handle] == nil then
+    if @target_for.has_key?(clean_handle) == nil then
       @last_command_failed = true
       @last_failure_message = "No target found with handle #{handle}."
     else
@@ -109,35 +109,40 @@ class STodoTargetEditor
   pre "handle exists" do |handle| ! handle.nil? end
   pre "No data change yet" do change_occurred == false end
   pre "target for 'handle' exists" do |handle|
-    ! target_for[handle].nil?
+    ! target_for.has_key?(handle).nil?
   end
   def delete_target handle, *options
+    # Note: the operation is allowed to continue if 'handle' is in the
+    # system but its associated target is not, so that the "dangling"
+    # 'handle' will be removed.
     opts = CommandOptions.new(__method__.to_s, options)
     recursive = opts.recursive?
     self.commit_msg = opts.message  # (Will be used by 'close_edit'.)
     t = target_for[handle]
-    if recursive then
-      t.children.each do |c|
-        self.change_occurred = false  # (ensure precondition)
-        delete_target c.handle, *options
+    if ! t.nil? then
+      if recursive then
+        t.children.each do |c|
+          self.change_occurred = false  # (ensure precondition)
+          delete_target c.handle, *options
+        end
       end
-    end
-    if t.parent_handle != nil then
-      # "disown" the parent.
-      parent = target_for[t.parent_handle]
-      if parent and parent.can_have_children? then
-        parent.remove_child(t)
+      if t.parent_handle != nil then
+        # "disown" the parent.
+        parent = target_for[t.parent_handle]
+        if parent and parent.can_have_children? then
+          parent.remove_child(t)
+        end
       end
-    end
-    if ! recursive then
-      t.children.each do |c|
-        # Make c into an orphan.
-        c.parent_handle = nil
+      if ! recursive then
+        t.children.each do |c|
+          # Make c into an orphan.
+          c.parent_handle = nil
+        end
       end
     end
     target_for.delete(handle)
     repo = Configuration.instance.stodo_git
-    if repo.in_git(handle) then
+    if ! t.nil? && repo.in_git(handle) then
       execute_git_command(@command_for[__method__], t)
     end
     self.change_occurred = true

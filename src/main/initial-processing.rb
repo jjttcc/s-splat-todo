@@ -14,6 +14,8 @@ Configuration.debugging = false
 spec_collector = FileBasedSpecGatherer.new
 # Build the s*todo targets.
 target_builder = TargetBuilder.new spec_collector
-manager = STodoManager.new(target_builder: target_builder)
+config = Configuration.instance
+manager = config.new_stodo_manager(service_name: 'initial-processing',
+                                   debugging: true)
+manager.target_builder = target_builder
 manager.perform_initial_processing
-$log.warn("test init-proc")

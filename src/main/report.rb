@@ -300,69 +300,9 @@ class ReportUtil
 
 end
 
-# [temporary - for testing redis connection]
-def redis_read_test(broker)
-  o = broker.object('vim-tips')
-  $log.warn o.class
-  $log.warn "vim tips: #{o}"
-end
-
-# (hacking)
-def write_redis_db(config, manager)
-  db = config.db_config.data_manager
-  db.store_targets(manager.existing_targets)
-end
-
-# [temporary - for testing redis connection]
-def redis_write_test(manager, broker)
-  manager.existing_targets.each do |t|
-    object = t[1]   # (t[0] is the object's "handle".)
-    puts "object: #{object.handle}"
-    if broker.exists(object.handle) then
-      $log.warn "object with handle #{object.handle} is already stored."
-    else
-      $log.warn "object with handle #{object.handle} is NOT stored."
-      broker.set_object(object.handle, object)
-    end
-  end
-end
-
 Configuration.service_name = 'report'
 config = Configuration.instance
 manager = config.new_stodo_manager(service_name: 'report', debugging: true)
-#manager = STodoManager.new(service_name: 'report', debugging: true)
 reporter = ReportManager.new manager
 
-#!!!config = Configuration.instance
-# debugging of logging:
-logconfig = config.log_config
-redis_log = logconfig.admin_log
-trlog = logconfig.transaction_manager
-s = ""
-if trlog.in_transaction then
-  trid = trlog.current_transaction
-  s = "We are in a transaction with id: #{trid}"
-  $log.warn(s)
-else
-  s = "We are NOT in a transaction"
-  $log.warn(s)
-end
-rlo = ObjectInfo.new(redis_log)
-pid = $$
-=begin
-$log.warn("i-am-report:warning#{pid}")
-$log.info("i-am-report:information#{pid}")
-$log.error("i-am-report:error#{pid}")
-$log.debug("i-am-report:debug#{pid}")
-$log.fatal("i-am-report:fatal#{pid}")
-$log.unknown("i-am-report:unknown#{pid}")
-=end
-#res = redis_log.contents
-#!!!!puts "testresult[1]:\n", res
-#broker = ApplicationConfiguration.application_message_broker
-##exit 0
-#redis_write_test(manager, broker)
-#!!!!redis_read_test(broker)
-# end-debugging
-#write_redis_db(config, manager)
 ReportUtil::execute(reporter).call

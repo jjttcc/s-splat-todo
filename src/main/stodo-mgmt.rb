@@ -100,5 +100,4 @@ if ARGV.length > 0 then
     end
     manager.close_edit
   end
-$log.warn("test mgmt[1]")
 end
