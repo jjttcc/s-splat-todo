@@ -382,7 +382,7 @@ class ReportManager
     end
     if sorted then
       result.sort! do |a, b|
-        time_comparison(a, b)
+        a <=> b
       end
     end
     result
@@ -390,7 +390,6 @@ class ReportManager
 
   def targets_for_criteria criteria, sorted = true
     if ! criteria.null_criteria? && ! criteria.handles_only? then
-#      apply_criteria = selection_method(criteria)
       apply_criteria = comparison_method(criteria)
       result = manager.selected_targets do |h|
         apply_criteria.call(h, criteria)
@@ -403,7 +402,6 @@ class ReportManager
 
   def handles_for_criteria criteria, sorted = true
     if ! criteria.null_criteria? && ! criteria.handles_only? then
-#      apply_criteria = selection_method(criteria)
       apply_criteria = comparison_method(criteria)
       result = manager.selected_handles do |h|
         apply_criteria.call(h, criteria)
@@ -429,32 +427,36 @@ class ReportManager
   # criteria comparison.
   def create_compare_methods
     @comparison_method_table = {}
-    pri_cmp = lambda {|tgt, crit|
+    pri_cmp = lambda {|hndl, crit|
+      tgt = manager.existing_targets[hndl]
       crit.priorities.include?(tgt.priority)
     }
-    sta_cmp = lambda {|tgt, crit|
+    sta_cmp = lambda {|hndl, crit|
+      tgt = manager.existing_targets[hndl]
       tgt.state == nil || crit.states.include?(tgt)
     }
-    typ_cmp = lambda {|tgt, crit|
+    typ_cmp = lambda {|hndl, crit|
+      tgt = manager.existing_targets[hndl]
       tgt.type == nil || crit.types.include?(tgt.type)
     }
-    ttl_cmp = lambda {|tgt, crit|
+    ttl_cmp = lambda {|hndl, crit|
       crit.title_exprs.any? { |e|
-      Regexp.new(e, Regexp::IGNORECASE).match(tgt.title) }
+        tgt = manager.existing_targets[hndl]
+        Regexp.new(e, Regexp::IGNORECASE).match(tgt.title)
+      }
     }
-#    hnd_cmp = lambda {|tgt, crit|
-    hnd_cmp = lambda {|h, crit|
-#      crit.handle_exprs.any? { |e|
-#!!!      Regexp.new(e, Regexp::IGNORECASE).match(tgt.handle) }
+    hnd_cmp = lambda {|hndl, crit|
         r = crit.handle_exprs.any? do |e|
-          result = h =~ /#{e}/
+          result = hndl =~ /#{e}/
           result
         end
         r
     }
-    des_cmp = lambda {|tgt, crit|
+    des_cmp = lambda {|hndl, crit|
       crit.description_exprs.any? { |e|
-      Regexp.new(e, Regexp::IGNORECASE).match(tgt.description) }
+        tgt = manager.existing_targets[hndl]
+        Regexp.new(e, Regexp::IGNORECASE).match(tgt.description)
+      }
     }
 
     @comparison_method_table[PRI] = pri_cmp

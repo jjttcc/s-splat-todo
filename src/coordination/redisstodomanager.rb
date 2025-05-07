@@ -22,7 +22,7 @@ class RedisSTodoManager < STodoManager
     handles = @data_manager.keys.select do |h|
       yield h
     end
-    result = handles.keys.map { |h| @data_manager.target_for(h) }
+    result = handles.map { |h| @data_manager.target_for(h) }
   end
 
   def selected_handles
