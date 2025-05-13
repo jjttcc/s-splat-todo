@@ -80,7 +80,6 @@ class RedisBasedDataManager
   alias_method :[], :target_for
 
   def []=(new_handle, target)
-#!!!!!TEST!!!!
     if target.handle != new_handle then
       target.handle = new_handle
     end

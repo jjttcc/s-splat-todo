@@ -412,17 +412,6 @@ class ReportManager
     result
   end
 
-  def old___targets_for_criteria criteria, sorted = true
-    result = targets_for(criteria.handles, sorted)
-    if ! criteria.null_criteria? && ! criteria.handles_only? then
-      apply_criteria = comparison_method(criteria)
-      result = result.select do |t|
-        apply_criteria.call(t, criteria)
-      end
-    end
-    result
-  end
-
   # Create the table of lambdas (comparison_method_table) to use for
   # criteria comparison.
   def create_compare_methods

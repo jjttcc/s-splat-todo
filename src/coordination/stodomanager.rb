@@ -170,9 +170,9 @@ class STodoManager
       targets.each do |t|
         repo = configuration.stodo_git
         $log.debug "[add_new_targets] adding #{t.handle}"
-        self.existing_targets[t.handle] = t
+        store_target(t)
         if ! t.parent_handle.nil? then
-          p = self.existing_targets[t.parent_handle]
+          p = target_for(t.parent_handle)
           if p then
             p.add_child t
           else
@@ -375,7 +375,7 @@ class STodoManager
     if p then
       candidate_parent = @new_targets[p]
       if not candidate_parent then
-        candidate_parent = self.existing_targets[p]
+        candidate_parent = target_for(p)
         if candidate_parent then
           $log.debug "#{t.handle}'s parent found among old targets: " +
             "'#{candidate_parent.title}'"
@@ -419,6 +419,14 @@ class STodoManager
   def save_new_targets
     all_targets = self.existing_targets.merge(@new_targets)
     update_database(all_targets)
+  end
+
+  def store_target(tgt)
+    self.existing_targets[tgt.handle] = tgt
+  end
+
+  def target_for(handle)
+    self.existing_targets[handle]
   end
 
   def update_database(targets = nil)
