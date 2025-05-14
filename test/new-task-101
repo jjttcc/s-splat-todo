@@ -1,0 +1,87 @@
+#!/bin/bash
+# Test: Create a new task by first running 'stodo temp ...' (create
+# template) and then running 'stodo init' to input the template to
+# create a new task. Then delete it.
+
+# (define env. var. STODO_KEEP_ARTIFACTS to force any new items to NOT
+# be deleted.)
+
+# Create a template and deposit it as a file in the 'specpath'.
+# Set var 'new_handle' to the handle used for the template.
+create_template() {
+  local result=0
+  hndl=$ST_HANDLE
+  new_handle=$hndl
+  type=$ST_TYPE
+  title=$ST_TITLE
+  targetdir=$(specpath)
+  targetpath=$targetdir/$hndl
+  if
+      EDITOR='' stodo temp $type -h $hndl -pr 1 -t $title \
+          -ti 'tomorrow at 12:00' |grep -Ev 'type: *template' >$targetpath
+  then
+    echo "creation of template for $hndl SUCCEEDED"
+  else
+    echo "creation of template for $hndl FAILED"
+    result=99
+  fi
+  return $result
+}
+
+digest_template() {
+  if stodo init; then
+    echo "creation of $hndl from template SUCCEEDED"
+  else
+    echo "creation of $hndl from template FAILED"
+    result=99
+  fi
+  return $result
+}
+
+# Set "vars" for origination/creation.
+set_main_vars() {
+  ST_HANDLE=$testhndl
+  ST_TYPE=$testtype
+  ST_TITLE=$mainttl
+  ST_DESC=$desc
+  ST_EMAIL=$email
+  ST_ATTACH="$attchs"
+  ST_DTTIME='now'
+}
+
+basedir=$(dirname $0)
+toolsfile=$basedir/tools
+testenv=$basedir/.env
+if [ -r $testenv -a -f $testenv ]; then
+  . $testenv
+fi
+if [ -r $toolsfile -a -f $toolsfile ]; then
+  . $toolsfile
+  init_tools
+fi
+
+# (Use file $testenv, sourced above, to set user_email.)
+if [ "$ST_EMAIL" ]; then
+  email="$ST_EMAIL"
+else
+  email="test@foo.invalid"
+fi
+testhndl=test-stodo$$
+testtype=task
+mainttl="new-task-$$"
+newttl="This is new task test number $$."
+newttlregex="This.is.new.task.*number"
+
+testcount=0
+successcount=0
+set_main_vars
+if create_template; then ((++successcount)); fi
+((++testcount))
+if digest_template; then ((++successcount)); fi
+((++testcount))
+if delete_test $new_handle; then ((++successcount)); fi
+((++testcount))
+[ $successcount = $testcount ]
+status=$?
+testreport $testcount $successcount
+exit $status
