@@ -37,6 +37,8 @@ class OneTimeReminder < Reminder
 
   ###  Status setting
 
+  # Note: This method will cause a state change in 'self' - See
+  # documentation in the parent class (Reminder) for more complete info.
   post 'triggered? and not due' do self.triggered? && ! self.is_due? end
   def trigger
     @triggered = true

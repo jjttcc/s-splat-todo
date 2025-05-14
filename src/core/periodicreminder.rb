@@ -44,6 +44,8 @@ class PeriodicReminder < Reminder
 
   ###  Status setting
 
+  # Note: This method may cause a state change in 'self' - See
+  # documentation in the parent class (Reminder) for more info.
   def trigger
     if @advancer_for == nil then
       init_advancers

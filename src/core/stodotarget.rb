@@ -268,7 +268,7 @@ class STodoTarget
     ! target.nil? && target.children.include?(self)
   end
 
-  public    ###  Element change
+  public    ###  Persistent attribute change
 
   def parent_handle=(h)
     @parent_handle = h
@@ -281,15 +281,6 @@ class STodoTarget
   end
   def add_child(t)
     @children << t
-    update
-  end
-
-  # Add a notifier to the list of notifiers to be used by `initiate' and
-  # `perform_ongoing_actions'.
-  # postcondition: notifiers.length == old notifiers.length + 1
-  pre 'n != nil' do |n| n != nil end
-  def add_notifier n
-    @notifiers << n
     update
   end
 
@@ -321,6 +312,16 @@ class STodoTarget
       c.parent_handle = self.handle
     end
     update
+  end
+
+  public    ###  Element change (non-persistent)
+
+  # Add a notifier to the list of notifiers to be used by `initiate' and
+  # `perform_ongoing_actions'.
+  # postcondition: notifiers.length == old notifiers.length + 1
+  pre 'n != nil' do |n| n != nil end
+  def add_notifier n
+    @notifiers << n
   end
 
   public    ###  Removal
@@ -1110,8 +1111,11 @@ class STodoTarget
         end
       end
     end
-    if ! rems.empty? and client != nil then
-      client.dirty = true
+    if ! rems.empty? then
+      update    # The 'reminders' that were due likely changed state.
+      if client != nil then
+        client.dirty = true
+      end
     end
   end
 

@@ -52,6 +52,8 @@ class Reminder
 
   # Mark the Reminder as triggered - i.e., that is_due? was true and the
   # Reminder was used for a notification.
+  # Note: The state of this object may change and thus may need updating
+  # in persistent store. For example, self.date_time may change.
   # postcondition: not is_due?
   post 'not due' do ! self.is_due? end
   def trigger
