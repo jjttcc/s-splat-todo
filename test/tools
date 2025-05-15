@@ -51,6 +51,7 @@ type_exists() {
   [ "$ST_TYPE" ]
 }
 
+# Create a stodo item.
 create() {
   if ! handle_exists; then
     echo "create: fatal: ST_HANDLE is not set." >&2

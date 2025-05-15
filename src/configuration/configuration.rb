@@ -30,7 +30,7 @@ class Configuration
   attr_reader :debugging
   # The RedisLogConfig object - for reporting and debugging
   attr_reader :log_config
-  # The RedisDBConfig object - for reporting and debugging
+  # The RedisDBConfig (database configuration) object
   attr_reader :db_config
 
   public  ### admin-related class methods
@@ -152,20 +152,21 @@ class Configuration
   end
 
   # stodo configuration/settings
-  def settings
-    result = {
-      'config file path'        => CONFIG_FILE_PATH,
-      "user"                    => user,
-      "user_path"               => user_path,
-      "spec_path"               => spec_path,
-      "data_path"               => data_path,
-      "git_path"                => git_path,
-      "git_executable"          => git_executable,
-      "backup_paths"            => backup_paths,
-      "post_init_spec_path"     => post_init_spec_path,
-      "default_email"           => default_email,
-      "templated_email_command" => templated_email_command,
-    }
+  def settings_report
+    result = []
+    result << ['config file path'        , CONFIG_FILE_PATH]
+    result << ["user"                    , user]
+    result << ["user_path"               , user_path]
+    result << ["spec_path"               , spec_path]
+    result << ['database_type'           , database_type]
+    result << ['log_type'                , log_type]
+    result << ["data_path"               , data_path]
+    result << ["git_path"                , git_path]
+    result << ["git_executable"          , git_executable]
+    result << ["backup_paths"            , backup_paths]
+    result << ["post_init_spec_path"     , post_init_spec_path]
+    result << ["default_email"           , default_email]
+    result << ["templated_email_command" , templated_email_command]
     result
   end
 
@@ -198,8 +199,9 @@ class Configuration
 
   private
 
-  attr_writer :view_attachment, :edit_attachment
-  attr_writer :service_name, :debugging, :log_config, :db_config
+  attr_writer   :view_attachment, :edit_attachment
+  attr_writer   :service_name, :debugging, :log_config, :db_config
+  attr_accessor :settings
 
   post 'important objects exist' do
     ! data_manager.nil? && ! stodo_git.nil?
@@ -211,7 +213,7 @@ class Configuration
     else
       self.debugging = false
     end
-    settings = config_file_settings
+    self.settings = config_file_settings
     set_config_vars settings
     set_external_media_tools settings
     @app_configuration = ApplicationConfiguration.new
@@ -450,7 +452,7 @@ class Configuration
     else
       $log.level = $debug? Logger::DEBUG: Logger::WARN
     end
-$log.debug("debugging messages are on")
+    $log.debug("debugging messages are on")
   end
 
   def initialize_database

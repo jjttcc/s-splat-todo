@@ -136,8 +136,8 @@ class STodoAdministrator
     trx_status = config.in_transaction ? "YES": "NO"
     printf("%-26s%s\n", "assertions:", dbc_status);
     printf("%-26s%s\n", "in transaction:", trx_status);
-    config.settings.sort.each do |set|
-      printf("%-26s%s\n", "#{set[0]}:", set[1]);
+    config.settings_report.each do |setting|
+      printf("%-26s%s\n", "#{setting[0]}:", setting[1]);
     end
   end
 
