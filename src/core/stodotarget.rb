@@ -306,7 +306,6 @@ class STodoTarget
   pre 'h != old handle' do |h| h != self.handle end
   post 'handle == h' do |result, h| self.handle == h end
   def change_handle h
-#!!!binding.irb
     if ! db.nil? then
       old_handle = handle
       parent = db.target_for(parent_handle)
@@ -316,11 +315,7 @@ class STodoTarget
       c.parent_handle = self.handle
     end
     if parent then
-      parent.db = nil   # Inhibit database updates.
-      parent.remove_child_by_handle(old_handle)
-      parent.add_child(self)
-      parent.db = db
-      parent.update
+      update_parent_after_handle_change(parent, old_handle)
     end
     update
   end
@@ -945,7 +940,6 @@ class STodoTarget
 
   # If ! db.nil?, update self via db.
   def update
-#!!!binding.irb
     if ! db.nil? then
       tmp_db = db
       prepare_for_db_write
@@ -957,16 +951,17 @@ class STodoTarget
     end
   end
 
-  pre :old_and_new_handles_differ do |nh| self.handle != nh end
-  def update_parent(new_handle)
-#!!!!Is 'new_handle' needed?!!!
-    if ! db.nil? then
-      parent = db.target_for(parent_handle)
-      parent.add_child(self)
-#tmp_db = db
-#prepare_for_db_write
-#tmp_db.update_target(self)
-    end
+  private
+
+  pre :parent_exists do |parent| ! parent.nil? end
+  pre :old_h_exists do |p, oh| ! oh.nil? end
+  pre :db_exists do ! self.db.nil? end
+  def update_parent_after_handle_change(parent, old_handle)
+    parent.db = nil   # Inhibit database updates.
+    parent.remove_child_by_handle(old_handle)
+    parent.add_child(self)
+    parent.db = db
+    parent.update
   end
 
   # If ! db.nil?, remove self from db.
