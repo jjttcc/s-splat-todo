@@ -6,6 +6,7 @@ tests='test/add-change-delete-etc-101 test/add-change-delete-etc-102 test/attach
 status=0
 testcount=0
 failures=0
+stodo settings
 for f in $tests; do
   echo "=============== Executing $f ==============="
   if $f; then

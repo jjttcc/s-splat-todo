@@ -1,5 +1,5 @@
 #!/bin/bash
-# vim: ts=4 sw=4 expandtab
+# vim: ts=2 sw=2 expandtab
 
 init_tools() {
   no_h=false
@@ -67,6 +67,21 @@ create() {
 
 specpath() {
     stodo set|awk '/^spec_path/ {print $NF}'
+}
+
+# Check that the item (handle $1) has the specified item (handle $2) as its
+# parent.
+checkparent() {
+  local h=$1 p=$2
+  stodo report comp $h|grep -q "^parent: *$p$"
+}
+
+checkchild() {
+  local prnt=$1 chld=$2
+  result=101
+  stodo report comp $prnt|grep  "children: $chld"
+  result=$?
+  return $result
 }
 
 report() {

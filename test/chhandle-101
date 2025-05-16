@@ -1,6 +1,6 @@
 #!/bin/bash
 # vim: sw=2 ts=2 expandtab
-# Change parent test
+# Change handle test
 
 # (define env. var. STODO_KEEP_ARTIFACTS to force any new items to NOT
 # be deleted.)
@@ -17,10 +17,20 @@ set_main_vars() {
   ST_DTTIME='now'
 }
 
-chparent_test() {
-  local hndl=$1 parent=$2
-  stodo chparent $hndl $parent
-  checkparent $hndl $parent
+change-handle-test() {
+  if [ $# -lt 3 ]; then
+    echo "fatal: change-handle-test: need three arguments" >&2
+    exit 13
+  fi
+  result=0
+  local h1=$1 h2=$2 p=$3
+  stodo chhandle $h1 $h2
+  checkparent $h2 $p
+  if ! checkchild $p $h2; then
+    result=2
+    echo "change-handle-test - error: $h2 is not parent's ($p) child." >&2
+  fi
+  return $result
 }
 
 basedir=$(dirname $0)
@@ -40,9 +50,9 @@ if [ "$ST_EMAIL" ]; then
 else
   email="test@foo.invalid"
 fi
-mainhndl=test-stodo$$
-origparent=parent1-test-stodo$$
-newparent=parent2-test-stodo$$
+firsthndl=test-stodo$$
+secondhndl="new-hndl-$firsthndl"
+parent=parent-test-stodo$$
 testtype=task
 mainttl="new-task-$$"
 newttl="This is new task test number $$."
@@ -51,28 +61,25 @@ newttlregex="This.is.new.task.*number"
 stodo starttran
 testcount=0
 successcount=0
-testhndl=$origparent
+testhndl=$parent
 set_main_vars
-# Create the first parent.
+# Create the parent.
 create
-testhndl=$newparent
-set_main_vars
-# Create the new parent.
-create
-testhndl=$mainhndl
-intended_parent=$origparent
+testhndl=$firsthndl
+intended_parent=$parent
 set_main_vars
 # Create the target (child) item.
 create
-if checkparent $mainhndl $origparent; then ((++successcount)); fi
+if checkparent $firsthndl $parent; then ((++successcount)); fi
 ((++testcount))
-if chparent_test $testhndl $newparent; then ((++successcount)); fi
+if change-handle-test $firsthndl $secondhndl $parent; then
+  ((++successcount))
+fi
 ((++testcount))
 [ $successcount = $testcount ]
 status=$?
-delete $mainhndl
-delete $origparent
-delete $newparent
+delete $parent
+delete $secondhndl
 stodo endtran
 testreport $testcount $successcount
 exit $status
