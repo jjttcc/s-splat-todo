@@ -1,7 +1,7 @@
 #!/bin/env bash
 # vim: expandtab ts=2 sw=2
 
-tests='test/add-change-delete-etc-101 test/add-change-delete-etc-102 test/attachments-101 test/references-101 new-task-101 chparent-101'
+tests='test/add-change-delete-etc-101 test/add-change-delete-etc-102 test/attachments-101 test/references-101 test/new-task-101 test/chparent-101'
 
 status=0
 testcount=0

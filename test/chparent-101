@@ -53,6 +53,7 @@ mainttl="new-task-$$"
 newttl="This is new task test number $$."
 newttlregex="This.is.new.task.*number"
 
+stodo starttran
 testcount=0
 successcount=0
 testhndl=$origparent
@@ -77,5 +78,6 @@ status=$?
 delete $mainhndl
 delete $origparent
 delete $newparent
+stodo endtran
 testreport $testcount $successcount
 exit $status

@@ -61,7 +61,7 @@ state_test() {
   return $result
 }
 
-delete_test() {
+ac_delete_test() {
   local result=0
   if ! [ "$STODO_KEEP_ARTIFACTS" ]; then
     delete $testhndl
@@ -127,7 +127,7 @@ if create_test; then ((++successcount)); fi
 set_nvars
 if state_test; then ((++successcount)); fi
 ((++testcount))
-if delete_test; then ((++successcount)); fi
+if ac_delete_test; then ((++successcount)); fi
 ((++testcount))
 [ $successcount = $testcount ]
 allgood=$?

@@ -41,7 +41,7 @@ create_item_with_attachments() {
   return $result
 }
 
-delete_test() {
+ac_delete_test() {
   local result=0
   if ! [ "$STODO_KEEP_ARTIFACTS" ]; then
     delete $testhndl
@@ -103,7 +103,7 @@ parse_args $@
 set_main_vars
 if create_item_with_attachments; then ((++successcount)); fi
 ((++testcount))
-if delete_test; then ((++successcount)); fi
+if ac_delete_test; then ((++successcount)); fi
 ((++testcount))
 [ $successcount = $testcount ]
 status=$?
