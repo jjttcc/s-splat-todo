@@ -1,0 +1,137 @@
+#!/bin/bash
+# vim: sw=2 ts=2 expandtab
+# Clear descendants test
+
+# family tree diagram for test:
+#
+#        A
+#    /   |   \
+#   B    C    D
+#   |  /   \
+#   E  F    G
+
+# (define env. var. STODO_KEEP_ARTIFACTS to force any new items to NOT
+# be deleted.)
+
+# Set "vars" for origination/creation.
+set_main_vars() {
+  ST_HANDLE=$testhndl
+  ST_TYPE=$testtype
+  ST_TITLE=$mainttl
+  ST_PARENT=$intended_parent
+  ST_DESC=$desc
+  ST_EMAIL=$email
+  ST_ATTACH="$attchs"
+  ST_DTTIME='now'
+}
+
+basedir=$(dirname $0)
+toolsfile=$basedir/tools
+testenv=$basedir/.env
+if [ -r $testenv -a -f $testenv ]; then
+  . $testenv
+fi
+if [ -r $toolsfile -a -f $toolsfile ]; then
+  . $toolsfile
+  init_tools
+fi
+if [ "NO_ASSERT" ]; then
+  unset ENABLE_ASSERTION
+fi
+
+# (Use file $testenv, sourced above, to set user_email.)
+if [ "$ST_EMAIL" ]; then
+  email="$ST_EMAIL"
+else
+  email="test@foo.invalid"
+fi
+firsthndl=test-stodo$$
+secondhndl="new-hndl-$firsthndl"
+ancestorA=ancestorA-test-stodo$$
+parentB="parent-B-test-stodo$$"
+parentC="parent-C-test-stodo$$"
+parentD="parent-D-test-stodo$$"
+childE="child-E-test-stodo$$"
+childF="child-F-test-stodo$$"
+childG="child-G-test-stodo$$"
+testtype=task
+mainttl="new-task-$$"
+newttl="This is new task test number $$."
+newttlregex="This.is.new.task.*number"
+
+stodo starttran
+testcount=0
+successcount=0
+
+### Create the family tree
+testhndl=$ancestorA
+set_main_vars
+# Create the ancestor.
+create
+intended_parent=$ancestorA
+for testhndl in $parentB $parentC $parentD; do
+  echo $testhndl
+  set_main_vars
+  # Create the target (child) item.
+  create
+  if ! checkparent $testhndl $intended_parent; then
+    echo "error: $intended_parent is not parent of $testhndl" >&2
+  fi
+done
+intended_parent=$parentB
+for testhndl in $childE; do
+  echo $testhndl
+  set_main_vars
+  # Create the target (child) item.
+  create
+  if ! checkparent $testhndl $intended_parent; then
+    echo "error: $intended_parent is not parent of $testhndl" >&2
+  fi
+done
+intended_parent=$parentC
+for testhndl in $childF $childG; do
+  echo $testhndl
+  set_main_vars
+  # Create the target (child) item.
+  create
+  if ! checkparent $testhndl $intended_parent; then
+    echo "error: $intended_parent is not parent of $testhndl" >&2
+  fi
+done
+
+keeplist="$childF:$parentD"
+set -x  #!!!!!
+stodo clear_d $ancestorA:$keeplist
+set +x  #!!!!!
+par=$ancestorA
+for tgt in $parentC $parentD; do
+  if ! checkparent $tgt $par; then
+    echo "error: $par is not $tgt's parent" >&2
+  else
+    ((++successcount))
+  fi
+  ((++testcount))
+  if ! checkchild $par $tgt; then
+    echo "error: $tgt is not one of $par's children" >&2
+  else
+    ((++successcount))
+  fi
+  ((++testcount))
+done
+removedlist="$parentB $childE $childG"
+for h in $removedlist; do
+  if [ "$(hgrep $h)" != "" ]; then
+    echo "error: $h was not removed."
+  else
+    ((++successcount))
+  fi
+  ((++testcount))
+done
+[ $successcount = $testcount ]
+status=$?
+set -x
+delete $ancestorA $parentB $parentC $parentD $childE $childF $childG
+set +x
+stodo endtran
+testreport $testcount $successcount
+exit $status
