@@ -110,6 +110,9 @@ if [ -r $toolsfile -a -f $toolsfile ]; then
   . $toolsfile
   init_tools
 fi
+if [ "$NO_ASSERT" ]; then
+  unset ENABLE_ASSERTION
+fi
 
 if [ $"ST_EMAIL" ]; then
   email="$ST_EMAIL"

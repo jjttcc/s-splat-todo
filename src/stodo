@@ -100,7 +100,7 @@ set_rubylib() {
   moredirs="$moredirs coordination util attributes"
   moredirs="$moredirs domain/services/reporting external/messaging"
   moredirs="$moredirs lib/messaging domain/support"
-  moredirs="$moredirs lib/util"
+  moredirs="$moredirs lib/util lib/util/redis"
   moredirs="$moredirs external/util"
   rubylib="RUBYLIB=$STEXEC_PATH/core"
   for d in $moredirs; do

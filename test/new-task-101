@@ -59,6 +59,9 @@ if [ -r $toolsfile -a -f $toolsfile ]; then
   . $toolsfile
   init_tools
 fi
+if [ "$NO_ASSERT" ]; then
+  unset ENABLE_ASSERTION
+fi
 
 # (Use file $testenv, sourced above, to set user_email.)
 if [ "$ST_EMAIL" ]; then

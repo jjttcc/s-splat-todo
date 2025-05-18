@@ -35,7 +35,7 @@ if [ -r $toolsfile -a -f $toolsfile ]; then
   . $toolsfile
   init_tools
 fi
-if [ "NO_ASSERT" ]; then
+if [ "$NO_ASSERT" ]; then
   unset ENABLE_ASSERTION
 fi
 
@@ -100,9 +100,7 @@ for testhndl in $childF $childG; do
 done
 
 keeplist="$childF:$parentD"
-set -x  #!!!!!
 stodo clear_d $ancestorA:$keeplist
-set +x  #!!!!!
 par=$ancestorA
 for tgt in $parentC $parentD; do
   if ! checkparent $tgt $par; then
@@ -129,9 +127,7 @@ for h in $removedlist; do
 done
 [ $successcount = $testcount ]
 status=$?
-set -x
 delete $ancestorA $parentB $parentC $parentD $childE $childF $childG
-set +x
 stodo endtran
 testreport $testcount $successcount
 exit $status
