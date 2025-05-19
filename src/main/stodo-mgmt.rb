@@ -64,8 +64,13 @@ if ARGV.length > 0 then
     require 'templatetargetbuilder'
     require 'templateoptions'
     options = TemplateOptions.new(arguments, true)
+=begin
     target_builder = TemplateTargetBuilder.new(options,
-                                               manager.existing_targets)
+                                               manager.existing_targets,
+                                               Set.new)
+=end
+    target_builder = TemplateTargetBuilder.new(options,
+                                       manager.existing_targets, nil, config)
     target_builder.set_processing_mode TemplateTargetBuilder::CREATE_MODE
     manager.target_builder = target_builder
     manager.add_new_targets
@@ -80,7 +85,7 @@ if ARGV.length > 0 then
     options = TemplateOptions.new(arguments, true)
     spec = StubbedSpec.new(options, false)  # false => don't use defaults
     target_editor = TemplateTargetBuilder.new(options,
-                                              manager.existing_targets, spec)
+                                        manager.existing_targets, spec, config)
     manager.target_builder = target_editor
     manager.update_targets(options)
   when /start-transaction/

@@ -114,12 +114,12 @@ class TargetBuilder
   # Set self.processing_mode to CREATE_MODE, unless overridden in descendant.
   # Initialize @spec_collector, @edited_targets, @time_changed_for.
   # Initialize @target_factory_for ("target factory" hash table).
-  def initialize spec_collector
+  def initialize spec_collector, config
     @spec_collector = spec_collector
     @edited_targets = []
     @time_changed_for = {}
     self.processing_mode = CREATE_MODE
-    init_target_factory
+    init_target_factory config.stodo_target_child_container_factory
   end
 
   # Build and return a new STodoTarget based on 'spec'. If 'spec' is
@@ -178,12 +178,14 @@ class TargetBuilder
     end
   end
 
-  def init_target_factory
+  def init_target_factory cc_factory
     @target_factory_for = {
-      PROJECT     => lambda do |spec| Project.new(spec) end,
-      TASK_ALIAS1 => lambda do |spec| Task.new(spec) end,
-      NOTE        => lambda do |spec| Memorandum.new(spec) end,
-      APPOINTMENT => lambda do |spec| ScheduledEvent.new(spec) end,
+      PROJECT     => lambda do |spec| Project.new(spec, cc_factory.call) end,
+      TASK_ALIAS1 => lambda do |spec|
+        Task.new(spec, cc_factory.call) end,
+      NOTE        => lambda do |spec| Memorandum.new(spec, cc_factory.call) end,
+      APPOINTMENT => lambda do |spec| ScheduledEvent.new(spec,
+                                                         cc_factory.call) end,
     }
     # Define "type" aliases.
     @target_factory_for[TASK] = @target_factory_for[TASK_ALIAS1]

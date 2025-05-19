@@ -13,8 +13,8 @@ Configuration.debugging = false
 # Gather the new specs.
 spec_collector = FileBasedSpecGatherer.new
 # Build the s*todo targets.
-target_builder = TargetBuilder.new spec_collector
 config = Configuration.instance
+target_builder = TargetBuilder.new spec_collector, config
 manager = config.new_stodo_manager(service_name: 'initial-processing',
                                    debugging: true)
 manager.target_builder = target_builder

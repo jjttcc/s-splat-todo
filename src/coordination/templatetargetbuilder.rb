@@ -34,7 +34,8 @@ class TemplateTargetBuilder < TargetBuilder
     implies(! the_existing_targets.nil?,
             self.existing_targets == the_existing_targets)
   end
-  def initialize(options, the_existing_targets = nil, the_spec = nil)
+  def initialize(options, the_existing_targets = nil, the_spec = nil,
+                config)
     self.existing_targets = the_existing_targets
     if the_spec.nil? then
       # (2nd arg: Initialize self.spec with defaults:)
@@ -42,7 +43,7 @@ class TemplateTargetBuilder < TargetBuilder
     else
       self.spec = the_spec
     end
-    super options
+    super options, config
     # (override creation-mode setting in parent:)
     self.processing_mode = EDIT_MODE
   end

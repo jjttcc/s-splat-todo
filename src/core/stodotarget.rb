@@ -38,6 +38,13 @@ class STodoTarget
   # database object for updating, if there is one
   attr_accessor :db
 
+  def db=(dbs)
+    @db = dbs
+if defined?  @children.set_db(dbs) then #!!!!temporary?
+    @children.set_db(dbs)
+end
+  end
+
   attr_writer :handle         # Needed for cloning
 
   ST_CURRENT_HANDLE = 'STODO_HDL'
@@ -551,6 +558,9 @@ class STodoTarget
 
   # Make any needed changes before the persistent attributes are saved.
   def prepare_for_db_write
+if defined?  @children.set_db(dbs) then #!!!!temporary?
+    @children.prepare_for_db_write
+end
     @notifiers = []
     @email_spec = ""
     @notification_subject = ""
@@ -600,11 +610,14 @@ class STodoTarget
 
   private   ###  Initialization
 
+  # 'child_container' will be used to "contain" the children - It must be a
+  # Set or behave like a Set.
   post 'invariant' do invariant end
-  def initialize spec
+  def initialize spec, child_container
     @valid = true
     # Extra database field/object to allow future expansion
     @additional_database_field = nil
+    @children = child_container
     set_fields spec
     check_fields
     set_email_addrs
@@ -632,7 +645,6 @@ class STodoTarget
   private   ###  Implementation
 
   def set_fields spec
-    @children = Set.new
     @title = spec.title
     @handle = spec.handle
     @email_spec = spec.email
@@ -1235,4 +1247,15 @@ class STodoTarget
     creation_date != nil
   end
 
+end
+
+# Adapt Set class for non-redis version (@children)
+class Set
+  def set_db(db)
+    # dummy
+  end
+
+  def prepare_for_db_write
+    # dummy
+  end
 end

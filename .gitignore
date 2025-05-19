@@ -16,6 +16,7 @@ hide*
 /oldspeclib
 .byebug*
 .vimrc
+*.orig
 /doc/*.html
 /doc/*.pdf
 /doc/*.png

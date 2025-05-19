@@ -14,6 +14,7 @@ require 'stodogit'
 require 'application_configuration'
 require 'redis_log_config'
 require 'redis_db_config'
+require 'redis_based_set'
 
 
 # Configuration settings for the current run
@@ -91,6 +92,35 @@ class Configuration
     result
   end
 
+####!!!!???
+  # Factory for the Set-like container to use for the children
+  # of a STodoTarget
+  def stodo_target_child_container_factory
+    if database_type == REDIS_TYPE_TAG then
+#      result = lambda do Set.new end
+      result = lambda do RedisBasedSet.new(data_manager) end
+    else
+      result = lambda do Set.new end
+    end
+    result
+  end
+####!!!!???
+
+####!!!!???
+####!!!!(remove):
+  # A new TemplateTargetBuilder object, configured according to the
+  # config-file settings.
+  def template_target_builder(options, existing_targets)
+    if database_type == REDIS_TYPE_TAG then
+      chld_container = Set.new
+#      chld_container = RedisBasedSet.new
+    else
+      chld_container = Set.new
+    end
+    TemplateTargetBuilder.new(options, existing_targets, chld_container)
+  end
+####!!!!???
+
   public  ###  Access
 
   # user name/id
@@ -137,9 +167,7 @@ class Configuration
   # The "global" git-repository object
   attr_reader :stodo_git
 
-  public  ###  Settable attributes
-
-  VERSION =  '1.0.109'
+  VERSION =  '1.0.1'
   PROGNAME = 'stodo'
 
   # stodo version identifier
