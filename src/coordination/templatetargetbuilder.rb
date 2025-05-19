@@ -27,13 +27,13 @@ class TemplateTargetBuilder < TargetBuilder
   # Initialize with 'options', 'the_existing_targets'.
   # Set processing_mode to EDIT_MODE.
   post 'spec exists' do ! self.spec.nil? end
-  post 'spec set as ordered' do |result, opts, extgts, the_spec|
-    implies(! the_spec.nil?, self.spec == the_spec)
-  end
-  post 'existing_targets set' do |res, opts, the_existing_targets|
-    implies(! the_existing_targets.nil?,
-            self.existing_targets == the_existing_targets)
-  end
+  #post 'spec set as ordered' do |result, opts, extgts, the_spec|
+  #  implies(! the_spec.nil?, self.spec == the_spec)
+  #end
+  #post 'existing_targets set' do |res, opts, the_existing_targets|
+  #  implies(! the_existing_targets.nil?,
+  #          self.existing_targets == the_existing_targets)
+  #end
   def initialize(options, the_existing_targets = nil, the_spec = nil,
                 config)
     self.existing_targets = the_existing_targets

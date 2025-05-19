@@ -56,7 +56,9 @@ class RedisSTodoManager < STodoManager
 
   ###    Implementation
 
+  pre :tgt_exists do |tgt| ! tgt.nil? end
   def store_target(tgt)
+    tgt.prepare_for_db_write
     @data_manager.store_target(tgt)
   end
 

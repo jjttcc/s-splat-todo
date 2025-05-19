@@ -31,8 +31,9 @@ class CommandOptions
 
   RECURSIVE_OPT = '-r'
   MESSAGE_OPT   = '-m'
+  FORCE_OPT     = '-f'
 
-  DELETE_OPTIONS             = [RECURSIVE_OPT, MESSAGE_OPT]
+  DELETE_OPTIONS             = [RECURSIVE_OPT, MESSAGE_OPT, FORCE_OPT]
   STATE_OPTIONS              = [MESSAGE_OPT]
   GIT_ADD_OPTIONS            = [RECURSIVE_OPT, MESSAGE_OPT]
   GIT_RETRIEVE_OPTIONS       = [RECURSIVE_OPT]
@@ -58,6 +59,13 @@ class CommandOptions
   def recursive?
     result = OPTS_FOR[command].include?(RECURSIVE_OPT) &&
       options.include?(RECURSIVE_OPT)
+    result
+  end
+
+  # Is 'force' a valid option for self.command and, if so, is it set?
+  def force?
+    result = OPTS_FOR[command].include?(FORCE_OPT) &&
+      options.include?(FORCE_OPT)
     result
   end
 

@@ -398,6 +398,7 @@ delete_help() {
   echo -e "Usage: $progname del <handle>... [options]"
   echo -e "\nOptions:"
   echo -e "  -r              Recursive: delete all descendants as well"
+  echo -e "  -f              Force deletion of items with the specified handles"
   echo -e "  -m <msg>        use <msg> as commit Message if items are in git"
 }
 

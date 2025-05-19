@@ -1,5 +1,7 @@
 #!/bin/env bash
 # vim: expandtab ts=2 sw=2
+# (Reminder: Don't forget to run './rem-chtest1 all' in ./reminders)
+# (It won't work well to run it from here.)
 
 t=test
 tests="$t/add-change-delete-etc-101 $t/add-change-delete-etc-102"

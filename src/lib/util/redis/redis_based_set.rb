@@ -32,8 +32,8 @@ class RedisBasedSet
     handles << t.handle
   end
 
+#!!!
 #  def method_missing *args
-##binding.irb
 #    handles.send *args
 #  end
 

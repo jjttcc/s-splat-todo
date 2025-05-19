@@ -15,7 +15,23 @@ OPT_CHAR = '-'
 # command-line options (marked with OPT_CHAR) from 'arguments'
 # Assumption: All elements from the first occurrence in 'arguments' of
 # OPT_CHAR to the end of the array are options.
+#!!!old one saved since this might break something:
 def opts_from_args arguments
+  result = []
+  (0 .. arguments.count - 1).each do |i|
+    if arguments[i] =~ /^#{OPT_CHAR}/ then
+      result << arguments[i]
+    end
+  end
+  if result.count > 0 then
+    result.each do |e|
+      arguments.delete(e)
+    end
+  end
+  result
+end
+
+def old__opts_from_args arguments
   result = []
   opt_ind = -1
   (0 .. arguments.count - 1).each do |i|

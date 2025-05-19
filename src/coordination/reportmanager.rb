@@ -369,11 +369,6 @@ class ReportManager
   def handles_for handles, sorted = true
     if handles != nil && handles.length > 0 then
       result = []
-#      handles.each do |h|
-#        if manager.existing_targets[h] then
-#          result << manager.existing_targets[h]
-#        end
-#      end
       result = handles.select do |h|
         manager.existing_targets.has_key?(h)
       end

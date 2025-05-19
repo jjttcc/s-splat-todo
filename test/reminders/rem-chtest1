@@ -3,6 +3,7 @@
 # reminders to different ones.
 # Note: To be run in the directory in which this script resides.
 # vim: ts=4 sw=4 expandtab
+# (Hint: simply run: rem-chtest1 all)
 
 init() {
     .  /home/jtc/.stodo_utilities   # for hgrep

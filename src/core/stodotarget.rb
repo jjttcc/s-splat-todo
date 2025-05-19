@@ -558,9 +558,7 @@ end
 
   # Make any needed changes before the persistent attributes are saved.
   def prepare_for_db_write
-if defined?  @children.set_db(dbs) then #!!!!temporary?
     @children.prepare_for_db_write
-end
     @notifiers = []
     @email_spec = ""
     @notification_subject = ""
