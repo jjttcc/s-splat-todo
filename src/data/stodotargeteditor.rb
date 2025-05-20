@@ -144,7 +144,7 @@ class STodoTargetEditor
     rescue Exception => e
       $log.warn e
       if ! opts.force? then
-        raise $e
+        raise e
       else
         # The "force" option was specified, so continue.
       end

@@ -369,7 +369,7 @@ end
     end
     @children.clear
     if ! new_childlist.empty? then
-      @children = new_childlist
+      @children.merge(new_childlist)
     end
     update
   end
@@ -953,9 +953,6 @@ end
     if ! db.nil? then
       tmp_db = db
       prepare_for_db_write
-      self.descendants.each do |d|
-        d.prepare_for_db_write
-      end
       tmp_db.update_target(self)
       db = tmp_db   # restore to pre-'prepare_for_db_write' state
     end

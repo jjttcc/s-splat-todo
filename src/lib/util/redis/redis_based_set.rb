@@ -32,6 +32,16 @@ class RedisBasedSet
     handles << t.handle
   end
 
+  # Merge (append) an array or enumerable of STodoTarget.
+  def merge(enumerable)
+#!!!Z:binding.irb
+    if ! defined? handles || handles.nil? then
+      init_handles
+      init_stodo_targets
+    end
+    handles.merge(enumerable.map { |e| e.handle })
+  end
+
 #!!!
 #  def method_missing *args
 #    handles.send *args
@@ -41,8 +51,11 @@ class RedisBasedSet
     if ! defined?(@@database) || @@database.nil? then
       @@database = db
     end
-    init_handles
-    init_stodo_targets
+    if ! defined? handles || handles.nil? then
+$log.debug "RedisBasedSet.set_db - calling 'init_handles'"
+      init_handles
+      init_stodo_targets
+    end
   end
 
   public  ###  Removal

@@ -100,8 +100,10 @@ for testhndl in $childF $childG; do
 done
 
 keeplist="$childF:$parentD"
+# Clear the descendants of $ancestorA except for those on $keeplist.
 stodo clear_d $ancestorA:$keeplist
 par=$ancestorA
+# Check that clear_d performed correctly.
 for tgt in $parentC $parentD; do
   if ! checkparent $tgt $par; then
     echo "error: $par is not $tgt's parent" >&2
