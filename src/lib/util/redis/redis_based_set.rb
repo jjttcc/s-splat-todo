@@ -1,7 +1,8 @@
 require 'ruby_contracts'
+require 'errortools'
 
 class RedisBasedSet
-  include Enumerable
+  include Enumerable, ErrorTools
   include Contracts::DSL
 
   public  ###  Status report
@@ -13,14 +14,10 @@ class RedisBasedSet
   public  ###  Iteration
 
   def each(&block)
-    if stodo_targets.nil? then
-      init_handles
-      init_stodo_targets
-    end
+    check(:stodo_targets_set) { ! stodo_targets.nil? }
     if stodo_targets.empty? then
       load_targets
     end
-#    stodo_targets.each(&block)
     stodo_targets.each do |key, value|
       block.call(value)
     end
@@ -34,7 +31,6 @@ class RedisBasedSet
 
   # Merge (append) an array or enumerable of STodoTarget.
   def merge(enumerable)
-#!!!Z:binding.irb
     if ! defined? handles || handles.nil? then
       init_handles
       init_stodo_targets
@@ -42,17 +38,12 @@ class RedisBasedSet
     handles.merge(enumerable.map { |e| e.handle })
   end
 
-#!!!
-#  def method_missing *args
-#    handles.send *args
-#  end
-
+  # To be called when this object is loaded from the database.
   def set_db(db)
     if ! defined?(@@database) || @@database.nil? then
       @@database = db
     end
     if ! defined? handles || handles.nil? then
-$log.debug "RedisBasedSet.set_db - calling 'init_handles'"
       init_handles
       init_stodo_targets
     end
@@ -77,7 +68,6 @@ $log.debug "RedisBasedSet.set_db - calling 'init_handles'"
     if stodo_targets.empty? then
       load_targets
     end
-#    stodo_targets.each(&block)
     stodo_targets.each do |key, value|
       if block.call(value) then
         delete(value)
@@ -127,7 +117,12 @@ $log.debug "RedisBasedSet.set_db - calling 'init_handles'"
   def load_targets
     db = @@database
     handles.each do |h|
-      stodo_targets[h] = db[h]
+      t = db[h]
+      if ! t.nil? then
+        stodo_targets[h] = t
+      else
+        # There is no STodoTarget with handle 'h' in the database.
+      end
     end
   end
 

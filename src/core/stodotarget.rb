@@ -40,9 +40,7 @@ class STodoTarget
 
   def db=(dbs)
     @db = dbs
-if defined?  @children.set_db(dbs) then #!!!!temporary?
     @children.set_db(dbs)
-end
   end
 
   attr_writer :handle         # Needed for cloning
