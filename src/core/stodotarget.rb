@@ -588,8 +588,17 @@ class STodoTarget
     if defined?(@user) then
       remove_instance_variable(:@user)
     end
+    rem_contains_nil = false
     @reminders.each do |r|
-      r.prepare_for_db_write
+      if ! r.nil? then
+        r.prepare_for_db_write
+      else
+        rem_contains_nil = true   #!!!(bug)
+      end
+    end
+    if rem_contains_nil then
+      # !!!Temporary fix - elements of @reminders should not be nil.
+      @reminders.delete(nil)
     end
   end
 
