@@ -95,6 +95,18 @@ class RedisBasedDataManager
     database.remove_from_set(db_key, key)
   end
 
+  public  ###  Basic operations - Conversion
+
+  # "Legacy" targets (STodoTargets) converted into the new, flat (i.e.,
+  # 'children' consist of simply a list of the child handles) format
+  def converted_from_legacy(targets)
+    puts targets.count
+    result = {}
+    targets.values.each do |t|
+      result[t.handle] = converted(t)
+    end
+  end
+
   public  ###  Basic operations - Write
 
   # Write `targets' out to persistent store.
@@ -166,6 +178,18 @@ class RedisBasedDataManager
       result = key
     end
     result
+  end
+
+  # The specified 'target' (STodoTarget), converted from legacy format to
+  # the new "flat" format used in redis.
+  def converted(target)
+    puts target
+    child_list = target.children
+    target.children = RedisBasedSet.new(self)
+    child_list.each do |c|
+      target.children << c
+    end
+    target
   end
 
   private   ###  Initialization

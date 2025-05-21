@@ -37,6 +37,8 @@ class STodoTarget
     :notification_email_addrs, :short_notification_message
   # database object for updating, if there is one
   attr_accessor :db
+  # For legacy conversion:
+  attr_writer   :children
 
   def db=(dbs)
     @db = dbs
@@ -407,6 +409,8 @@ class STodoTarget
     super(orig)
     ieas = @initial_email_addrs
     oeas = @ongoing_email_addrs
+    #!!!!Might need, as in 'initialize':
+    #@children = child_container
     @children = Set.new
     @calendar_ids = []
     @initial_email_addrs = []
@@ -1242,8 +1246,21 @@ class STodoTarget
 
 end
 
+#### Extensions to Set and Array for the file-based version:
+
 # Adapt Set class for non-redis version (@children)
 class Set
+  def set_db(db)
+    # dummy
+  end
+
+  def prepare_for_db_write
+    # dummy
+  end
+end
+
+# Adapt Array class for non-redis version (@children)
+class Array
   def set_db(db)
     # dummy
   end

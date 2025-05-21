@@ -92,34 +92,16 @@ class Configuration
     result
   end
 
-####!!!!???
   # Factory for the Set-like container to use for the children
   # of a STodoTarget
   def stodo_target_child_container_factory
     if database_type == REDIS_TYPE_TAG then
-#      result = lambda do Set.new end
       result = lambda do RedisBasedSet.new(data_manager) end
     else
       result = lambda do Set.new end
     end
     result
   end
-####!!!!???
-
-####!!!!???
-####!!!!(remove):
-  # A new TemplateTargetBuilder object, configured according to the
-  # config-file settings.
-  def template_target_builder(options, existing_targets)
-    if database_type == REDIS_TYPE_TAG then
-      chld_container = Set.new
-#      chld_container = RedisBasedSet.new
-    else
-      chld_container = Set.new
-    end
-    TemplateTargetBuilder.new(options, existing_targets, chld_container)
-  end
-####!!!!???
 
   public  ###  Access
 

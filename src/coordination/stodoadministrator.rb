@@ -120,7 +120,9 @@ class STodoAdministrator
     end
     old_data_manager = YamlStoreBasedDataManager.new(path, config.user)
     targets = old_data_manager.restored_targets
-    config.data_manager.store_targets(targets)
+    data_manager = config.data_manager
+    converted_targets = data_manager.converted_from_legacy(targets)
+    data_manager.store_targets(converted_targets)
   end
 
   # Print application version information.
