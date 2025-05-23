@@ -102,6 +102,7 @@ class ReminderSpecScanner
     if time_index != nil then
       result = "#{result} #{word_groups[time_index][0]}"
     end
+    result
   end
 
   def date_time_from_wkday(word_groups, ignore_last_group)

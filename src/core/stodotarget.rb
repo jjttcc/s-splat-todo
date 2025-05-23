@@ -783,7 +783,12 @@ class STodoTarget
     result = []
     rem_spec_strings = remspec.split(REMINDER_DELIMITER)
     rem_spec_strings.each do |s|
-      result << reminder_from(s)
+      rem = reminder_from(s)
+      if ! rem.nil? then
+        result << rem
+      else
+        $log.warn("failed to parse reminder: '#{s}'")
+      end
     end
     result
   end
@@ -806,9 +811,22 @@ class STodoTarget
   def one_time_reminder(date_time)
     result = nil
     if ! date_time.nil? then
-      datetimes = DateParser.new([date_time]).result
+      parser = DateParser.new([date_time], true)
+      datetimes = parser.result
       if datetimes.count > 0 then
-        result = OneTimeReminder.new(datetimes[0])
+        dt = datetimes[0]
+        if dt.nil? then
+          $log.warn(parser.error)
+        elsif
+          dt.year < 2000 && dt.hour == 0 && dt.min == 0 && dt.sec == 0
+        then
+          $log.warn("reminder rejected - year is well in the past: " +
+                "#{dt.year}. Is it actually the time - with no year " +
+                "specified? If so, please specify the year." +
+                "(You specified a date/time of #{date_time})")
+        else
+          result = OneTimeReminder.new(dt)
+        end
       else
         msg = "Invalid reminder date/time: '#{datetimes[0]}' [spec: " +
           "#{remspec}"

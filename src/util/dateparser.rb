@@ -9,7 +9,7 @@ require 'externaldateparser'
 class DateParser
   public
 
-  attr_reader :result
+  attr_reader :result, :error
 
   private
 
@@ -40,10 +40,13 @@ class DateParser
     xparser = ExternalDateParser.new(datetimes)
     result = xparser.result
     if ! result or xparser.parse_failed then
-      error = (xparser.error_msg != nil) ? xparser.error_msg :
-        "parse failed for date(s): #{datetimes}"
+      if ! xparser.error_msg.nil? && ! xparser.error_msg.empty? then
+        @error = xparser.error_msg
+      else
+        @error = "parse failed for date(s): #{datetimes}"
+      end
       if not suppress_exception then
-        raise error
+        raise @error
       end
     end
     result
