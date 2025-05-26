@@ -1155,7 +1155,10 @@ class STodoTarget
   def send_ongoing_notifications(client = nil)
     assert('ongoing_email_addrs != nil') { @ongoing_email_addrs != nil }
     rems = []
-    reminders.each { |r| if r.is_due? then rems << r end }
+    reminders.each do |r|
+      assert('r not nil') { r != nil }
+      if r.is_due? then rems << r end
+    end
     if
       final_reminder != nil and final_reminder.is_due?
     then
