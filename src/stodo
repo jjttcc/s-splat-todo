@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# vim: ts=2 sw=2 expandtab
 
 progname=$(basename $0)
 stodopath=$(dirname $0)
@@ -11,6 +12,20 @@ admin=main/stodo-admin.rb
 stodo_envpath="$STODO_PATH"
 specpath_expr='^# *spec-path:'
 
+### Utilities
+
+# Does the specified list ($2 $3 ...) contain the specified word ($1)?
+list_contains() {
+  local target=$1; shift
+  result=1
+  for word; do
+    if [ "$word" = "$target" ]; then
+      result=0
+    fi
+  done
+
+  return $result
+}
 
 mainhelp() {
     gap="    "
@@ -280,11 +295,16 @@ make_template() {
   checkpath $mktmpl
   type=$1
   case $type in
-    -*) type=task
+    -*|"") type=task
       ;;
     *) shift
       ;;
   esac
+  valid_list='task memo appointment event project'
+  if ! list_contains $type $valid_list; then
+    echo "fatal: '$type' is not one of '$valid_list'" >&2
+    exit 12
+  fi
   if [ -w . ]; then
     outfile=$(mktemp $type.XXXX)
     run $mktmpl $type "$@" >$outfile

@@ -23,13 +23,25 @@ class StubbedSpec < STodoSpec
     due_time = options.time
     expire_date = options.time
     if use_defaults then
-      if handle.empty? then handle = '<unique-handle1>' end
-      if email.empty? then email = '<template>@<template.org>' end
-      if due_time.nil? then due_time = Time.now.to_s end
-      if expire_date.nil? then expire_date = DateTime.now + 30 end
+      if handle.nil? || handle.empty? then
+        handle = '<unique-handle1>'
+      end
+      if email.nil? || email.empty? then
+        email = '<template>@<template.org>'
+      end
+      if due_time.nil? || due_time.nil? then
+        due_time = Time.now.to_s
+      end
+      if expire_date.nil? || expire_date.nil? then
+        expire_date = DateTime.now + 30
+      end
     else
-      if handle.empty? then handle = nil end
-      if email.empty? then email = nil end
+      if handle.nil? || handle.empty? then
+        handle = nil
+      end
+      if email.nil? || email.empty? then
+        email = nil
+      end
     end
     @setting_for[TITLE_KEY] = options.title
     @setting_for[DESCRIPTION_KEY] = options.description

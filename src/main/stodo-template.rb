@@ -11,7 +11,6 @@ include SpecTools
 Configuration.service_name = 'template'
 config = Configuration.instance
 manager = config.new_stodo_manager(service_name: 'template', debugging: true)
-#target_builder = TemplateTargetBuilder.new TemplateOptions.new
 target_builder = TemplateTargetBuilder.new(TemplateOptions.new, nil, config)
 target_builder.set_processing_mode(TemplateTargetBuilder::CREATE_MODE)
 manager.target_builder = target_builder
