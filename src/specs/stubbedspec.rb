@@ -36,10 +36,10 @@ class StubbedSpec < STodoSpec
         expire_date = DateTime.now + 30
       end
     else
-      if handle.nil? || handle.empty? then
+      if ! handle.nil? && handle.empty? then
         handle = nil
       end
-      if email.nil? || email.empty? then
+      if ! email.nil? && email.empty? then
         email = nil
       end
     end

@@ -13,7 +13,7 @@ module SpecTools
   # key/label for "transitory" commit-message field:
   COMMIT_MSG_KEY = 'commit'
   SINGULAR_REMINDER_KEY = 'reminder'
-  MULTILINE_FIELD_END_EXPR = Regexp.new("^\cgendfield\cg")
+  MULTILINE_FIELD_END_STRING = "\cgendfield\cg"
   SPEC_FIELD_DELIMITER = /,\s*/
   SPEC_FIELD_JOINER = ','
   REMINDER_DELIMITER = /;\s*/
@@ -39,6 +39,8 @@ module SpecTools
   ST_REJECT_BADATTCHMTS = 'STODO_REJECT_BADATTCHMTS'
   ST_ATTCH_ACTION       = 'ST_ATTCH_ACTION'
   ST_COMMIT_ID          = 'ST_COMMIT_ID'
+  # instruction to output MULTILINE_FIELD_END_STRING in report:
+  ST_END_MULTIL_FIELD   = 'STODO_MULTIL_END_FIELD'
   SUPPRESS_TRANSACTION  = 'STODO_SUPPRESS_TR'
 
   # tags/patterns from spec with special meaning
@@ -120,6 +122,17 @@ module SpecTools
 
   def no_commit_id_msg
     "commit-id (#{ST_COMMIT_ID} env. var.) not set or empty"
+  end
+
+  def multiline_end_marker_for(label)
+    result = ""
+    if
+      ENV[ST_END_MULTIL_FIELD] &&
+        (label == DESCRIPTION_KEY || label == COMMENT_KEY)
+    then
+      result = MULTILINE_FIELD_END_STRING + "\n"
+    end
+    result
   end
 
 end

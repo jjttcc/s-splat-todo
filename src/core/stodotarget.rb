@@ -92,7 +92,7 @@ class STodoTarget
           v = ""
         end
       end
-      result += "#{tag}: #{v}\n"
+      result += "#{tag}: #{v}\n#{multiline_end_marker_for(tag)}"
     end
     result += "#{REMINDER_KEY}: "
     remlist = reminders.map do |r|

@@ -158,7 +158,7 @@ class STodoSpec
     result = ""
     lines = s.split("\n")
     lines.each do |l|
-      if MULTILINE_FIELD_END_EXPR.match?(l) then
+      if MULTILINE_FIELD_END_STRING == l then
         break
       else
         result += "#{l}\n"

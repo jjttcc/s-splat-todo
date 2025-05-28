@@ -546,7 +546,7 @@ todo-corr() {
     local result=0
     local handle=$1
     local file=/tmp/$handle.corr.$(date "+%Y-%m-%d_%H%M")
-    stodo rep comp $handle| awk '
+    STODO_MULTIL_END_FIELD=1 stodo rep comp $handle| awk '
     BEGIN {
         estart = "^("
         eend   = "):"
@@ -569,20 +569,16 @@ todo-corr() {
         print "#" $0; next
     }
     (in_comment) {
-#    if ($1 ~ /^[a-z][-_a-z]*:/) {   # (next field)
     if ($1 ~ label_expr) {   # (next field)
             in_comment = 0
             # (Print with "#" - as a "comment" - to fit in.)
-            print "'"#$endfield_tag"'"
         } else {
             print_as_comment()
         }
     }
     (in_descr) {
-#    if ($1 ~ /^[a-z][-_a-z]*:/) {   # (next field)
     if ($1 ~ label_expr) {   # (next field)
             in_descr = 0
-            print "'"$endfield_tag"'"
         } else {
         }
     }
