@@ -55,9 +55,9 @@ childE="child-E-test-stodo$$"
 childF="child-F-test-stodo$$"
 childG="child-G-test-stodo$$"
 testtype=task
-mainttl="new-task-$$"
-newttl="This is clear desc test number $$."
-newttlregex="This.is.clear.*number"
+mainttl="remove-descendants-$$"
+newttl="This is remove-descendants test number $$."
+newttlregex="This.is.remove.*number"
 
 stodo starttran
 testcount=0
@@ -98,13 +98,12 @@ for testhndl in $childF $childG; do
     echo "error: $intended_parent is not parent of $testhndl" >&2
   fi
 done
-
-keeplist="$childF:$parentD"
-# Clear the descendants of $ancestorA except for those on $keeplist.
-stodo clear_d $ancestorA:$keeplist
+#$ancestorA $parentB $parentC $parentD $childE $childF $childG
+stodo remove_d $ancestorA $parentB
+##### Check that 'remove_d $ancestorA $parentB' performed correctly.
 par=$ancestorA
-# Check that clear_d performed correctly.
-for tgt in $parentC $parentD; do
+### Check $ancestorA's children:
+for tgt in $parentC $parentD $childE; do
   if ! checkparent $tgt $par; then
     echo "error: $par is not $tgt's parent" >&2
   else
@@ -118,10 +117,55 @@ for tgt in $parentC $parentD; do
   fi
   ((++testcount))
 done
-removedlist="$parentB $childE $childG"
+par=$parentC
+### Check $parentC's children:
+for tgt in $childF $childG; do
+  if ! checkparent $tgt $par; then
+    echo "error: $par is not $tgt's parent" >&2
+  else
+    ((++successcount))
+  fi
+  ((++testcount))
+  if ! checkchild $par $tgt; then
+    echo "error: $tgt is not one of $par's children" >&2
+  else
+    ((++successcount))
+  fi
+  ((++testcount))
+done
+
+stodo remove_d $ancestorA $childG
+##### Check that 'remove_d $ancestorA $childG' performed correctly.
+par=$parentC
+### Check $parentC's children:
+for tgt in $childF; do
+  if ! checkparent $tgt $par; then
+    echo "error: $par is not $tgt's parent" >&2
+  else
+    ((++successcount))
+  fi
+  ((++testcount))
+  if ! checkchild $par $tgt; then
+    echo "error: $tgt is not one of $par's children" >&2
+  else
+    ((++successcount))
+  fi
+  ((++testcount))
+done
+### Check that $childG is no longer one of $parentC's children:
+for tgt in $childG; do
+  if checkchild $par $tgt; then
+    echo "error: $tgt is incorrectly reported as one of $par's children" >&2
+  else
+    ((++successcount))
+  fi
+  ((++testcount))
+done
+
+removedlist="$parentB $childG"
 for h in $removedlist; do
-  if [ "$(hgrep $h)" != "" ]; then
-    echo "error: $h was not removed."
+  if [ "$(stodo report handle $h)" ]; then
+    echo "error: $h exists - it should have been removed." >&2
   else
     ((++successcount))
   fi

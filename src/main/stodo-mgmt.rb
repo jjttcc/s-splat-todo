@@ -15,7 +15,7 @@ OPT_CHAR = '-'
 # command-line options (marked with OPT_CHAR) from 'arguments'
 # Assumption: All elements from the first occurrence in 'arguments' of
 # OPT_CHAR to the end of the array are options.
-#!!!old one saved since this might break something:
+# (old one saved below since this might break something:)
 def opts_from_args arguments
   result = []
   (0 .. arguments.count - 1).each do |i|
@@ -80,11 +80,6 @@ if ARGV.length > 0 then
     require 'templatetargetbuilder'
     require 'templateoptions'
     options = TemplateOptions.new(arguments, true)
-=begin
-    target_builder = TemplateTargetBuilder.new(options,
-                                               manager.existing_targets,
-                                               Set.new)
-=end
     target_builder = TemplateTargetBuilder.new(options,
                                        manager.existing_targets, nil, config)
     target_builder.set_processing_mode TemplateTargetBuilder::CREATE_MODE

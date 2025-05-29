@@ -36,7 +36,7 @@ class STodoTarget
   attr_reader :notification_subject, :full_notification_message,
     :notification_email_addrs, :short_notification_message
   # database object for updating, if there is one
-  attr_accessor :db
+  attr_reader :db
   # For legacy conversion:
   attr_writer   :children
 
@@ -303,7 +303,6 @@ class STodoTarget
   # Ensure that 'last_removed_descendant' is not set - i.e., is nil
   def clear_last_removed_descendant
     self.last_removed_descendant = nil
-    update    #!!!???
   end
 
   # Change self's handle to 'h'.
@@ -593,11 +592,11 @@ class STodoTarget
       if ! r.nil? then
         r.prepare_for_db_write
       else
-        rem_contains_nil = true   #!!!(bug)
+        rem_contains_nil = true
       end
     end
     if rem_contains_nil then
-      # !!!Temporary fix - elements of @reminders should not be nil.
+      # Clean up: nil reminders were stored in the database:
       @reminders.delete(nil)
     end
   end
@@ -624,6 +623,7 @@ class STodoTarget
   post 'invariant' do invariant end
   def initialize spec, child_container
     @valid = true
+    @no_update = false
     # Extra database field/object to allow future expansion
     @additional_database_field = nil
     @children = child_container
@@ -648,7 +648,8 @@ class STodoTarget
           "be ignored (#{rems})"
       end
     end
-    self.db = nil
+#remove?:    self.db = nil
+@db = nil
   end
 
   private   ###  Implementation
@@ -673,7 +674,8 @@ class STodoTarget
       $log.debug "calendar_ids set: #{calendar_ids}"
     end
     if spec.parent != nil then
-      self.parent_handle = spec.parent
+      # bypass 'update' called by parent_handle=(h):
+      @parent_handle = spec.parent
     end
   end
 
@@ -960,17 +962,20 @@ class STodoTarget
   # "adopt" its children as our (self's) own.
   pre '! child.nil?' do |child| ! child.nil? end
   post 'no longer a child' do |result, child| ! children.include?(child) end
-  post 'no children' do |result, child| child.children.count == 0 end
-  post 'no parent' do |result, child| child.parent_handle.nil? end
   def detach child
+    @no_update = true
     remove_child child
     its_children = child.children
     its_children.each do |c|
       c.parent_handle = self.handle
+      @no_update = false
       self.add_child c
-      child.remove_child c
+      @no_update = true
+      if db.nil? then
+        child.remove_child c
+      end
     end
-    child.parent_handle = nil
+    @no_update = false
   end
 
   ### Implementation - utilities/tools
@@ -979,11 +984,13 @@ class STodoTarget
 
   # If ! db.nil?, update self via db.
   def update
-    if ! db.nil? then
-      tmp_db = db
-      prepare_for_db_write
-      tmp_db.update_target(self)
-      db = tmp_db   # restore to pre-'prepare_for_db_write' state
+    if ! @no_update then
+      if ! db.nil? then
+        tmp_db = @db
+        prepare_for_db_write
+        tmp_db.update_target(self)
+        @db = tmp_db   # restore to pre-'prepare_for_db_write' state
+      end
     end
   end
 
