@@ -58,8 +58,10 @@ class RedisSTodoManager < STodoManager
 
   pre :tgt_exists do |tgt| ! tgt.nil? end
   def store_target(tgt)
-    tgt.prepare_for_db_write
-    @data_manager.store_target(tgt)
+    if ! tgt.connected_to_database then
+      tgt.db = @data_manager
+    end
+    tgt.force_update
   end
 
   def target_for(handle)
@@ -68,9 +70,11 @@ class RedisSTodoManager < STodoManager
 
   def save_new_targets
     @new_targets.values.each do |t|
-      t.prepare_for_db_write    # nil out or remove un-persistent attributes.
+      if ! t.connected_to_database then
+        t.db = @data_manager
+      end
+      t.force_update
     end
-    @data_manager.store_targets(@new_targets, false)
   end
 
   def update_database(targets = nil)

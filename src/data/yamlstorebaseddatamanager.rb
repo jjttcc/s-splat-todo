@@ -165,7 +165,8 @@ class YamlStoreBasedDataManager
 
   def perform_target_storage(tgts, dbstore)
     tgts.values.each do |t|
-      t.prepare_for_db_write
+      # Override 'private' status of t.prepare_for_db_write.
+      t.send(:prepare_for_db_write)
     end
     dbstore[@user] = tgts
     dbstore[LAST_UPDATE_TAG] = Time.now

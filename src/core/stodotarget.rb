@@ -35,14 +35,18 @@ class STodoTarget
   alias :detail :comment
   attr_reader :notification_subject, :full_notification_message,
     :notification_email_addrs, :short_notification_message
-  # database object for updating, if there is one
+  # Database object for updating, if there is one
   attr_reader :db
+  # Does this object update itself in the database directly (via 'db')?
+  attr_reader :connected_to_database
   # For legacy conversion:
   attr_writer   :children
 
+  pre :dbs_exists do |dbs| ! dbs.nil? end
   def db=(dbs)
     @db = dbs
     @children.set_db(dbs)
+    @connected_to_database = true
   end
 
   attr_writer :handle         # Needed for cloning
@@ -277,6 +281,8 @@ class STodoTarget
 
   public    ###  Persistent attribute change
 
+  pre  :invariant do invariant end
+  post :invariant do invariant end
   def parent_handle=(h)
     @parent_handle = h
     update
@@ -286,6 +292,8 @@ class STodoTarget
   pre 't != nil and t.parent_handle == handle' do |t|
     ! t.nil? && t.parent_handle == handle
   end
+  pre  :invariant do invariant end
+  post :invariant do invariant end
   def add_child(t)
     @children << t
     update
@@ -294,6 +302,8 @@ class STodoTarget
   # Set self's fields from the non-nil fields in spec.
   pre 'valid_spec' do |spec| ! spec.nil? && self.handle == spec.handle end
   pre 'target_list valid' do |spec, target_list| ! target_list.nil? end
+  pre  :invariant do invariant end
+  post :invariant do invariant end
   def modify_fields spec, target_list
     main_modify_fields spec, target_list
     post_modify_fields spec
@@ -310,6 +320,8 @@ class STodoTarget
   # new handle.
   pre 'h exists' do |h| ! h.nil? && h.length > 0 end
   pre 'h != old handle' do |h| h != self.handle end
+  pre  :invariant do invariant end
+  post :invariant do invariant end
   post 'handle == h' do |result, h| self.handle == h end
   def change_handle h
     if ! db.nil? then
@@ -339,19 +351,17 @@ class STodoTarget
   public    ###  Removal
 
   # Remove child `t' from 'children'.
+  pre  :invariant do invariant end
+  post :invariant do invariant end
   def remove_child t
     @children.delete(t)
     update
   end
 
-  # Remove child with handle `h' from 'children'.
-  def remove_child_by_handle h
-    @children.delete_if { |c| c.handle == h }
-    update
-  end
-
   # Remove all of self's 'descendants' except for those indicated by
   # 'exceptions'.
+  pre  :invariant do invariant end
+  post :invariant do invariant end
   def remove_descendants(exceptions)
     new_childlist = []  # List of children to restore after clear
     # Recursively remove descendants first.
@@ -380,6 +390,8 @@ class STodoTarget
   # removed descendant; if the descendant is not found, the result of this
   # query will be nil.
   pre '! handle.nil?' do |handle| ! handle.nil?  end
+  pre  :invariant do invariant end
+  post :invariant do invariant end
   def remove_descendant handle
     child = children.find do |o| o.handle == handle end
     if child.nil? then
@@ -467,12 +479,16 @@ class STodoTarget
   public    ###  Basic operations
 
   # Perform required initial notifications and related actions.
+  pre  :invariant do invariant end
+  post :invariant do invariant end
   def initiate calendar, client
     send_initial_notifications(client)
     set_initial_calendar_entry calendar
   end
 
   # Perform post-"initiate" notifications.
+  pre  :invariant do invariant end
+  post :invariant do invariant end
   def perform_ongoing_actions(client = nil)
     if state.value == IN_PROGRESS then
       send_ongoing_notifications(client)
@@ -485,6 +501,8 @@ class STodoTarget
   # set d's parent_handle to p.handle.
   # If any "emancipated" descendants were found and updated, set
   # last_op_changed_state to true; otherwise, it is set to false.
+  pre  :invariant do invariant end
+  post :invariant do invariant end
   def adopt_descendants
     self.last_op_changed_state = false
     self.children.each do |c|
@@ -506,6 +524,8 @@ class STodoTarget
   # handle of a target other than self, remove c as one of self's children.
   # If 'recursive', perform this same operation recursively on all of self's
   # children.
+  pre  :invariant do invariant end
+  post :invariant do invariant end
   def remove_false_children recursive = false
     self.last_op_changed_state = false
     self.children.each do |c|
@@ -545,6 +565,8 @@ class STodoTarget
   end
 
   pre '"editing" eixsts' do |editing| ! editing.nil? end
+  pre  :invariant do invariant end
+  post :invariant do invariant end
   def process_attachments editing
     # Make self.handle available to child processes:
     ENV[ST_CURRENT_HANDLE] = self.handle
@@ -556,6 +578,17 @@ class STodoTarget
   end
 
   public    ###  Persistence
+
+  # Force a database update - to be used if a client changed self's
+  # internal state.
+  # If 'db.nil?', do nothing.
+  pre  :invariant do invariant end
+  post :invariant do invariant end
+  def force_update
+    update
+  end
+
+  private
 
   # Make any needed changes before the persistent attributes are saved.
   def prepare_for_db_write
@@ -601,13 +634,6 @@ class STodoTarget
     end
   end
 
-  # Force a database update - to be used if a client changed self's
-  # internal state.
-  # If 'db.nil?', do nothing.
-  def force_update
-    update
-  end
-
   private   ###  Assignment (<attribute>= methods)
 
   attr_writer   :last_removed_descendant
@@ -648,8 +674,8 @@ class STodoTarget
           "be ignored (#{rems})"
       end
     end
-#remove?:    self.db = nil
-@db = nil
+    @db = nil
+    @connected_to_database = false
   end
 
   private   ###  Implementation
@@ -988,10 +1014,26 @@ class STodoTarget
       if ! db.nil? then
         tmp_db = @db
         prepare_for_db_write
-        tmp_db.update_target(self)
+        tmp_db.store_target(self)
         @db = tmp_db   # restore to pre-'prepare_for_db_write' state
       end
     end
+  end
+
+  # Set attribute 'db' to nil.
+  pre  :invariant do invariant end
+  post :invariant do invariant end
+  def nullify_db
+    @db = nil
+    @connected_to_database = false
+  end
+
+  # Remove child with handle `h' from 'children'.
+  pre  :invariant do invariant end
+  post :invariant do invariant end
+  def remove_child_by_handle h
+    @children.delete_if { |c| c.handle == h }
+    update
   end
 
   private
@@ -1000,7 +1042,7 @@ class STodoTarget
   pre :old_h_exists do |p, oh| ! oh.nil? end
   pre :db_exists do ! self.db.nil? end
   def update_parent_after_handle_change(parent, old_handle)
-    parent.db = nil   # Inhibit database updates.
+    parent.nullify_db   # Inhibit database updates.
     parent.remove_child_by_handle(old_handle)
     parent.add_child(self)
     parent.db = db
@@ -1274,11 +1316,12 @@ class STodoTarget
     ""
   end
 
-  ###  class invariant
+  ###  class invariant - holds at start and end of all public methods
 
   def invariant
     reminders != nil
     creation_date != nil
+    @connected_to_database == ! db.nil?
   end
 
 end

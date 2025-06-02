@@ -137,13 +137,12 @@ class RedisBasedDataManager
       begin
         database.set_object(key, t)
       rescue Exception => e
-        $log.warn("database.set_object failed: #{e}")
+        $log.warn("database.set_object failed: #{e}\n" +
+                  "#{e.backtrace.join("\n")}")
       end
     end
     database.add_to_set(db_key, key)
   end
-
-  alias_method :update_target, :store_target
 
   private   ###  Implementation
 
