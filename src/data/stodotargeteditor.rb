@@ -357,6 +357,9 @@ class STodoTargetEditor
   pre "new_handle exists" do |oh, new_handle|
     ! new_handle.nil? && ! new_handle.empty?
   end
+  pre "handles different" do |orig_handle, new_handle|
+    new_handle != orig_handle
+  end
   def make_clone orig_handle, new_handle
     if target_for[new_handle].nil? then
       t = self.target_for[orig_handle]
@@ -385,6 +388,9 @@ class STodoTargetEditor
   end
   pre "new_handle exists" do |oh, new_handle|
     ! new_handle.nil? && ! new_handle.empty?
+  end
+  pre "handles different" do |orig_handle, new_handle|
+    new_handle != orig_handle
   end
   def make_orphan_clone orig_handle, new_handle
     if target_for[new_handle].nil? then
