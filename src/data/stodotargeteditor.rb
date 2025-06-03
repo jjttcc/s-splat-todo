@@ -20,7 +20,7 @@ class STodoTargetEditor
     @last_command_failed = false
     self.change_occurred = false
     clean_handle = handle.split(/#{DEFAULT_COMPONENT_SEPARATOR}/)[0]
-    if @target_for.has_key?(clean_handle) == nil then
+    if ! @target_for.has_key?(clean_handle) then
       @last_command_failed = true
       @last_failure_message = "No target found with handle #{handle}."
     else
@@ -108,9 +108,7 @@ class STodoTargetEditor
   # Delete the target IDd by 'handle'.
   pre "handle exists" do |handle| ! handle.nil? end
   pre "No data change yet" do change_occurred == false end
-  pre "target for 'handle' exists" do |handle|
-    ! target_for.has_key?(handle).nil?
-  end
+  pre "target for 'handle' exists" do |handle| target_for.has_key?(handle) end
   def delete_target handle, *options
     # Note: the operation is allowed to continue if 'handle' is in the
     # system but its associated target is not, so that the "dangling"
@@ -360,6 +358,35 @@ class STodoTargetEditor
     ! new_handle.nil? && ! new_handle.empty?
   end
   def make_clone orig_handle, new_handle
+    if target_for[new_handle].nil? then
+      t = self.target_for[orig_handle]
+      clone = t.clone
+      # Guaranteed by 'clone':
+      check(:same_parent) { clone.parent_handle == t.parent_handle }
+      clone.handle = new_handle
+      if ! t.parent_handle.nil? then
+        parent = self.target_for[t.parent_handle]
+        parent.add_child(clone)
+      end
+      target_for[clone.handle] = clone
+      clone.force_update
+      self.change_occurred = true
+    else
+      $log.warn "cloning error: handle #{new_handle} is already in use."
+    end
+  end
+
+  # Same as 'make_clone' except that the resulting STodoTarget has
+  # no parent.
+  pre "No data change yet" do self.change_occurred == false
+  end
+  pre "target for 'orig_handle' exists" do |orig_handle|
+    ! self.target_for[orig_handle].nil?
+  end
+  pre "new_handle exists" do |oh, new_handle|
+    ! new_handle.nil? && ! new_handle.empty?
+  end
+  def make_orphan_clone orig_handle, new_handle
     if target_for[new_handle].nil? then
       t = self.target_for[orig_handle]
       clone = t.clone

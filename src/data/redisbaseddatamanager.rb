@@ -38,7 +38,7 @@ class RedisBasedDataManager
 
   # Is the key 'handle' in the database?
   def has_key?(handle)
-    result = key_table[handle]
+    result = ! key_table[handle].nil?
   end
 
   # All "STodoTarget"s, with handle as key, restored from persistent store.

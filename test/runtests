@@ -7,7 +7,7 @@ t=test
 tests="$t/add-change-delete-etc-101 $t/add-change-delete-etc-102"
 tests="$tests $t/attachments-101 $t/references-101 $t/new-task-101"
 tests="$tests $t/chparent-101 $t/chhandle-101 $t/clear-desc-101"
-tests="$tests $t/remove-desc-101"
+tests="$tests $t/remove-desc-101 $t/clone-101"
 
 status=0
 testcount=0

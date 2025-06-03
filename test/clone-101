@@ -1,6 +1,6 @@
 #!/bin/bash
 # vim: sw=2 ts=2 expandtab
-# Remove descendants test
+# Clone test
 
 # family tree diagram for test:
 #
@@ -23,6 +23,14 @@ set_main_vars() {
   ST_EMAIL=$email
   ST_ATTACH="$attchs"
   ST_DTTIME='now'
+}
+
+clone_matches() {
+  local origf=$1
+  local clonef=$2
+  orig_contents=$(grep -E -v '^children:|^handle:|^parent:' $origf)
+  clone_contents=$(grep -E -v '^children:|^handle:|^parent:' $clonef)
+  [ "$orig_contents" = "$clone_contents" ]
 }
 
 basedir=$(dirname $0)
@@ -54,6 +62,7 @@ parentD="parent-D-test-stodo$$"
 childE="child-E-test-stodo$$"
 childF="child-F-test-stodo$$"
 childG="child-G-test-stodo$$"
+cloneA="cloneA-test-stodo$$"
 testtype=task
 mainttl="remove-descendants-$$"
 newttl="This is remove-descendants test number $$."
@@ -98,82 +107,54 @@ for testhndl in $childF $childG; do
     echo "error: $intended_parent is not parent of $testhndl" >&2
   fi
 done
-#$ancestorA $parentB $parentC $parentD $childE $childF $childG
-stodo remove_d $ancestorA $parentB
-##### Check that 'remove_d $ancestorA $parentB' performed correctly.
-par=$ancestorA
-### Check $ancestorA's children:
-for tgt in $parentC $parentD $childE; do
-  if ! checkparent $tgt $par; then
-    echo "error: $par is not $tgt's parent" >&2
-  else
-    ((++successcount))
-  fi
-  ((++testcount))
-  if ! checkchild $par $tgt; then
-    echo "error: $tgt is not one of $par's children" >&2
-  else
-    ((++successcount))
-  fi
-  ((++testcount))
-done
-par=$parentC
-### Check $parentC's children:
-for tgt in $childF $childG; do
-  if ! checkparent $tgt $par; then
-    echo "error: $par is not $tgt's parent" >&2
-  else
-    ((++successcount))
-  fi
-  ((++testcount))
-  if ! checkchild $par $tgt; then
-    echo "error: $tgt is not one of $par's children" >&2
-  else
-    ((++successcount))
-  fi
-  ((++testcount))
-done
+origfile=$(mktemp /tmp/orig$$.XXXXX)
+stodo rep comp $parentC >$origfile
+stodo clone $parentC $cloneA
+orig_after_file=$(mktemp /tmp/orig-after$$.XXXXX)
+clonefile=$(mktemp /tmp/clone$$.XXXXX)
+stodo rep comp $parentC >$orig_after_file
+stodo rep comp $cloneA >$clonefile
 
-stodo remove_d $ancestorA $childG
-##### Check that 'remove_d $ancestorA $childG' performed correctly.
-par=$parentC
-### Check $parentC's children:
-for tgt in $childF; do
-  if ! checkparent $tgt $par; then
-    echo "error: $par is not $tgt's parent" >&2
-  else
-    ((++successcount))
-  fi
-  ((++testcount))
-  if ! checkchild $par $tgt; then
-    echo "error: $tgt is not one of $par's children" >&2
-  else
-    ((++successcount))
-  fi
-  ((++testcount))
-done
-### Check that $childG is no longer one of $parentC's children:
-for tgt in $childG; do
-  if checkchild $par $tgt; then
-    echo "error: $tgt is incorrectly reported as one of $par's children" >&2
-  else
-    ((++successcount))
-  fi
-  ((++testcount))
-done
+if ! check_no_children $cloneA; then
+  echo "$cloneA incorrectly has children:" >&2
+  echo -e "  \c"
+  grep children: $clonefile >&2
+else
+  ((++successcount))
+fi
+((++testcount))
 
-removedlist="$parentB $childG"
-for h in $removedlist; do
-  if [ "$(stodo report handle $h)" ]; then
-    echo "error: $h exists - it should have been removed." >&2
-  else
-    ((++successcount))
-  fi
-  ((++testcount))
-done
+if ! checkchild $ancestorA $cloneA; then
+  echo "error: $cloneA is not one of $ancestorA's children" >&2
+else
+  ((++successcount))
+fi
+((++testcount))
+
+if ! checkparent $cloneA $ancestorA; then
+  echo "error: $ancestorA is not parent of $cloneA" >&2
+else
+  ((++successcount))
+fi
+((++testcount))
+
+if ! clone_matches $origfile $clonefile; then
+  echo "Expected fields of $parentC and $cloneA do NOT match" >&2
+else
+  ((++successcount))
+fi
+((++testcount))
+
+if ! diff $origfile $orig_after_file; then
+  echo "$parentC was incorrectly changed by the clone process." >&2
+else
+  ((++successcount))
+fi
+((++testcount))
+
 [ $successcount = $testcount ]
 status=$?
-delete $ancestorA $parentB $parentC $parentD $childE $childF $childG
+delete $ancestorA $parentB $parentC $parentD $childE $childF $childG $cloneA
 stodo endtran
 testreport $testcount $successcount
 exit $status

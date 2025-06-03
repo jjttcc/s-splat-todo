@@ -416,13 +416,20 @@ class STodoTarget
   # Ensure no 'children' and that 'children' and the other complex object
   # attributes ('reminders', 'categories', etc.) do not have the same
   # object_id as the equivalent attribute in orig.
+  # Note: No databse update is done. The caller is expected to change
+  # the copy(self)'s handle after calling 'clone' and then calling
+  # 'force_update' to "force" the clone to be updated.
+  pre  :invariant do invariant end
+  post :parent_h_match do |result, orig|
+    self.parent_handle == orig.parent_handle
+  end
   def initialize_copy(orig)
     super(orig)
     ieas = @initial_email_addrs
     oeas = @ongoing_email_addrs
-    #!!!!Might need, as in 'initialize':
-    #@children = child_container
-    @children = Set.new
+    @children = orig.children.clone
+    @children.clear
+    @parent_handle = orig.parent_handle
     @calendar_ids = []
     @initial_email_addrs = []
     @ongoing_email_addrs = []
@@ -457,7 +464,6 @@ class STodoTarget
     orig.notifiers.each do |o|
       @notifiers << o.dup
     end
-    update
   end
 
   public    ###  Hash-related queries
@@ -1321,7 +1327,7 @@ class STodoTarget
   def invariant
     reminders != nil
     creation_date != nil
-    @connected_to_database == ! db.nil?
+    connected_to_database == ! db.nil?
   end
 
 end
