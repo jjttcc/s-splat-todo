@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# vim: ts=2 sw=2 expandtab
+# Start up the stodo_server.
+
+progname=$(basename $0)
+stodo_envpath="$STODO_PATH"
+server=$stodo_envpath/main/init-server.rb
+# [temporary?]
+#!!rm: initproc=$stodo_envpath/main/initial-processing.rb
+#!!rm: notifyproc=$stodo_envpath/main/ongoing-processing.rb
+#!!rm: mktmpl=$stodo_envpath/main/stodo-template.rb
+#!!rm: report=$stodo_envpath/main/report.rb
+#!!rm: edit=$stodo_envpath/main/stodo-mgmt.rb
+#!!rm: admin=$stodo_envpath/main/stodo-admin.rb
+# [END: temporary?]
+
+set_rubylib() {
+  srvd=client_server/server
+  clntd=client_server/client
+  dirlist="facility error configuration notification specs data"
+  dirlist="$dirlist coordination util attributes"
+  dirlist="$dirlist domain/services/reporting external/messaging"
+  dirlist="$dirlist lib/messaging domain/support"
+  dirlist="$dirlist lib/util lib/util/redis external/util"
+  dirlist="$dirlist $srvd/support $srvd/structural $srvd/request_handling"
+  dirlist="$dirlist $srvd/communication $srvd/main $clntd/main"
+  rubylib="RUBYLIB=$stodo_envpath/core"
+  for d in $dirlist; do
+    rubylib="$rubylib:$stodo_envpath/$d"
+  done
+  eval export $rubylib
+}
+
+run() {
+  cmd=$1; shift
+  $RUBY_EXEC $STEXEC_PATH/$cmd "$@"
+  status=$?
+  if [ $status -ne 0 ]; then
+    echo "command failed [$RUBY_EXEC $STEXEC_PATH/$cmd $@]" >&2
+    exit $status
+  fi
+}
+
+set_rubylib
+run $server "$@"
+#run $edit "$@"
+#run $initproc $*

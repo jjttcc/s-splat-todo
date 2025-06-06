@@ -50,7 +50,7 @@ class RedisPubSubBroker
         if processor != nil then
           processor.call
         end
-        redis.unsubscribe channel
+#!!![leave out and change name?:]        redis.unsubscribe channel
       end
     end
     if postprocessor != nil then
