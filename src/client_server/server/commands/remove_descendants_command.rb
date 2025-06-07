@@ -1,0 +1,2 @@
+class RemoveDescendantsCommand
+end
