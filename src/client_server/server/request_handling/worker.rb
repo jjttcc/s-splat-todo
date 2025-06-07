@@ -3,23 +3,24 @@ require 'stodo_services_constants'
 require 'command_line_request'
 require 'templatetargetbuilder'
 require 'templateoptions'
+require 'command_facilities'
 
 class Worker < Publisher
-  include STodoServicesConstants
+  include STodoServicesConstants, CommandFacilities
 
   public
 
   def process_request(request_object_key)
+#!!!CMD:binding.irb
     request = message_broker.object(request_object_key)
-    # stublike:
-### Need a hash table of WorkCommand subclass creators:
-    case request.command
-    when 'add'
-      cmd = AddCommand.new(request, manager)
-    end
-    puts "request: #{request.inspect}"
-    if cmd then
-      cmd.execute
+    builder = command_builder_for[request.command]
+    if ! builder.nil? then
+      cmd = builder.call(request, manager)
+      if cmd then
+        cmd.execute
+      end
+    else
+      "[appropriate error message]"
     end
   end
 
@@ -28,6 +29,7 @@ class Worker < Publisher
   attr_accessor :message_broker, :manager, :config
 
   def initialize(config)
+    init_command_builder_table
     self.config = config
     app_config = config.app_configuration
     self.message_broker = app_config.application_message_broker
@@ -46,10 +48,9 @@ class Worker < Publisher
 
 end
 
-#!!!to-do: Move the code for these classes into their own files:
-
+=begin
 # Abstract ancestor - objects for carrying out work for "Worker"s
-class WorkCommand
+class HIDEME_WorkCommand
 
   def execute
   end
@@ -65,8 +66,6 @@ class WorkCommand
 
 end
 
-# rename - such as (don't just use it for 'add'):
-#class CommandWithArgs < WorkCommand
 class AddCommand < WorkCommand
   public
 
@@ -79,3 +78,4 @@ class AddCommand < WorkCommand
   end
 
 end
+=end

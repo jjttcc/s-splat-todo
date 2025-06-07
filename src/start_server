@@ -25,6 +25,7 @@ set_rubylib() {
   dirlist="$dirlist lib/util lib/util/redis external/util"
   dirlist="$dirlist $clsrv/support $srvd/structural $srvd/request_handling"
   dirlist="$dirlist $srvd/main $clsrv/communication $clsrv/structural"
+  dirlist="$dirlist $srvd/facility $srvd/commands"
   rubylib="RUBYLIB=$stodo_envpath/core"
   for d in $dirlist; do
     rubylib="$rubylib:$stodo_envpath/$d"
