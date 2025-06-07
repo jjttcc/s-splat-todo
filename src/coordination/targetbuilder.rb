@@ -48,6 +48,19 @@ class TargetBuilder
     self.processing_mode == CREATE_MODE
   end
 
+  #####  Element change
+
+  # Set 'spec_collector' to 'sc' and clear attributes:
+  #   - [to-do: list of attrs]
+  pre  :sc_exists do |sc| ! sc.nil? end
+  pre  :spec_c_set do self.spec_collector == sc end
+  def spec_collector=(sc)
+    @spec_collector = sc
+    prepare_targets
+    @edited_targets = []
+    @time_changed_for = {}
+  end
+
   #####  Basic operations
 
   # Process STodoTarget objects according to self.specs, and, based on
@@ -119,7 +132,7 @@ class TargetBuilder
     @edited_targets = []
     @time_changed_for = {}
     self.processing_mode = CREATE_MODE
-    init_target_factory config.stodo_target_child_container_factory
+    init_target_factory(config.stodo_target_child_container_factory)
   end
 
   # Build and return a new STodoTarget based on 'spec'. If 'spec' is

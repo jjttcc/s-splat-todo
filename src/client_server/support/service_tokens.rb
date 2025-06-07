@@ -1,4 +1,5 @@
 # Symbols, method names, etc. used for TAT services
+#!!!!Remove this class/file if it is not used!!!
 module ServiceTokens
 
   public

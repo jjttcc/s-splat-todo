@@ -35,15 +35,14 @@ module Service
   #####  Basic operations
 
   # Start the service.
-  def execute(args = nil)
-    prepare_for_main_loop(args)
+  def execute(exe_args = nil)
+    prepare_for_main_loop(exe_args)
     while continue_processing do
-#!!!binding.irb
-      pre_process(args)
-      process(args)
-      post_process(args)
+      pre_process(exe_args)
+      process(exe_args)
+      post_process(exe_args)
     end
-    main_loop_cleanup(args)
+    main_loop_cleanup(exe_args)
   rescue StandardError => e
     msg = "Unrecoverable error occurred for service '#{service_tag}':\n'#{e}'"
 #    msg += " - stack:\n#{e.backtrace.join("\n")}"
@@ -93,13 +92,13 @@ module Service
 
   # Perform any needed preparation before starting the main 'while' loop.
   # (To turn this into a [template-method-pattern] hook method, simply
-  # redefine this method in the "descendant class" and call 'super(args)'
+  # redefine this method in the "descendant class" and call 'super(exe_args)'
   # at the appropriate time - e.g.:
   #   do_stuff #...
-  #   super(args)
+  #   super(exe_args)
   #   # [do_more_stuff #...]
   # )
-  def prepare_for_main_loop(args)
+  def prepare_for_main_loop(exe_args)
   end
 
   ##### Hook methods
@@ -109,21 +108,21 @@ module Service
   end
 
   # Perform any needed cleanup after ending the main 'while' loop.
-  def main_loop_cleanup(args)
+  def main_loop_cleanup(exe_args)
     # Null operation - Redefine if needed.
   end
 
   # Perform the main processing.
-  def process(args = nil)
+  def process(exe_args = nil)
     # Null operation - Redefine if needed.
   end
 
   # Perform any needed pre-processing before 'process' is called.
-  def pre_process(args = nil)
+  def pre_process(exe_args = nil)
   end
 
   # Perform any needed post-processing after 'process' is called.
-  def post_process(args = nil)
+  def post_process(exe_args = nil)
     # Null operation - Redefine if needed.
   end
 

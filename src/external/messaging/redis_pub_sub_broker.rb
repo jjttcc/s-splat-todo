@@ -20,7 +20,7 @@ class RedisPubSubBroker
 
   # Subscribe to 'channel' until the first message is received, calling the
   # block (if it is provided), after setting 'last_message' to the message.
-  # Then (after the first message is received & processed) unsubscribe.
+  # If 'once', after the first message is received & processed, unsubscribe.
   # If provided, the 'callbacks' argument is a hash table that - optionally -
   # contains one or more lambdas, indexed by the keys :preproc, :process,
   # :postproc, where the corresponding value, respectively is called:
@@ -31,7 +31,7 @@ class RedisPubSubBroker
   pre  :channel      do |channel| ! channel.nil? end
   pre  :cbs_hash     do |ch, cbs| implies(cbs != nil, cbs.is_a?(Hash)) end
   post :last_message do ! last_message.nil? end
-  def subscribe_once(channel, callbacks = nil, &block)
+  def subscribe(channel, callbacks = nil, once = false, &block)
     preprocessor, processor, postprocessor = nil, nil, nil
     if callbacks != nil then
       preprocessor ||= callbacks[:preproc]
@@ -50,7 +50,9 @@ class RedisPubSubBroker
         if processor != nil then
           processor.call
         end
-#!!![leave out and change name?:]        redis.unsubscribe channel
+        if once then
+          redis.unsubscribe channel
+        end
       end
     end
     if postprocessor != nil then

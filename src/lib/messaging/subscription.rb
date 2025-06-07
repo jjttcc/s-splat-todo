@@ -24,8 +24,25 @@ module Subscription
   # Then (after the first message is received & processed) unsubscribe.
   pre  :pubsub_broker do ! self.pubsub_broker.nil? end
   post :last_message  do ! last_message.nil? end
+  def subscribe(channel = default_subscription_channel, &block)
+    pubsub_broker.subscribe(channel, subs_callbacks) do
+      @last_message = pubsub_broker.last_message
+      msg = "#{self.class}] received '#{@last_message}' (stack:\n" +
+        caller.join("\n") + ")"
+      log_messages(channel: msg)
+      if block != nil then
+        block.call
+      end
+    end
+  end
+
+  # Subscribe to 'channel' until the first message is received, calling the
+  # block (if it is provided) after setting 'last_message' to the message.
+  # Then (after the first message is received & processed) unsubscribe.
+  pre  :pubsub_broker do ! self.pubsub_broker.nil? end
+  post :last_message  do ! last_message.nil? end
   def subscribe_once(channel = default_subscription_channel, &block)
-    pubsub_broker.subscribe_once(channel, subs_callbacks) do
+    pubsub_broker.subscribe(channel, subs_callbacks, true) do
       @last_message = pubsub_broker.last_message
       msg = "#{self.class}] received '#{@last_message}' (stack:\n" +
         caller.join("\n") + ")"

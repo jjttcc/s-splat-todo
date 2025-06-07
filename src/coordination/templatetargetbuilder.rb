@@ -18,6 +18,11 @@ class TemplateTargetBuilder < TargetBuilder
     [self.spec]
   end
 
+  def spec_collector=(sc)
+    super(sc)
+    self.spec = StubbedSpec.new(sc, true)
+  end
+
   protected
 
   attr_accessor :spec

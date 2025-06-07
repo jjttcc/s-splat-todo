@@ -61,7 +61,6 @@ def handles_from_args arguments
 end
 
 if ARGV.length > 0 then
-  binding.irb
   Configuration.service_name = 'management'
   config = Configuration.instance
   manager = config.new_stodo_manager(service_name: 'management',
