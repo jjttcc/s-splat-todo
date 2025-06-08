@@ -1,2 +1,2 @@
-class RemoveDescendantsCommand
+class RemoveDescendantsCommand < WorkCommand
 end

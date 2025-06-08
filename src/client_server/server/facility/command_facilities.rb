@@ -1,28 +1,30 @@
+require 'ruby_contracts'
 require 'command_constants'
 require 'add_command'
 require 'delete_command'
 require 'change_command'
-require 'clear_command'
+require 'change_handle_command'
+require 'clear_descendants_command'
 require 'remove_descendants_command'
 require 'clone_command'
 require 'state_change_command'
 
 module CommandFacilities
-  include CommandConstants
+  include CommandConstants, Contracts::DSL
 
-  # hash table: 'command_builder_for[cmd_name]'
-  attr_reader :command_builder_for
+  # hash table: 'command_for[cmd_name]'
+  attr_reader :command_for
 
   private
 
-  def init_command_builder_table
-    @command_builder_for = {
-      ADD_CMD        => lambda do |req, mgr| AddCommand.new(req, mgr) end,
-      DELETE_CMD     => lambda do |req, mgr| DeleteCommand.new(req, mgr) end,
-      CHANGE_CMD     => lambda do |req, mgr| ChangeCommand.new(req, mgr) end,
-      CLEAR_DESC_CMD => lambda do |req, mgr|
-        ClearDescendantsCommand.new(req, mgr)
-      end,
+  pre :manager_good do ! manager.nil? end
+  def init_command_table(manager)
+    @command_for = {
+      ADD_CMD        => AddCommand.new(manager),
+      DELETE_CMD     => DeleteCommand.new(manager),
+      CHANGE_CMD     => ChangeCommand.new(manager),
+      CH_HANDLE_CMD  => ChangeHandleCommand.new(manager),
+      CLEAR_DESC_CMD => ClearDescendantsCommand.new(manager),
     }
 =begin
     # Define "type" aliases.

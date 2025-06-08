@@ -12,6 +12,25 @@ class TargetBuilder
 
   EDIT_MODE, CREATE_MODE = 'edit', 'create'
 
+  # Set 'processing_mode' to EDIT_MODE.
+  post :edit_mode do self.processing_mode == EDIT_MODE end
+  def set_edit_mode
+    self.processing_mode = EDIT_MODE
+  end
+
+  # Set 'processing_mode' to CREATE_MODE.
+  post :create_mode do self.processing_mode == CREATE_MODE end
+  def set_create_mode
+    self.processing_mode = CREATE_MODE
+  end
+
+  # Set 'processing_mode' to 'm'.
+  pre ' m is edit or create' do |m| m == EDIT_MODE || m == CREATE_MODE end
+  post 'mode set to "m"' do |res, m| self.processing_mode == m end
+  def set_processing_mode(m)
+    self.processing_mode = m
+  end
+
   public
 
   #####  Access
@@ -53,7 +72,7 @@ class TargetBuilder
   # Set 'spec_collector' to 'sc' and clear attributes:
   #   - [to-do: list of attrs]
   pre  :sc_exists do |sc| ! sc.nil? end
-  pre  :spec_c_set do self.spec_collector == sc end
+  post :spec_c_set do |result, sc| self.spec_collector == sc end
   def spec_collector=(sc)
     @spec_collector = sc
     prepare_targets

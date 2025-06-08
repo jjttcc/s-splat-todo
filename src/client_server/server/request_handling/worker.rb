@@ -11,16 +11,12 @@ class Worker < Publisher
   public
 
   def process_request(request_object_key)
-#!!!CMD:binding.irb
     request = message_broker.object(request_object_key)
-    builder = command_builder_for[request.command]
-    if ! builder.nil? then
-      cmd = builder.call(request, manager)
-      if cmd then
-        cmd.execute
-      end
+    cmd = command_for[request.command]
+    if ! cmd.nil? then
+      cmd.execute(request)
     else
-      "[appropriate error message]"
+      "!!![appropriate error message]!!!"
     end
   end
 
@@ -29,7 +25,6 @@ class Worker < Publisher
   attr_accessor :message_broker, :manager, :config
 
   def initialize(config)
-    init_command_builder_table
     self.config = config
     app_config = config.app_configuration
     self.message_broker = app_config.application_message_broker
@@ -37,6 +32,7 @@ class Worker < Publisher
     self.manager =
       config.new_stodo_manager(service_name: Configuration.service_name,
                                debugging: true)
+    init_command_table(manager)
     # dummy:
     options = TemplateOptions.new([], true)
     target_builder = TemplateTargetBuilder.new(options,
@@ -47,35 +43,3 @@ class Worker < Publisher
   end
 
 end
-
-=begin
-# Abstract ancestor - objects for carrying out work for "Worker"s
-class HIDEME_WorkCommand
-
-  def execute
-  end
-
-  private
-
-  attr_accessor :client_request, :manager
-
-  def initialize(request, manager)
-    self.client_request = request
-    self.manager = manager
-  end
-
-end
-
-class AddCommand < WorkCommand
-  public
-
-  def execute
-    # strip out the 'command: add'
-    opt_args = client_request.arguments[1 .. -1]
-    options = TemplateOptions.new(opt_args, true)
-    manager.target_builder.spec_collector = options
-    manager.add_new_targets
-  end
-
-end
-=end

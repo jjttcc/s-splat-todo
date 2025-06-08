@@ -7,13 +7,6 @@ class TemplateTargetBuilder < TargetBuilder
 
   public
 
-  # Set 'processing_mode' to 'm'.
-  pre ' m is edit or create' do |m| m == EDIT_MODE || m == CREATE_MODE end
-  post 'mode set to "m"' do |res, m| self.processing_mode == m end
-  def set_processing_mode(m)
-    self.processing_mode = m
-  end
-
   def specs
     [self.spec]
   end

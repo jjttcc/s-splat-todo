@@ -104,7 +104,6 @@ if ARGV.length > 0 then
   when /end-transaction/
     manager.end_transaction
   else
-binding.irb
     require 'templateoptions'
     opts = opts_from_args(arguments)
     handles = handles_from_args(arguments)

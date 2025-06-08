@@ -6,6 +6,8 @@ td
 datatest
 obsolete
 hide*
+.hide*
+.vscode
 /work
 *tmpbck
 /src/remove

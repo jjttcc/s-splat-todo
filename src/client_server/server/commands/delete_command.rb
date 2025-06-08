@@ -3,21 +3,11 @@ require 'work_command'
 class DeleteCommand < WorkCommand
   public
 
-  def model
-    # strip out the 'command: add'
-    opt_args = client_request.arguments[1 .. -1]
-    options = TemplateOptions.new(opt_args, true)
-    manager.target_builder.spec_collector = options
-    manager.add_new_targets
-  end
-
-  def execute
-binding.irb
-    args = client_request.arguments[1 .. -1]
-    cmd = client_request.command
+  def execute(request)
+    args = request.arguments[1 .. -1]
+    cmd = request.command
     opts = opts_from_args(args)
     handles = handles_from_args(args)
-#handles = client_request.arguments[1 .. -1]
     handles.each do |h|
       if ! opts.empty? then
         manager.edit_target(h, cmd, opts)
@@ -32,6 +22,7 @@ binding.irb
 
   OPT_CHAR = '-'
 
+#!!!Need to move these two methods into a utility class/module:
   def opts_from_args arguments
     result = []
     (0 .. arguments.count - 1).each do |i|

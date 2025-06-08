@@ -1,15 +1,18 @@
+require 'ruby_contracts'
+
 # Abstract ancestor - objects for carrying out work for "Worker"s
 class WorkCommand
+  include Contracts::DSL
 
-  def execute
+  pre  :request_exists do |request| ! request.nil? end
+  def execute(request)
   end
 
   private
 
-  attr_accessor :client_request, :manager
+  attr_accessor :manager
 
-  def initialize(request, manager)
-    self.client_request = request
+  def initialize(manager)
     self.manager = manager
   end
 
