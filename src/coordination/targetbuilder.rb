@@ -94,15 +94,22 @@ class TargetBuilder
   post 'targets exist' do ! targets.nil? end
   post 'edited_targets exist' do ! edited_targets.nil? end
   def process_targets
+logf = File.new("/tmp/process_targets", "w")
     if ! targets_prepared? then
       prepare_targets
     end
     for s in self.specs do
+logf.puts("TB.proc targets: s: #{s}")
+logf.flush
       begin
         s.existing_targets = self.existing_targets
         if new_target_needed(s) then
+logf.puts("TB.proc targets: new_target_needed")
+logf.flush
           t = new_target(s)
         else
+logf.puts("TB.proc targets: NOT new_target_needed")
+logf.flush
           edit_target(s)
           t = self.last_edited_target
         end

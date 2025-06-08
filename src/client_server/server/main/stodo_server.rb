@@ -5,7 +5,7 @@ require 'subscriber'
 require 'service'
 require 'stodo_services_constants'
 require 'configuration'
-require 'worker'
+require 'work_coordinator'
 
 
 # Responds to client requests for stodo services (which are modeled after
@@ -19,15 +19,14 @@ class STodoServer < Subscriber
 
   MAIN_LOOP_PAUSE_SECONDS = 0.15
 
-  attr_accessor :worker
+  attr_accessor :work_coordinator
 
   def initialize
     Configuration.service_name = 'main-server'
     Configuration.debugging = false
     config = Configuration.instance
     app_config = config.app_configuration
-    #!!!We need a "pool" of workers!!!
-    self.worker = Worker.new(config)
+    self.work_coordinator = WorkCoordinator.new(config)
     initialize_pubsub_broker(app_config)
     super(SERVER_REQUEST_CHANNEL)
   end
@@ -35,8 +34,8 @@ class STodoServer < Subscriber
   ##### Hook methods
 
   def process(args = nil)
-    subscribe_once do
-      worker.process_request(last_message)
+    subscribe do
+      work_coordinator.delegate_request(last_message)
     end
   end
 

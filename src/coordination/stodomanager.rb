@@ -164,13 +164,21 @@ class STodoManager
     ! self.target_builder.existing_targets.nil?
   end
   def add_new_targets
+@logf = File.new("/tmp/add_new_targets", "w")
     target_builder.process_targets
     targets = target_builder.targets
+@logf.puts("targets.count: #{targets.count}")
+@logf.flush
     if ! targets.empty? then
       targets.each do |t|
+@logf.puts("t: #{t}")
+@logf.flush
         repo = configuration.stodo_git
         $log.debug "[add_new_targets] adding #{t.handle}"
         store_target(t)
+@logf.puts("tried to store target")
+@logf.puts("self.inspect: #{self.inspect}")
+@logf.flush
         if ! t.parent_handle.nil? then
           p = target_for(t.parent_handle)
           if p then
