@@ -4,9 +4,11 @@ require 'ruby_contracts'
 class CommandLineRequest
   include Contracts::DSL
 
+  public
+
   attr_reader :command, :arguments
 
-  pre  :not_nil do ! c.nil? end
+  pre  :not_nil do |c| ! c.nil? end
   pre  :invariant do invariant end
   post :command_not_nil do ! self.command.nil? end
   post :invariant do invariant end
@@ -14,8 +16,8 @@ class CommandLineRequest
     @command = c
   end
 
-  pre  :not_nil do ! args.nil? end
-  pre  :args_array do args.is_a?(Array) end
+  pre  :not_nil do |args| ! args.nil? end
+  pre  :args_array do |args| args.is_a?(Array) end
   pre  :invariant do invariant end
   post :arguments_not_nil do ! self.arguments.nil? end
   post :invariant do invariant end
@@ -25,13 +27,10 @@ class CommandLineRequest
 
   private
 
-#!!!  attr_writer :command, :arguments
-
-  pre  :invariant do invariant end
   post :invariant do invariant end
   def initialize
     @command = nil
-    self.arguments = []
+    @arguments = []
   end
 
   ### Invariant

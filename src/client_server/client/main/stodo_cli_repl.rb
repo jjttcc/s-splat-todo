@@ -41,7 +41,6 @@ class STodoCliREPL < PublisherSubscriber
   def post_process(exe_args)
     # subscribe to response
     puts "pretending to subscrib to response"
-#sleep 1
   end
 
   private

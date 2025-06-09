@@ -1,6 +1,7 @@
 require 'work_command'
 
 class ChangeCommand < WorkCommand
+  include CommandConstants, Contracts::DSL
 
   def execute(request)
     # strip out the command:

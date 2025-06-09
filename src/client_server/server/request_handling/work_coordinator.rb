@@ -38,7 +38,6 @@ class WorkCoordinator
   end
 
   def update_available_work_servers
-binding.irb
     occupied_work_servers.each do |s|
       if ! message_broker.retrieved_message(s.server_id).nil? then
         available_work_servers << s

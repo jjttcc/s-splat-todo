@@ -20,20 +20,15 @@ module CommandFacilities
   pre :manager_good do ! manager.nil? end
   def init_command_table(manager)
     @command_for = {
-      ADD_CMD        => AddCommand.new(manager),
-      DELETE_CMD     => DeleteCommand.new(manager),
-      CHANGE_CMD     => ChangeCommand.new(manager),
-      CH_HANDLE_CMD  => ChangeHandleCommand.new(manager),
-      CLEAR_DESC_CMD => ClearDescendantsCommand.new(manager),
+      ADD_CMD          => AddCommand.new(manager),
+      CHANGE_CMD       => ChangeCommand.new(manager),
+      CH_HANDLE_CMD    => ChangeHandleCommand.new(manager),
+      CLEAR_DESC_CMD   => ClearDescendantsCommand.new(manager),
+      CLONE_CMD        => CloneCommand.new(manager),
+      DELETE_CMD       => DeleteCommand.new(manager),
+      REMOVE_DESC_CMD  => RemoveDescendantsCommand.new(manager),
+      STATE_CHANGE_CMD => StateChangeCommand.new(manager),
     }
-=begin
-    # Define "type" aliases.
-    @target_factory_for[TASK] = @target_factory_for[TASK_ALIAS1]
-    @target_factory_for[NOTE_ALIAS1] = @target_factory_for[NOTE]
-    @target_factory_for[NOTE_ALIAS2] = @target_factory_for[NOTE]
-    @target_factory_for[APPOINTMENT_ALIAS1] = @target_factory_for[APPOINTMENT]
-    @target_factory_for[APPOINTMENT_ALIAS2] = @target_factory_for[APPOINTMENT]
-=end
   end
 
 end
