@@ -5,8 +5,9 @@ require 'delete_command'
 require 'change_command'
 require 'change_handle_command'
 require 'clear_descendants_command'
-require 'remove_descendants_command'
+require 'remove_descendant_command'
 require 'clone_command'
+require 'session_request_command'
 require 'state_change_command'
 
 module CommandFacilities
@@ -26,8 +27,9 @@ module CommandFacilities
       CLEAR_DESC_CMD   => ClearDescendantsCommand.new(manager),
       CLONE_CMD        => CloneCommand.new(manager),
       DELETE_CMD       => DeleteCommand.new(manager),
-      REMOVE_DESC_CMD  => RemoveDescendantsCommand.new(manager),
+      REMOVE_DESC_CMD  => RemoveDescendantCommand.new(manager),
       STATE_CHANGE_CMD => StateChangeCommand.new(manager),
+      SESSION_REQ_CMD  => SessionRequestCommand.new(manager)
     }
   end
 

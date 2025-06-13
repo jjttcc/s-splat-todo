@@ -1,9 +1,10 @@
 require 'work_command'
 
+#!!!!See NOTE in WorkCommand!!!
 class DeleteCommand < WorkCommand
   public
 
-  def execute(request)
+  def do_execute(the_caller)
     args = request.arguments[1 .. -1]
     cmd = request.command
     opts = opts_from_args(args)

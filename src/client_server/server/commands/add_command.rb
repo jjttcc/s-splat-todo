@@ -1,9 +1,10 @@
 require 'work_command'
 
+#!!!!See NOTE in WorkCommand!!!
 class AddCommand < WorkCommand
   public
 
-  def execute(request)
+  def do_execute(the_caller)
 logf = File.new("/tmp/addcmd#{$$}", "w")
 logf.puts("#{self.class} self: #{self}")
     # strip out the 'command: add'

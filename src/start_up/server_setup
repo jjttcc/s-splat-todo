@@ -1,0 +1,22 @@
+#!/bin/bash
+# vim: ts=2 sw=2 expandtab
+# Note: depends on $stodo_envpath being initialized.
+
+set_rubylib() {
+  clsrv=client_server
+  srvd=$clsrv/server
+  dirlist="facility error configuration notification specs data"
+  dirlist="$dirlist coordination util attributes"
+  dirlist="$dirlist domain/services/reporting external/messaging"
+  dirlist="$dirlist lib/messaging domain/support"
+  dirlist="$dirlist lib/util lib/util/redis external/util"
+  dirlist="$dirlist $clsrv/support $srvd/structural $srvd/request_handling"
+  dirlist="$dirlist $srvd/main $clsrv/communication $clsrv/structural"
+  dirlist="$dirlist $srvd/facility $srvd/commands $clsrv/facility"
+  dirlist="$dirlist $clsrv/login"
+  rubylib="RUBYLIB=$stodo_envpath/core"
+  for d in $dirlist; do
+    rubylib="$rubylib:$stodo_envpath/$d"
+  done
+  eval export $rubylib
+}

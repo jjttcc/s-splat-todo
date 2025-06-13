@@ -4,34 +4,8 @@
 
 progname=$(basename $0)
 stodo_envpath="$STODO_PATH"
+. $stodo_envpath/start_up/server_setup
 server=$stodo_envpath/main/init-server.rb
-# [temporary?]
-#!!rm: initproc=$stodo_envpath/main/initial-processing.rb
-#!!rm: notifyproc=$stodo_envpath/main/ongoing-processing.rb
-#!!rm: mktmpl=$stodo_envpath/main/stodo-template.rb
-#!!rm: report=$stodo_envpath/main/report.rb
-#!!rm: edit=$stodo_envpath/main/stodo-mgmt.rb
-#!!rm: admin=$stodo_envpath/main/stodo-admin.rb
-# [END: temporary?]
-
-set_rubylib() {
-  clsrv=client_server
-  srvd=$clsrv/server
-  clntd=$clsrv/client
-  dirlist="facility error configuration notification specs data"
-  dirlist="$dirlist coordination util attributes"
-  dirlist="$dirlist domain/services/reporting external/messaging"
-  dirlist="$dirlist lib/messaging domain/support"
-  dirlist="$dirlist lib/util lib/util/redis external/util"
-  dirlist="$dirlist $clsrv/support $srvd/structural $srvd/request_handling"
-  dirlist="$dirlist $srvd/main $clsrv/communication $clsrv/structural"
-  dirlist="$dirlist $srvd/facility $srvd/commands"
-  rubylib="RUBYLIB=$stodo_envpath/core"
-  for d in $dirlist; do
-    rubylib="$rubylib:$stodo_envpath/$d"
-  done
-  eval export $rubylib
-}
 
 run() {
   cmd=$1; shift
@@ -45,5 +19,3 @@ run() {
 
 set_rubylib
 run $server "$@"
-#run $edit "$@"
-#run $initproc $*

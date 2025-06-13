@@ -6,27 +6,30 @@ require 'stodo_services_constants'
 require 'configuration'
 require 'service'
 require 'command_line_request'
+require 'command_constants'
+require 'client_session'
 
 # Makes requests for stodo services to implement a REPL interface that
 # mimics the 'stodo' CLI.
 class STodoCliREPL < PublisherSubscriber
-  include STodoServicesConstants, Service
+  include STodoServicesConstants, Service, CommandConstants
 
-  public
-
-  def prepare_for_main_loop(exe_args)
-    self.command_line_request = CommandLineRequest.new
-  end
+  private
 
   def pre_process(exe_args)
     print PROMPT
   end
 
   def process(exe_args)
-    line = gets
+    line = $stdin.gets
     if ! line.nil? then
+#!!Reminder: If we get a session_id, do:
+#command_line_request.session_id = session_id
       args = line.chomp.split( / *"(.*?)" *| / )
       if args.count > 0 then
+#!!!Use a filtering tool to correct spelling errors in the
+#!!!command - i.e., if possible if what the user types is
+#!!!close enough, match/change it to the exact command.
         command_line_request.command = args[0]
         command_line_request.arguments = args
         key = new_key
@@ -38,6 +41,22 @@ class STodoCliREPL < PublisherSubscriber
     end
   end
 
+  def request_client_session
+    command_line_request.command = SESSION_REQ_CMD
+    key = new_key
+    message_broker.set_object(key, command_line_request)
+    publish(key)
+    subscribe_once do
+      session_id = last_message
+      if ! session_id.nil? then
+        self.session = message_broker.object(session_id)
+        command_line_request.session_id = session_id
+      else
+puts "nil session_id"
+      end
+    end
+  end
+
   def post_process(exe_args)
     # subscribe to response
     puts "pretending to subscrib to response"
@@ -46,11 +65,13 @@ class STodoCliREPL < PublisherSubscriber
   private
 
   attr_accessor :message_broker, :command_line_request
+  attr_accessor :user_id, :app_name, :session
 
   CLI_KEY_BASE = 'client-repl-request'
   PROMPT       = '> '
 
   def initialize
+    set_user_and_appname
     Configuration.service_name = 'cli-client'
     Configuration.debugging = false
     config = Configuration.instance
@@ -59,14 +80,31 @@ class STodoCliREPL < PublisherSubscriber
     initialize_pubsub_broker(app_config)
     init_pubsub(default_pubchan: SERVER_REQUEST_CHANNEL,
                 default_subchan: SERVER_RESPONSE_CHANNEL)
+    self.command_line_request = CommandLineRequest.new(user_id, app_name)
+    request_client_session
   end
 
   private   ###  Implementation
+
+  ERROR_EXIT = 99
 
   def new_key
     time = Time.now
     result = time.strftime("#{CLI_KEY_BASE}:%Y-%m-%d.%H%M%S.%6N.#{$$}")
     result
+  end
+
+  def set_user_and_appname
+    if ARGV.count < 2 then
+      usage
+      exit ERROR_EXIT
+    end
+    self.user_id = ARGV[0]
+    self.app_name = ARGV[1]
+  end
+
+  def usage
+    puts "Usage: #{$0} <user-id> <app-name>"
   end
 
 end

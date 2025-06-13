@@ -1,12 +1,14 @@
 require 'ruby_contracts'
 
 # Request objects whose structure mimic the 'stodo' command line
+# !!!This might need a name change to something like: ClientRequest.
 class CommandLineRequest
   include Contracts::DSL
 
   public
 
-  attr_reader :command, :arguments
+  attr_reader   :command, :arguments
+  attr_accessor :user_id, :app_name, :session_id
 
   pre  :not_nil do |c| ! c.nil? end
   pre  :invariant do invariant end
@@ -28,9 +30,11 @@ class CommandLineRequest
   private
 
   post :invariant do invariant end
-  def initialize
+  def initialize(user_id, app_name)
     @command = nil
     @arguments = []
+    self.user_id = user_id
+    self.app_name = app_name
   end
 
   ### Invariant

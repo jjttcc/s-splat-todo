@@ -1,9 +1,10 @@
 require 'work_command'
 
+#!!!!See NOTE in WorkCommand!!!
 class ChangeCommand < WorkCommand
   include CommandConstants, Contracts::DSL
 
-  def execute(request)
+  def do_execute(the_caller)
     # strip out the command:
     opt_args = request.arguments[1 .. -1]
     handle = opt_args[0]

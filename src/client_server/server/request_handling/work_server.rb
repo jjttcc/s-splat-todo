@@ -1,4 +1,5 @@
-require 'subscriber'
+#!!!rm: require 'subscriber'
+require 'publisher_subscriber'
 #require 'stodo_services_constants'
 require 'command_line_request'
 require 'templatetargetbuilder'
@@ -6,10 +7,20 @@ require 'templateoptions'
 require 'command_facilities'
 
 # Servers that carry out work delegated by a coordinating server
-class WorkServer < Subscriber
+class WorkServer < PublisherSubscriber
   include Service, CommandFacilities
 
   public
+
+  # The client request - made available to the command
+  attr_reader :request
+
+  # Insert the ClientSession, s. into the database and publish the
+  # session id for the client.
+  def send_session(s)
+    message_broker.set_object(s.session_id, s, s.expiration_secs)
+    publish(s.session_id)
+  end
 
   private
 
@@ -36,18 +47,26 @@ class WorkServer < Subscriber
 $tlog = File.new("/tmp/#{server_id}", "w")
 $tlog.puts("subscribe channel should be #{default_subscription_channel}")
 $tlog.flush
+
+#!!!to-do: Fix: initialize now as a PublisherSubscriber, not a Subscriber
   end
 
   def process_request(request_object_key)
 $tlog.puts("[process_request]: rok: #{request_object_key}")
 $tlog.flush
-    request = message_broker.object(request_object_key)
+    @request = message_broker.object(request_object_key)
     cmd = command_for[request.command]
-$tlog.puts("[process_request]: req, cmd:",
-           request.inspect, cmd.inspect)
+$tlog.puts("[process_request]: req, cmd:", request.inspect, cmd.inspect)
 $tlog.flush
+    if ! request.session_id.nil? then
+      client_session_object = message_broker.object(request.session_id)
+      if ! client_session_object.nil? then
+        cmd.client_session = client_session_object
+      end
+    end
     if ! cmd.nil? then
-      cmd.execute(request)
+#!!!      cmd.execute(request)
+      cmd.execute(self)
 $tlog.puts("[process_request]: command executed")
 $tlog.flush
     else

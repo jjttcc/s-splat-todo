@@ -7,8 +7,6 @@ require 'work_server_process'
 #require 'templateoptions'
 
 # Coordinates worker processes to carry out client requests.
-#!!!!!Move this file out of request_handling.
-#class WorkCoordinator < Publisher
 class WorkCoordinator
 
   public
@@ -18,16 +16,6 @@ class WorkCoordinator
     self.occupied_work_servers << work_server
     work_server.notify_worker(request_object_key)
     update_available_work_servers
-  end
-
-  def remove___stash_delegate_request(request_object_key)
-    request = message_broker.object(request_object_key)
-    cmd = command_for[request.command]
-    if ! cmd.nil? then
-      cmd.execute(request)
-    else
-      "!!![appropriate error message]!!!"
-    end
   end
 
   private
@@ -55,7 +43,6 @@ class WorkCoordinator
   attr_accessor :message_broker, :child_pids
   # Array of WorkServerProcess, each representing a work server:
   attr_accessor :work_servers
-  # 
   # Array of available WorkServerProcess objects:
   attr_accessor :available_work_servers
   # Array of occupied WorkServerProcess objects:
@@ -69,6 +56,7 @@ class WorkCoordinator
     self.available_work_servers = []
     self. occupied_work_servers= []
     self.child_pids = []
+    # Start up 'SERVER_COUNT' WorkServer processes to handle requests:
     (1 .. SERVER_COUNT).each do |i|
       server_id = "#{WORK_SERVER_ID_BASE}#{i}"
       ch_pid = start_server_process(server_id)
@@ -88,24 +76,6 @@ class WorkCoordinator
     result = child_pid
     Process.detach(child_pid)
     result
-  end
-
-  def stash_initialize_remove(config)
-    self.config = config
-    app_config = config.app_configuration
-    self.message_broker = app_config.application_message_broker
-    initialize_pubsub_broker(app_config)
-    self.manager =
-      config.new_stodo_manager(service_name: Configuration.service_name,
-                               debugging: true)
-#    init_command_table(manager)
-    # dummy:
-    options = TemplateOptions.new([], true)
-    target_builder = TemplateTargetBuilder.new(options,
-                                     manager.existing_targets, nil, config)
-    target_builder.set_processing_mode TemplateTargetBuilder::CREATE_MODE
-    manager.target_builder = target_builder
-    super(SERVER_RESPONSE_CHANNEL)
   end
 
 end

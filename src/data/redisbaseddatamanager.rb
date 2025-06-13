@@ -11,20 +11,13 @@ class RedisBasedDataManager
 
   public  ###  Access
 
-  attr_reader  :app_name
+  # The application name associated with a particular user-client-session
+  attr_accessor  :app_name
 
-  attr_reader  :user
+  # The user name associated with a particular user-client-session
+  attr_accessor  :user
 
   public  ###  Basic operations - Query
-
-  # A hash table of all the keys in the database (for this user/app)
-  # for fast searching, with all value components set to true
-  def key_table
-    result = database.set_members(db_key).map do |k|
-      unornamented(k)
-    end.to_h { |k| [k, true] }
-    result
-  end
 
   # All keys in the database (for this user/app)
   def keys
@@ -146,6 +139,15 @@ class RedisBasedDataManager
 
   private   ###  Implementation
 
+  # A hash table of all the keys in the database (for this user/app)
+  # for fast searching, with all value components set to true
+  def key_table
+    result = database.set_members(db_key).map do |k|
+      unornamented(k)
+    end.to_h { |k| [k, true] }
+    result
+  end
+
   # Set "target"'s db attribute to 'self'.
   pre :tgt_not_nil do |tgt| ! tgt.nil? end
   def set_db(target)
@@ -193,7 +195,6 @@ class RedisBasedDataManager
 
   private   ###  Initialization
 
-  attr_writer    :user, :app_name
   attr_accessor :database, :db_key
 
   DB_KEY_BASE = 'stodo-database'

@@ -1,0 +1,15 @@
+#!/bin/bash
+
+client=$STODO_PATH/stodo_client_repl
+
+echo 'add memo -t "remove descendant test" -h remd-101-ancestor -d "remove descentant" -ti now'|$client
+sleep 0.2
+echo 'add memo -t "remove descendant testA" -h remd-101-childA -d "remove descentant" -ti now -p remd-101-ancestor'|$client
+sleep 0.2
+echo 'add memo -t "remove descendant testB" -h remd-101-childB -d "remove descentant" -ti now -p remd-101-ancestor'|$client
+sleep 0.2
+echo 'add memo -t "remove descendant testC" -h remd-101-grandchildC -d "remove descentant" -ti now -p remd-101-childB'|$client
+sleep 0.2
+echo 'add memo -t "remove descendant testD" -h remd-101-grandchildD -d "remove descentant" -ti now -p remd-101-childA'|$client
+sleep 0.3
+echo 'remove_descendant remd-101-ancestor remd-101-childB'|$client
