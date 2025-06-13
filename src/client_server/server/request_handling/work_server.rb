@@ -1,30 +1,23 @@
-#!!!rm: require 'subscriber'
 require 'publisher_subscriber'
-#require 'stodo_services_constants'
+require 'stodo_services_constants'
 require 'command_line_request'
 require 'templatetargetbuilder'
 require 'templateoptions'
 require 'command_facilities'
+require 'client_request_handler'
 
 # Servers that carry out work delegated by a coordinating server
 class WorkServer < PublisherSubscriber
-  include Service, CommandFacilities
+  include ClientRequestHandler, STodoServicesConstants, Service,
+    CommandFacilities
 
   public
 
-  # The client request - made available to the command
-  attr_reader :request
-
-  # Insert the ClientSession, s. into the database and publish the
-  # session id for the client.
-  def send_session(s)
-    message_broker.set_object(s.session_id, s, s.expiration_secs)
-    publish(s.session_id)
-  end
+  private :process_request
 
   private
 
-  attr_accessor :message_broker, :manager, :server_id
+  attr_accessor :manager, :server_id
 
   def initialize(server_id)
     self.server_id = server_id
@@ -32,6 +25,7 @@ class WorkServer < PublisherSubscriber
     Configuration.debugging = false
     config = Configuration.instance
     app_config = config.app_configuration
+    self.database = config.data_manager
     self.message_broker = app_config.application_message_broker
     initialize_pubsub_broker(app_config)
     self.manager =
@@ -43,50 +37,17 @@ class WorkServer < PublisherSubscriber
     target_builder = TemplateTargetBuilder.new(options,
                                      manager.existing_targets, nil, config)
     manager.target_builder = target_builder
-    super(server_id)
-$tlog = File.new("/tmp/#{server_id}", "w")
-$tlog.puts("subscribe channel should be #{default_subscription_channel}")
-$tlog.flush
-
-#!!!to-do: Fix: initialize now as a PublisherSubscriber, not a Subscriber
-  end
-
-  def process_request(request_object_key)
-$tlog.puts("[process_request]: rok: #{request_object_key}")
-$tlog.flush
-    @request = message_broker.object(request_object_key)
-    cmd = command_for[request.command]
-$tlog.puts("[process_request]: req, cmd:", request.inspect, cmd.inspect)
-$tlog.flush
-    if ! request.session_id.nil? then
-      client_session_object = message_broker.object(request.session_id)
-      if ! client_session_object.nil? then
-        cmd.client_session = client_session_object
-      end
-    end
-    if ! cmd.nil? then
-#!!!      cmd.execute(request)
-      cmd.execute(self)
-$tlog.puts("[process_request]: command executed")
-$tlog.flush
-    else
-      "!!![appropriate error message]!!!"
-    end
+    init_pubsub(default_pubchan: SERVER_RESPONSE_CHANNEL,
+                default_subchan: server_id)
   end
 
   ##### Hook methods
 
   def process(args = nil)
-$tlog.puts("[process]: subscribing to #{default_subscription_channel}")
     subscribe_once do
       process_request(last_message)
     end
-$tlog.puts("[process]: calling message_broker.set_message")
-$tlog.puts("[process]: server_id: #{server_id.inspect}")
-$tlog.flush
     message_broker.set_message(server_id, "ready")
-$tlog.puts("[process]: finished - set msg(#{server_id}) to ready")
-$tlog.flush
   end
 
 end

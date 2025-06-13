@@ -7,6 +7,7 @@ class AddCommand < WorkCommand
   def do_execute(the_caller)
 logf = File.new("/tmp/addcmd#{$$}", "w")
 logf.puts("#{self.class} self: #{self}")
+logf.flush
     # strip out the 'command: add'
     opt_args = request.arguments[1 .. -1]
 logf.puts("opt_args: #{opt_args}")

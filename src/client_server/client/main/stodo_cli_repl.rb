@@ -23,15 +23,13 @@ class STodoCliREPL < PublisherSubscriber
   def process(exe_args)
     line = $stdin.gets
     if ! line.nil? then
-#!!Reminder: If we get a session_id, do:
-#command_line_request.session_id = session_id
-      args = line.chomp.split( / *"(.*?)" *| / )
-      if args.count > 0 then
+      words = line.chomp.split( / *"(.*?)" *| / )
+      if words.count > 0 then
 #!!!Use a filtering tool to correct spelling errors in the
 #!!!command - i.e., if possible if what the user types is
 #!!!close enough, match/change it to the exact command.
-        command_line_request.command = args[0]
-        command_line_request.arguments = args
+        command_line_request.command = words[0]
+        command_line_request.arguments = words
         key = new_key
         message_broker.set_object(key, command_line_request)
         publish(key)
@@ -49,10 +47,9 @@ class STodoCliREPL < PublisherSubscriber
     subscribe_once do
       session_id = last_message
       if ! session_id.nil? then
-        self.session = message_broker.object(session_id)
         command_line_request.session_id = session_id
       else
-puts "nil session_id"
+        puts "nil session_id" #!!!Need a real log/warning!!!
       end
     end
   end
@@ -64,17 +61,18 @@ puts "nil session_id"
 
   private
 
-  attr_accessor :message_broker, :command_line_request
+  attr_accessor :message_broker, :command_line_request, :database
   attr_accessor :user_id, :app_name, :session
 
   CLI_KEY_BASE = 'client-repl-request'
   PROMPT       = '> '
 
   def initialize
-    set_user_and_appname
     Configuration.service_name = 'cli-client'
     Configuration.debugging = false
     config = Configuration.instance
+    self.database = config.data_manager
+    set_user_and_appname
     app_config = config.app_configuration
     self.message_broker = app_config.application_message_broker
     initialize_pubsub_broker(app_config)
@@ -101,6 +99,7 @@ puts "nil session_id"
     end
     self.user_id = ARGV[0]
     self.app_name = ARGV[1]
+    database.set_appname_and_user(app_name, user_id)
   end
 
   def usage

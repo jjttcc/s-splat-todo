@@ -9,13 +9,21 @@ require 'errortools'
 class RedisBasedDataManager
   include Contracts::DSL, ErrorTools
 
-  public  ###  Access
+  public  ###  app_name and user access/setting
 
   # The application name associated with a particular user-client-session
-  attr_accessor  :app_name
+  attr_reader  :app_name
 
   # The user name associated with a particular user-client-session
-  attr_accessor  :user
+  attr_reader  :user
+
+  # Set 'app_name' and 'user'.
+  pre :args_exist do |aname, u| ! (aname.nil? || u.nil?) end
+  def set_appname_and_user(aname, u)
+    @app_name = aname
+    @user = u
+    self.db_key = key_for(DB_KEY_BASE)
+  end
 
   public  ###  Basic operations - Query
 
@@ -205,9 +213,9 @@ class RedisBasedDataManager
   post :user_set do |res, user| self.database == user end
   def initialize(db, user, appname = '')
     self.database = db
-    self.user = user
-    self.app_name = appname
-    self.db_key = key_for(DB_KEY_BASE)
+    if ! user.nil? && ! appname.nil? then
+      set_appname_and_user(appname, user)
+    end
   end
 
 end
