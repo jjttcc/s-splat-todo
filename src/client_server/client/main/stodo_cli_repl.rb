@@ -9,6 +9,17 @@ require 'command_line_request'
 require 'command_constants'
 require 'client_session'
 
+# From:
+#https://stackoverflow.com/questions/11566094/trying-to-split-string-into-single-words-or-quoted-words-and-want-to-keep-the
+class String
+  def tokenize
+    self.
+      split(/\s(?=(?:[^'"]|'[^']*'|"[^"]*")*$)/).
+      select {|s| not s.empty? }.
+      map {|s| s.gsub(/(^ +)|( +$)|(^["']+)|(["']+$)/,'')}
+  end
+end
+
 # Makes requests for stodo services to implement a REPL interface that
 # mimics the 'stodo' CLI.
 class STodoCliREPL < PublisherSubscriber
@@ -23,14 +34,13 @@ class STodoCliREPL < PublisherSubscriber
   def process(exe_args)
     line = $stdin.gets
     if ! line.nil? then
-#!!!!Fix this:
-      words = line.chomp.split( / *"(.*?)" *| / )
-      if words.count > 0 then
+      components = line.tokenize
+      if components.count > 0 then
 #!!!Use a filtering tool to correct spelling errors in the
 #!!!command - i.e., if possible if what the user types is
 #!!!close enough, match/change it to the exact command.
-        command_line_request.command = words[0]
-        command_line_request.arguments = words
+        command_line_request.command = components[0]
+        command_line_request.arguments = components
         key = new_key
         message_broker.set_object(key, command_line_request)
         publish(key)
@@ -50,14 +60,17 @@ class STodoCliREPL < PublisherSubscriber
       if ! session_id.nil? then
         command_line_request.session_id = session_id
       else
-        puts "nil session_id" #!!!Need a real log/warning!!!
+        $log.error("received a 'nil' session_id from server")
       end
     end
   end
 
   def post_process(exe_args)
     # subscribe to response
-    puts "pretending to subscrib to response"
+    subscribe_once do
+      # Temporary!!!:
+      puts "got '#{last_message}' from server"
+    end
   end
 
   private

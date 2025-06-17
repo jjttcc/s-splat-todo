@@ -7,7 +7,6 @@ module DeletionLogic
   attr_accessor :commit_message
 
   def perform_deletion(handle, recursive, target_table, force = false)
-binding.irb
     begin
       t = target_table[handle]
       if ! t.nil? then

@@ -26,7 +26,6 @@ class AddCommand < WorkCommand
 
   ### Implementation of inherited abstract methods
 
-  pre :req_set do ! self.request.nil? end
   def do_execute(the_caller)
     self.the_caller = the_caller
     self.database = the_caller.database
@@ -38,6 +37,9 @@ class AddCommand < WorkCommand
       add_parent(target)
       init_git(target)
       initiate(target)
+    else
+      self.execution_succeeded = false
+      self.fail_msg = "Invalid spec [arguments: #{request.arguments}]"
     end
   end
 

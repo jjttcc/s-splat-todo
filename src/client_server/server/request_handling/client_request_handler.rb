@@ -1,10 +1,14 @@
 require 'ruby_contracts'
 
 # Client request-handling behavior
+# Descendants must implement the 'publish' method.
 module ClientRequestHandler
   include Contracts::DSL, ErrorTools
 
   public
+
+  SUCCESS_REPORT = "Succeeded"
+  FAIL_BASE = "Command failed"
 
   # The client request - made available to the command
   attr_reader :request, :database, :config
@@ -15,20 +19,26 @@ module ClientRequestHandler
     @request = message_broker.object(request_object_key)
     cmd = command_for[request.command]
     if cmd.nil? then
-      raise "Invalid command: #{request.command}"
-    end
-    if ! request.session_id.nil? then
-      client_session_object = message_broker.object(request.session_id)
-      if ! client_session_object.nil? then
-        database.set_appname_and_user(client_session_object.app_name,
-                                      client_session_object.user_id)
-        cmd.client_session = client_session_object
-      end
-    end
-    if ! cmd.nil? then
-      cmd.execute(self)
+      publish("Invalid command: #{request.command}")
     else
-      "!!![appropriate error message]!!!"
+      if ! request.session_id.nil? then
+        client_session_object = message_broker.object(request.session_id)
+        if ! client_session_object.nil? then
+          database.set_appname_and_user(client_session_object.app_name,
+                                        client_session_object.user_id)
+          cmd.client_session = client_session_object
+        end
+      end
+      cmd.execute(self)
+      if cmd.execution_succeeded then
+        publish(SUCCESS_REPORT)
+      else
+        msg = FAIL_BASE
+        if ! cmd.fail_msg.empty? then
+          msg = "#{msg}: #{cmd.fail_msg}"
+        end
+        publish(msg)
+      end
     end
   end
 

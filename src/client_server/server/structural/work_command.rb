@@ -7,7 +7,7 @@ class WorkCommand
 
   public
 
-  attr_accessor :client_session
+  attr_accessor :client_session, :execution_succeeded, :fail_msg
 
 #!!!!NOTE: It will probably be better/simpler in most (all?) cases
 #!!!!for the Commands to simply retrieve the object to be modified
@@ -22,6 +22,8 @@ class WorkCommand
   end
   def execute(the_caller)
     self.request = the_caller.request
+    self.execution_succeeded = true
+    self.fail_msg = ""
     do_execute(the_caller)
   end
 
@@ -29,7 +31,9 @@ class WorkCommand
 
   # Abstract method
   pre  :request_set do ! self.request.nil? end
+  pre  :start_with_success do execution_succeeded end
   def do_execute(the_caller)
+    # descendant should set 'execution_succeeded' to false if it failed.
   end
 
   attr_accessor :request
