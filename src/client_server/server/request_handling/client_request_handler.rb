@@ -1,15 +1,22 @@
+require 'ruby_contracts'
 
 # Client request-handling behavior
 module ClientRequestHandler
+  include Contracts::DSL, ErrorTools
 
   public
 
   # The client request - made available to the command
-  attr_reader :request
+  attr_reader :request, :database, :config
+
+  alias_method :configuration, :config
 
   def process_request(request_object_key)
     @request = message_broker.object(request_object_key)
     cmd = command_for[request.command]
+    if cmd.nil? then
+      raise "Invalid command: #{request.command}"
+    end
     if ! request.session_id.nil? then
       client_session_object = message_broker.object(request.session_id)
       if ! client_session_object.nil? then
@@ -34,6 +41,29 @@ module ClientRequestHandler
 
   private
 
-  attr_accessor :message_broker, :database
+  attr_accessor :message_broker, :manager
+  attr_writer   :database, :config
+
+  pre  :cfg_exists do |cfg| ! cfg.nil? end
+  post :config_set do |result, cfg| self.config == cfg end
+  def init_crh_attributes(cfg)
+    self.config = cfg
+    app_config = config.app_configuration
+    self.database = config.data_manager
+    self.message_broker = app_config.application_message_broker
+    initialize_pubsub_broker(app_config)
+    self.manager =
+      config.new_stodo_manager(service_name: Configuration.service_name,
+                               debugging: true)
+    init_command_table(config, manager)
+    # dummy:
+    options = TemplateOptions.new([], true)
+    # Perhaps, after some refactoring, this object will no longer be needed
+    # here (the 'manager' might go away, as well):
+    target_builder = TemplateTargetBuilder.new(options,
+                                     manager.existing_targets, nil, config)
+#!!!:    target_builder.set_processing_mode TemplateTargetBuilder::CREATE_MODE
+    manager.target_builder = target_builder
+  end
 
 end

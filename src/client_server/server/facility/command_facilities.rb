@@ -19,17 +19,17 @@ module CommandFacilities
   private
 
   pre :manager_good do ! manager.nil? end
-  def init_command_table(manager)
+  def init_command_table(config, manager)
     @command_for = {
-      ADD_CMD          => AddCommand.new(manager),
-      CHANGE_CMD       => ChangeCommand.new(manager),
-      CH_HANDLE_CMD    => ChangeHandleCommand.new(manager),
-      CLEAR_DESC_CMD   => ClearDescendantsCommand.new(manager),
-      CLONE_CMD        => CloneCommand.new(manager),
-      DELETE_CMD       => DeleteCommand.new(manager),
-      REMOVE_DESC_CMD  => RemoveDescendantCommand.new(manager),
-      STATE_CHANGE_CMD => StateChangeCommand.new(manager),
-      SESSION_REQ_CMD  => SessionRequestCommand.new(manager)
+      ADD_CMD          => AddCommand.new(config, manager),
+      CHANGE_CMD       => ChangeCommand.new(config, manager),
+      CH_HANDLE_CMD    => ChangeHandleCommand.new(config, manager),
+      CLEAR_DESC_CMD   => ClearDescendantsCommand.new(config, manager),
+      CLONE_CMD        => CloneCommand.new(config, manager),
+      DELETE_CMD       => DeleteCommand.new(config, manager),
+      REMOVE_DESC_CMD  => RemoveDescendantCommand.new(config, manager),
+      STATE_CHANGE_CMD => StateChangeCommand.new(config, manager),
+      SESSION_REQ_CMD  => SessionRequestCommand.new(config, manager)
     }
   end
 

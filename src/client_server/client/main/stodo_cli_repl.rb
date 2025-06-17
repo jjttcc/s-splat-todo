@@ -23,6 +23,7 @@ class STodoCliREPL < PublisherSubscriber
   def process(exe_args)
     line = $stdin.gets
     if ! line.nil? then
+#!!!!Fix this:
       words = line.chomp.split( / *"(.*?)" *| / )
       if words.count > 0 then
 #!!!Use a filtering tool to correct spelling errors in the

@@ -17,26 +17,13 @@ class WorkServer < PublisherSubscriber
 
   private
 
-  attr_accessor :manager, :server_id
+  attr_accessor :server_id
 
   def initialize(server_id)
     self.server_id = server_id
     Configuration.service_name = server_id
     Configuration.debugging = false
-    config = Configuration.instance
-    app_config = config.app_configuration
-    self.database = config.data_manager
-    self.message_broker = app_config.application_message_broker
-    initialize_pubsub_broker(app_config)
-    self.manager =
-      config.new_stodo_manager(service_name: Configuration.service_name,
-                               debugging: true)
-    init_command_table(manager)
-    # dummy:
-    options = TemplateOptions.new([], true)
-    target_builder = TemplateTargetBuilder.new(options,
-                                     manager.existing_targets, nil, config)
-    manager.target_builder = target_builder
+    init_crh_attributes(Configuration.instance)
     init_pubsub(default_pubchan: SERVER_RESPONSE_CHANNEL,
                 default_subchan: server_id)
   end

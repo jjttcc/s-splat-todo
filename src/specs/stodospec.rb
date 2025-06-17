@@ -10,9 +10,9 @@ class STodoSpec
 
   public
 
-  attr_reader   :input_file_path
+  attr_reader   :input_file_path, :reference_list
   # All current, stored STodoTarget objects
-  attr_accessor :existing_targets
+  attr_accessor :existing_targets, :database
 
   public
 
@@ -41,6 +41,21 @@ class STodoSpec
       result += "#{k}: #{v}\n"
     end
     result
+  end
+
+  # Check 'self.references' - remove any references (handles) for items
+  # that don't actually exist; and populate 'reference_list' (Array) with
+  # the valid reference handles.
+  def check_reference_list
+    @reference_list = []
+    refs = references.split(SPEC_FIELD_DELIMITER)
+    if ! refs.nil? && refs.count > 0 then
+      refs.each do |r|
+        if ref_good(r) then
+          @reference_list << r
+        end
+      end
+    end
   end
 
   private
@@ -166,4 +181,20 @@ class STodoSpec
     end
     result
   end
+
+  def ref_good(ref_handle)
+    # If there's a 'database', simply query it.
+    if ! database.nil? then
+      result = database[ref_handle] != nil
+    else
+      if existing_targets.nil? then
+        result = false
+      else
+        # Otherwise, see if it's in the "existing_targets" "hash".
+        result = existing_targets.has_key?(ref_handle)
+      end
+    end
+    result
+  end
+
 end

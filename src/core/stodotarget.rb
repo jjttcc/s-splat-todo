@@ -935,11 +935,12 @@ class STodoTarget
   end
 
   # Assign references from 'spec' to self.references.
-  pre 'spec-targets-exist' do |spec| ! spec.existing_targets.nil? end
   def assign_references spec
     if spec.references then
-      @references = spec.references.split(SPEC_FIELD_DELIMITER)
-      check_references spec
+      spec.check_reference_list
+#!!!      @references = spec.references.split(SPEC_FIELD_DELIMITER)
+      @references = spec.reference_list
+#!!!      check_references spec
     end
   end
 
@@ -966,6 +967,7 @@ class STodoTarget
     end
   end
 
+#!!!!TO-DO: remove this method:
   pre 'refs exist' do ! self.references.nil? end
   pre 'spec exists' do |spec| ! spec.nil? end
   pre 'extargets exist' do |spec| ! spec.existing_targets.nil? end

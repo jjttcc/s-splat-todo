@@ -3,10 +3,11 @@ require 'ruby_contracts'
 require 'stodogit'
 require 'commandoptions'
 require 'editingtogitfacilities'
+require 'deletion_logic'
 
 # Editors of "STodoTarget"s
 class STodoTargetEditor
-  include SpecTools, ErrorTools, EditingToGitFacilities
+  include SpecTools, ErrorTools, EditingToGitFacilities, DeletionLogic
   include Contracts::DSL
 
   public
@@ -116,42 +117,7 @@ class STodoTargetEditor
     opts = CommandOptions.new(__method__.to_s, options)
     recursive = opts.recursive?
     self.commit_msg = opts.message  # (Will be used by 'close_edit'.)
-    begin
-      t = target_for[handle]
-      if ! t.nil? then
-        if recursive then
-          t.children.each do |c|
-            self.change_occurred = false  # (ensure precondition)
-            delete_target c.handle, *options
-          end
-        end
-        if t.parent_handle != nil then
-          # "disown" the parent.
-          parent = target_for[t.parent_handle]
-          if parent and parent.can_have_children? then
-            parent.remove_child(t)
-          end
-        end
-        if ! recursive then
-          t.children.each do |c|
-            # Make c into an orphan.
-            c.parent_handle = nil
-          end
-        end
-      end
-    rescue Exception => e
-      $log.warn e
-      if ! opts.force? then
-        raise e
-      else
-        # The "force" option was specified, so continue.
-      end
-    end
-    target_for.delete(handle)
-    repo = Configuration.instance.stodo_git
-    if ! t.nil? && repo.in_git(handle) then
-      execute_git_command(@command_for[__method__], t)
-    end
+    perform_deletion(handle, recursive, target_for, opts.force?)
     self.change_occurred = true
   end
 

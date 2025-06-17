@@ -1,5 +1,10 @@
+require 'stodo_target_constants'
+require 'stodo_target_factory'
+
 # STodoSpec-related tools
 module SpecTools
+  include STodoTargetConstants
+
   # constants - s*todo-target-field names/hash-keys:
   TYPE_KEY, TITLE_KEY, DESCRIPTION_KEY, HANDLE_KEY, PRIORITY_KEY, DUE_DATE_KEY,
     GOAL_KEY, EMAIL_KEY, COMMENT_KEY, PARENT_KEY, REMINDER_KEY, START_DATE_KEY,
@@ -20,13 +25,18 @@ module SpecTools
   LOG_BASE = "stodo-debug-#{$$}"
   DEFAULT_LOG_PATH = "/tmp/" + LOG_BASE
 
+  # constants - STodoTarget pseudo-types:
+  CORRECTION, EDIT, TEMPLATE_TYPE = 'correction', 'edit', 'template'
+
+=begin
+#old:
   # constants - s*todo-target-types and aliases:
   TASK, APPOINTMENT, NOTE, PROJECT, CORRECTION, EDIT = 'task', 'appointment',
     'note', 'project', 'correction', 'edit'
   TEMPLATE_TYPE = 'template'
   TASK_ALIAS1, APPOINTMENT_ALIAS1, APPOINTMENT_ALIAS2, NOTE_ALIAS1,
     NOTE_ALIAS2 = 'action', 'meeting', 'event', 'memorandum', 'memo'
-
+=end
 
   # system-wide constants - Env vars:
   STDEBUG               = 'STODO_DEBUG'

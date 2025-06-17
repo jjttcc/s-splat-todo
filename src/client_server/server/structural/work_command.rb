@@ -1,8 +1,9 @@
 require 'ruby_contracts'
+require 'errortools'
 
 # Abstract ancestor - objects for carrying out work for "Worker"s
 class WorkCommand
-  include Contracts::DSL
+  include Contracts::DSL, ErrorTools
 
   public
 
@@ -33,10 +34,13 @@ class WorkCommand
 
   attr_accessor :request
 
-  attr_accessor :manager
+  attr_accessor :manager, :config
 
-  def initialize(manager)
+  def initialize(config = nil, manager)
     self.manager = manager
+    if ! config.nil? then
+      self.config = config
+    end
   end
 
 end

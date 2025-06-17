@@ -15,24 +15,10 @@ class Worker < Publisher
 
   private
 
-  attr_accessor :manager, :config
+#!!!rm:  attr_accessor :config
 
   def initialize(config)
-    self.config = config
-    app_config = config.app_configuration
-    self.database = config.data_manager
-    self.message_broker = app_config.application_message_broker
-    initialize_pubsub_broker(app_config)
-    self.manager =
-      config.new_stodo_manager(service_name: Configuration.service_name,
-                               debugging: true)
-    init_command_table(manager)
-    # dummy:
-    options = TemplateOptions.new([], true)
-    target_builder = TemplateTargetBuilder.new(options,
-                                     manager.existing_targets, nil, config)
-    target_builder.set_processing_mode TemplateTargetBuilder::CREATE_MODE
-    manager.target_builder = target_builder
+    init_crh_attributes(config)
     super(SERVER_RESPONSE_CHANNEL)
   end
 

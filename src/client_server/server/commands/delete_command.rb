@@ -1,10 +1,27 @@
 require 'work_command'
+require 'deletion_logic'
 
 #!!!!See NOTE in WorkCommand!!!
+# Command to delete one STodoTarget
 class DeleteCommand < WorkCommand
+  include DeletionLogic
+
   public
 
   def do_execute(the_caller)
+    args = request.arguments[1 .. -1]
+    cmd = request.command
+    opts = opts_from_args(args)
+    handle = handles_from_args(args)[0]
+    opts = CommandOptions.new(:delete_target.to_s, opts)
+    recursive = opts.recursive?
+    self.commit_message = opts.message  # (!!!Will be used by 'close_edit'?)
+    perform_deletion(handle, recursive, the_caller.database, opts.force?)
+#!!!!to-do: handle git entries
+    manager.close_edit
+  end
+
+  def old___do_execute(the_caller)
     args = request.arguments[1 .. -1]
     cmd = request.command
     opts = opts_from_args(args)

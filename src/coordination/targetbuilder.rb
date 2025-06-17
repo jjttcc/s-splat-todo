@@ -1,4 +1,5 @@
 require 'ruby_contracts'
+require 'stodo_target_factory'
 require 'project'
 require 'scheduledevent'
 require 'memorandum'
@@ -158,7 +159,8 @@ logf.flush
     @edited_targets = []
     @time_changed_for = {}
     self.processing_mode = CREATE_MODE
-    init_target_factory(config.stodo_target_child_container_factory)
+#!!!    init_target_factory(config.stodo_target_child_container_factory)
+    init_target_factory(config)
   end
 
   # Build and return a new STodoTarget based on 'spec'. If 'spec' is
@@ -217,7 +219,13 @@ logf.flush
     end
   end
 
-  def init_target_factory cc_factory
+  def init_target_factory(config)
+    @target_factory_for = STodoTargetFactory.new(config)
+  end
+
+=begin
+  def init_target_factory(config)
+    cc_factory = config.stodo_target_child_container_factory
     @target_factory_for = {
       PROJECT     => lambda do |spec| Project.new(spec, cc_factory.call) end,
       TASK_ALIAS1 => lambda do |spec|
@@ -233,6 +241,25 @@ logf.flush
     @target_factory_for[APPOINTMENT_ALIAS1] = @target_factory_for[APPOINTMENT]
     @target_factory_for[APPOINTMENT_ALIAS2] = @target_factory_for[APPOINTMENT]
   end
+
+#old:
+  def older___init_target_factory cc_factory
+    @target_factory_for = {
+      PROJECT     => lambda do |spec| Project.new(spec, cc_factory.call) end,
+      TASK_ALIAS1 => lambda do |spec|
+        Task.new(spec, cc_factory.call) end,
+      NOTE        => lambda do |spec| Memorandum.new(spec, cc_factory.call) end,
+      APPOINTMENT => lambda do |spec| ScheduledEvent.new(spec,
+                                                         cc_factory.call) end,
+    }
+    # Define "type" aliases.
+    @target_factory_for[TASK] = @target_factory_for[TASK_ALIAS1]
+    @target_factory_for[NOTE_ALIAS1] = @target_factory_for[NOTE]
+    @target_factory_for[NOTE_ALIAS2] = @target_factory_for[NOTE]
+    @target_factory_for[APPOINTMENT_ALIAS1] = @target_factory_for[APPOINTMENT]
+    @target_factory_for[APPOINTMENT_ALIAS2] = @target_factory_for[APPOINTMENT]
+  end
+=end
 
   # Does a new STodoTarget need to be created?
   def new_target_needed(s)
