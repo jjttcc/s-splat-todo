@@ -9,6 +9,7 @@ class RemoveDescendantCommand < WorkCommand
     opt_args = request.arguments[1 .. -1]
     handle = opt_args[0]
     command_and_args = [REMOVE_DESC_CMD, opt_args[1]]
+#!!!to-do: Replace these two commands with equivalent code:
     manager.edit_target(handle, command_and_args)
     manager.close_edit
   end

@@ -5,7 +5,9 @@
 set_rubylib() {
   clsrv=client_server
   srvd=$clsrv/server
+  l=legacy
   dirlist="facility error configuration notification specs data"
+  dirlist="$dirlist $l/data $l/main $l/coordination"
   dirlist="$dirlist coordination util attributes"
   dirlist="$dirlist domain/services/reporting external/messaging"
   dirlist="$dirlist lib/messaging domain/support"

@@ -24,6 +24,7 @@ class WorkCommand
     self.request = the_caller.request
     self.execution_succeeded = true
     self.fail_msg = ""
+    self.database = the_caller.database
     do_execute(the_caller)
   end
 
@@ -32,18 +33,32 @@ class WorkCommand
   # Abstract method
   pre  :request_set do ! self.request.nil? end
   pre  :start_with_success do execution_succeeded end
+  pre  :database do ! self.database.nil? end
   def do_execute(the_caller)
     # descendant should set 'execution_succeeded' to false if it failed.
   end
 
-  attr_accessor :request
+  attr_accessor :request, :database
 
   attr_accessor :manager, :config
 
+#!!!!!GOAL: get rid of need for 'manager' argument!!!!!
   def initialize(config = nil, manager)
     self.manager = manager
     if ! config.nil? then
       self.config = config
+    end
+  end
+
+  private   ### Implementation - utilities for descendants
+
+  # If 'target.commit' is not empty, do a "git commit" on 'target', with
+  # 'got.commit' as the commit message.
+  def git_commit(target)
+    if ! target.commit.nil? && ! target.commit.empty? then
+      repo = config.stodo_git
+      repo.update_item(target)
+      repo.commit target.commit
     end
   end
 

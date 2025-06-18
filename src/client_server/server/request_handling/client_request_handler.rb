@@ -68,8 +68,8 @@ module ClientRequestHandler
     init_command_table(config, manager)
     # dummy:
     options = TemplateOptions.new([], true)
-    # Perhaps, after some refactoring, this object will no longer be needed
-    # here (the 'manager' might go away, as well):
+    # !!!!To-do: If possible, don't rely on (get rid of) 'target_builder' and
+    # 'manager'.
     target_builder = TemplateTargetBuilder.new(options,
                                      manager.existing_targets, nil, config)
 #!!!:    target_builder.set_processing_mode TemplateTargetBuilder::CREATE_MODE

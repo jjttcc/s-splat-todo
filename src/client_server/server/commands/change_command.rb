@@ -11,6 +11,7 @@ class ChangeCommand < WorkCommand
     opt_args.unshift '-h'
     opt_args.unshift SpecTools::EDIT   # (the 'type' argument)
     options = TemplateOptions.new(opt_args, true)
+#!!!to-do: Replace these 3 commands with equivalent code:
     manager.target_builder.spec_collector = options
     manager.target_builder.set_edit_mode
     manager.update_targets(options)

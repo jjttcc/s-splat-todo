@@ -1,7 +1,6 @@
 require 'work_command'
 require 'deletion_logic'
 
-#!!!!See NOTE in WorkCommand!!!
 # Command to delete one STodoTarget
 class DeleteCommand < WorkCommand
   include DeletionLogic
@@ -10,43 +9,55 @@ class DeleteCommand < WorkCommand
 
   def do_execute(the_caller)
     args = request.arguments[1 .. -1]
-    cmd = request.command
-    opts = opts_from_args(args)
     handle = handles_from_args(args)[0]
-    opts = CommandOptions.new(:delete_target.to_s, opts)
-    recursive = opts.recursive?
-    self.commit_message = opts.message  # (!!!Will be used by 'close_edit'?)
-    perform_deletion(handle, recursive, the_caller.database, opts.force?)
-#!!!!to-do: handle git entries
-    manager.close_edit
+    if database.has_key?(handle) then
+      cmd = request.command
+      opts = opts_from_args(args)
+      cmdopts = CommandOptions.new(:delete_target.to_s, opts)
+      recursive = cmdopts.recursive?
+      self.commit_message = cmdopts.message
+      perform_deletion(handle, recursive, database, cmdopts.force?)
+      if ! deleted_target.nil? then
+        git_commit(deleted_target, opts)
+      end
+    else
+      self.execution_succeeded = false
+      self.fail_msg = "'#{handle}' is not the handle of an existing item."
+    end
   end
 
-  def old___do_execute(the_caller)
-    args = request.arguments[1 .. -1]
-    cmd = request.command
-    opts = opts_from_args(args)
-    handles = handles_from_args(args)
-    handles.each do |h|
-      if ! opts.empty? then
-        manager.edit_target(h, cmd, opts)
-      else
-        manager.edit_target(h, cmd)
+#!!!refactor to use parent 'git_commit':
+  def git_commit(target, opts)
+    if target.commit then
+      msg = target.commit
+      i = opts.index(MSG_OPT)
+      if ! opts[i+1].nil? then
+        msg = opts[i+1]
       end
+      repo = config.stodo_git
+      repo.update_item(target)
+      repo.commit msg
     end
-    manager.close_edit
   end
 
   private
 
   OPT_CHAR = '-'
+  MSG_OPT  = '-m'
 
 #!!!Need to move these two methods into a utility class/module:
   def opts_from_args arguments
     result = []
-    (0 .. arguments.count - 1).each do |i|
+    i = 0
+    while i < arguments.count do
       if arguments[i] =~ /^#{OPT_CHAR}/ then
         result << arguments[i]
+        if arguments[i] == MSG_OPT then
+          i = i + 1
+          result << arguments[i]
+        end
       end
+      i = i + 1
     end
     if result.count > 0 then
       result.each do |e|

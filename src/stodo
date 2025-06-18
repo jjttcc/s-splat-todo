@@ -1,16 +1,21 @@
 #!/usr/bin/env bash
 # vim: ts=2 sw=2 expandtab
 
+l=legacy
+
 progname=$(basename $0)
 stodopath=$(dirname $0)
-initproc=main/initial-processing.rb
-notifyproc=main/ongoing-processing.rb
-mktmpl=main/stodo-template.rb
-report=main/report.rb
-edit=main/stodo-mgmt.rb
 admin=main/stodo-admin.rb
+initproc=$l/main/initial-processing.rb
+notifyproc=$l/main/ongoing-processing.rb
+mktmpl=$l/main/stodo-template.rb
+report=$l/main/report.rb
+edit=$l/main/stodo-mgmt.rb
 stodo_envpath="$STODO_PATH"
 specpath_expr='^# *spec-path:'
+
+# Sets RUBYLIB env var:
+. $stodo_envpath/start_up/client_setup
 
 ### Utilities
 
@@ -108,20 +113,6 @@ help() {
   else
     indepth_help $*
   fi
-}
-
-set_rubylib() {
-  moredirs="facility error configuration notification specs data"
-  moredirs="$moredirs coordination util attributes"
-  moredirs="$moredirs domain/services/reporting external/messaging"
-  moredirs="$moredirs lib/messaging domain/support"
-  moredirs="$moredirs lib/util lib/util/redis"
-  moredirs="$moredirs external/util client_server/command_facilities"
-  rubylib="RUBYLIB=$STEXEC_PATH/core"
-  for d in $moredirs; do
-    rubylib="$rubylib:$STEXEC_PATH/$d"
-  done
-  eval export $rubylib
 }
 
 # Check that args ($*) are all valid executable files and set

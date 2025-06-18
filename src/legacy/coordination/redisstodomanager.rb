@@ -1,8 +1,7 @@
 require 'ruby_contracts'
 require 'stodomanager'
 
-# Basic manager of STodoTarget objects - creating, modifying/editing,
-# deleting, storing, etc.
+# STodoManager that uses redis.
 class RedisSTodoManager < STodoManager
   include ErrorTools, Contracts::DSL
 
