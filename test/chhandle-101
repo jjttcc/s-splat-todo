@@ -2,6 +2,20 @@
 # vim: sw=2 ts=2 expandtab
 # Change handle test
 
+setup() {
+  create=create
+  delete=delete
+  modify=modify
+  chhandle=chhandle
+  if [ "$TEST_REPL" ]; then
+    create=repl_create
+    delete=repl_delete
+    modify=repl_modify
+    chhandle=repl_chhandle
+  echo add $ST_TYPE $STODO_OPTS|$repl $user $appname
+  fi
+}
+
 # (define env. var. STODO_KEEP_ARTIFACTS to force any new items to NOT
 # be deleted.)
 
@@ -24,7 +38,7 @@ change-handle-test() {
   fi
   result=0
   local h1=$1 h2=$2 p=$3
-  stodo chhandle $h1 $h2
+  $chhandle $h1 $h2
   checkparent $h2 $p
   if ! checkchild $p $h2; then
     result=2
@@ -61,18 +75,19 @@ mainttl="new-task-$$"
 newttl="This is new task test number $$."
 newttlregex="This.is.new.task.*number"
 
+setup
 stodo starttran
 testcount=0
 successcount=0
 testhndl=$parent
 set_main_vars
 # Create the parent.
-create
+$create
 testhndl=$firsthndl
 intended_parent=$parent
 set_main_vars
 # Create the target (child) item.
-create
+$create
 if checkparent $firsthndl $parent; then ((++successcount)); fi
 ((++testcount))
 if change-handle-test $firsthndl $secondhndl $parent; then
@@ -81,8 +96,8 @@ fi
 ((++testcount))
 [ $successcount = $testcount ]
 status=$?
-delete $parent
-delete $secondhndl
+$delete $parent
+$delete $secondhndl
 stodo endtran
 testreport $testcount $successcount
 exit $status

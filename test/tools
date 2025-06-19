@@ -1,6 +1,11 @@
 #!/bin/bash
 # vim: ts=2 sw=2 expandtab
 
+basedir=$(dirname $0)
+repl=$basedir/../src/stodo_client_repl
+user=$USER
+appname=main
+
 init_tools() {
   no_h=false
 }
@@ -65,6 +70,20 @@ create() {
   eval stodo add $ST_TYPE $STODO_OPTS
 }
 
+# Create a stodo item using 'stodo_client_repl'.
+repl_create() {
+  if ! handle_exists; then
+    echo "create: fatal: ST_HANDLE is not set." >&2
+    return 3
+  fi
+  if ! type_exists; then
+    echo "create: fatal: ST_TYPE is not set." >&2
+    return 4
+  fi
+  set_opts_from_env
+  echo add $ST_TYPE $STODO_OPTS|$repl $user $appname
+}
+
 specpath() {
     stodo set|awk '/^spec_path/ {print $NF}'
 }
@@ -123,6 +142,16 @@ modify() {
   eval stodo change $STODO_OPTS
 }
 
+# Modify a stodo item using 'stodo_client_repl'.
+repl_modify() {
+  if ! handle_exists; then
+    echo "modify: fatal: ST_HANDLE is not set." >&2
+    return 5
+  fi
+  no_h=true set_opts_from_env
+  echo change $STODO_OPTS | $repl $user $appname
+}
+
 # Usage: change_state <state-change-cmd> <handle>
 change_state() {
   if [ $# -lt 2 ]; then
@@ -141,6 +170,37 @@ delete() {
     return 0
   fi
   eval stodo delete $*
+}
+
+# Delete a stodo item using 'stodo_client_repl'.
+repl_delete() {
+  if [ $# -lt 1 ]; then
+    echo "delete: fatal error: No handle specified."
+    return 27
+  fi
+  if [ "$STODO_KEEP_ARTIFACTS" ]; then
+    return 0
+  fi
+  echo delete $*|$repl $user $appname
+}
+
+# Usage: chhandle <handle1> <handle2>
+chhandle() {
+  if [ $# -lt 2 ]; then
+    echo "chhandle: fatal error: missing arg(s)."
+    return 28
+  fi
+  eval stodo chhandle $1 $2
+}
+
+# Usage: chhandle <handle1> <handle2>
+# chhandle using 'stodo_client_repl'.
+repl_chhandle() {
+  if [ $# -lt 2 ]; then
+    echo "chhandle: fatal error: missing arg(s)."
+    return 28
+  fi
+  echo change_handle $1 $2 |$repl $user $appname
 }
 
 delete_test() {

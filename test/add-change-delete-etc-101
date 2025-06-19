@@ -3,6 +3,17 @@
 # be deleted.)
 # vim: expandtab ts=2 sw=2
 
+setup() {
+  create=create
+  delete=delete
+  modify=modify
+  if [ "$TEST_REPL" ]; then
+    create=repl_create
+    delete=repl_delete
+    modify=repl_modify
+  fi
+}
+
 parse_args() {
   for arg; do
     if expr $arg : ".*@" >/dev/null; then
@@ -15,7 +26,7 @@ parse_args() {
 
 create_test() {
   local result=0
-  create $testhndl
+  $create $testhndl
   if report $testhndl|awk 'BEGIN { hitcount = 0; EXPCOUNT = 5 }
     /handle: *'$testhndl'/ {  ++hitcount }
     /title: *'"$origttl"'/ {  ++hitcount }
@@ -41,7 +52,7 @@ create_test() {
 
 modify_test() {
   local result=0
-  modify $testhndl
+  $modify $testhndl
   if report $testhndl|awk 'BEGIN { hitcount = 0; EXPCOUNT = 6 }
     /handle: *'$testhndl'/ {  ++hitcount }
     /title: *'"$newttlregex"'/ {  ++hitcount }
@@ -69,7 +80,7 @@ modify_test() {
 ac_delete_test() {
   local result=0
   if ! [ "$STODO_KEEP_ARTIFACTS" ]; then
-    delete $testhndl
+    $delete $testhndl
     if report $testhndl|grep -q "$testhndl"; then
       echo "deletion test FAILED in deletion of $testhndl"
       result=97
@@ -129,6 +140,7 @@ newprio=3
 
 testcount=0
 successcount=0
+setup
 parse_args $@
 set_ovars
 if create_test; then ((++successcount)); fi
