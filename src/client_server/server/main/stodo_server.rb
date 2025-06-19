@@ -23,7 +23,7 @@ class STodoServer < Subscriber
   attr_accessor :work_coordinator
 
 =begin
-[These notes are mostly or entirely implemented now - check:]
+[These notes are mostly or entirely implemented now - check!!!!!:]
 The 'app_name' (call it '.*_category'?) needs to be stored in
 a session. It shouldn't be in a server-side object.
 A client needs to keep track of its client-session-id. When it first
@@ -53,8 +53,11 @@ probably be a publish/(request from client)/subscribe(response from
 server) situation.
 =end
 
-#!!!to-do: formalize/fix:
-TESTING = false
+  if ENV[:STODO_TEST.to_s] then
+    TESTING = true
+  else
+    TESTING = false
+  end
 
   def initialize
     Configuration.service_name = 'main-server'

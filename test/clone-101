@@ -10,6 +10,17 @@
 #   |  /   \
 #   E  F    G
 
+setup() {
+  create=create
+  delete=delete
+  clone=clone
+  if [ "$TEST_REPL" ]; then
+    create=repl_create
+    delete=repl_delete
+    clone=repl_clone
+  fi
+}
+
 # (define env. var. STODO_KEEP_ARTIFACTS to force any new items to NOT
 # be deleted.)
 
@@ -68,6 +79,7 @@ mainttl="remove-descendants-$$"
 newttl="This is remove-descendants test number $$."
 newttlregex="This.is.remove.*number"
 
+setup
 stodo starttran
 testcount=0
 successcount=0
@@ -76,13 +88,13 @@ successcount=0
 testhndl=$ancestorA
 set_main_vars
 # Create the ancestor.
-create
+$create
 intended_parent=$ancestorA
 for testhndl in $parentB $parentC $parentD; do
   echo $testhndl
   set_main_vars
   # Create the target (child) item.
-  create
+  $create
   if ! checkparent $testhndl $intended_parent; then
     echo "error: $intended_parent is not parent of $testhndl" >&2
   fi
@@ -92,7 +104,7 @@ for testhndl in $childE; do
   echo $testhndl
   set_main_vars
   # Create the target (child) item.
-  create
+  $create
   if ! checkparent $testhndl $intended_parent; then
     echo "error: $intended_parent is not parent of $testhndl" >&2
   fi
@@ -102,14 +114,14 @@ for testhndl in $childF $childG; do
   echo $testhndl
   set_main_vars
   # Create the target (child) item.
-  create
+  $create
   if ! checkparent $testhndl $intended_parent; then
     echo "error: $intended_parent is not parent of $testhndl" >&2
   fi
 done
 origfile=$(mktemp /tmp/orig$$.XXXXX)
 stodo rep comp $parentC >$origfile
-stodo clone $parentC $cloneA
+$clone $parentC $cloneA
 orig_after_file=$(mktemp /tmp/orig-after$$.XXXXX)
 clonefile=$(mktemp /tmp/clone$$.XXXXX)
 stodo rep comp $parentC >$orig_after_file
@@ -154,7 +166,7 @@ fi
 
 [ $successcount = $testcount ]
 status=$?
-delete $ancestorA $parentB $parentC $parentD $childE $childF $childG $cloneA
+$delete $ancestorA $parentB $parentC $parentD $childE $childF $childG $cloneA
 stodo endtran
 testreport $testcount $successcount
 exit $status

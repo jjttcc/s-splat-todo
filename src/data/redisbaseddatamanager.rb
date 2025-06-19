@@ -38,6 +38,7 @@ class RedisBasedDataManager
   alias_method :handles, :keys
 
   # Is the key 'handle' in the database?
+  # Warning: This method call is expensive.
   def has_key?(handle)
     result = ! key_table[handle].nil?
   end
@@ -149,6 +150,7 @@ class RedisBasedDataManager
 
   # A hash table of all the keys in the database (for this user/app)
   # for fast searching, with all value components set to true
+  # Warning: This method call is expensive.
   def key_table
     result = database.set_members(db_key).map do |k|
       unornamented(k)

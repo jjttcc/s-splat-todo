@@ -435,6 +435,7 @@ class STodoTarget
     @ongoing_email_addrs = []
     @reminders = []
     @categories = []
+    @references = []
     @notifiers = []
     # Copy the objects contained in these enumerables - not the references.
     orig.calendar_ids.each do |o|
@@ -449,8 +450,10 @@ class STodoTarget
     orig.reminders.each do |o|
       @reminders << o.dup
     end
-    ! orig.categories.nil? && orig.categories.each do |o|
-      @categories << o.dup
+    if ! orig.categories.nil? then
+      orig.categories.each do |o|
+        @categories << o.dup
+      end
     end
     @attachments = []
     if ! orig.attachments.nil? then
@@ -458,8 +461,10 @@ class STodoTarget
         @attachments << Attachment.new(o.path)
       end
     end
-    ! orig.references.nil? && orig.references.each do |o|
-      @references << o.dup
+    if ! orig.references.nil? then
+      orig.references.each do |o|
+        @references << o.dup
+      end
     end
     orig.notifiers.each do |o|
       @notifiers << o.dup
@@ -938,9 +943,7 @@ class STodoTarget
   def assign_references spec
     if spec.references then
       spec.check_reference_list
-#!!!      @references = spec.references.split(SPEC_FIELD_DELIMITER)
       @references = spec.reference_list
-#!!!      check_references spec
     end
   end
 
@@ -974,10 +977,12 @@ class STodoTarget
   pre 'extargets is-hash' do |spec|
     spec.existing_targets.respond_to?(:has_key?)
   end
-  def check_references spec
+  def remove___check_references spec
     ex_targets = spec.existing_targets
     myhandle = self.handle
     valid_refs = self.references.select do |r|
+#!!!to-do: If this method cannot be removed, Get rid of 'has_key?' call -
+# it is inefficient:
       if ex_targets.has_key?(r) then
         true
       else

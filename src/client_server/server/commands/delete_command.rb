@@ -10,6 +10,7 @@ class DeleteCommand < WorkCommand
   def do_execute(the_caller)
     args = request.arguments[1 .. -1]
     handle = handles_from_args(args)[0]
+#!!!to-do: Get rid of 'has_key?' call - it's inefficient:
     if database.has_key?(handle) then
       cmd = request.command
       opts = opts_from_args(args)

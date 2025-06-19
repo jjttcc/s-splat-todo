@@ -22,6 +22,8 @@ class WorkCommand
   end
   def execute(the_caller)
     self.request = the_caller.request
+    @command, @arg1, @arg2 =
+      request.command, request.arguments[1], request.arguments[2]
     self.execution_succeeded = true
     self.fail_msg = ""
     self.database = the_caller.database
@@ -37,6 +39,9 @@ class WorkCommand
   def do_execute(the_caller)
     # descendant should set 'execution_succeeded' to false if it failed.
   end
+
+  # Convenience queries for 'do_execute':
+  attr_reader   :command, :arg1, :arg2
 
   attr_accessor :request, :database
 

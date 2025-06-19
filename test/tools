@@ -181,7 +181,9 @@ repl_delete() {
   if [ "$STODO_KEEP_ARTIFACTS" ]; then
     return 0
   fi
-  echo delete $*|$repl $user $appname
+  for handle; do
+    echo delete $handle|$repl $user $appname
+  done
 }
 
 # Usage: chhandle <handle1> <handle2>
@@ -198,9 +200,25 @@ chhandle() {
 repl_chhandle() {
   if [ $# -lt 2 ]; then
     echo "chhandle: fatal error: missing arg(s)."
-    return 28
+    return 29
   fi
   echo change_handle $1 $2 |$repl $user $appname
+}
+
+clone() {
+  if [ $# -lt 2 ]; then
+    echo "chhandle: fatal error: missing arg(s)."
+    return 30
+  fi
+  stodo clone $1 $2
+}
+
+repl_clone() {
+  if [ $# -lt 2 ]; then
+    echo "chhandle: fatal error: missing arg(s)."
+    return 31
+  fi
+  echo clone $1 $2|$repl $user $appname
 }
 
 delete_test() {
