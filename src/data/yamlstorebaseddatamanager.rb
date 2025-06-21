@@ -16,6 +16,10 @@ class YamlStoreBasedDataManager
   # Path of last performed temporary backup:
   attr_reader :last_temp_backup_path
 
+  # Set 'app_name' and 'user' - dummy (for compatibility).
+  def set_appname_and_user(aname, u)
+  end
+
   public
 
   # Write `tgts' out to persistent store.

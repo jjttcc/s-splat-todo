@@ -38,9 +38,8 @@ class RedisBasedDataManager
   alias_method :handles, :keys
 
   # Is the key 'handle' in the database?
-  # Warning: This method call is expensive.
   def has_key?(handle)
-    result = ! key_table[handle].nil?
+    result = database.set_has(db_key, key_for(handle))
   end
 
   # All "STodoTarget"s, with handle as key, restored from persistent store.
