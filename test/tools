@@ -205,6 +205,22 @@ repl_chhandle() {
   echo change_handle $1 $2 |$repl $user $appname
 }
 
+remove_desc() {
+  if [ $# -lt 2 ]; then
+    echo "chhandle: fatal error: missing arg(s)."
+    return 29
+  fi
+  eval stodo remove_d $1 $2
+}
+
+repl_remove_desc() {
+  if [ $# -lt 2 ]; then
+    echo "chhandle: fatal error: missing arg(s)."
+    return 29
+  fi
+  echo remove_descendant $1 $2 | $repl $user $appname
+}
+
 clone() {
   if [ $# -lt 2 ]; then
     echo "chhandle: fatal error: missing arg(s)."

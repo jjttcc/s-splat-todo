@@ -117,7 +117,8 @@ class STodoTargetEditor
     opts = CommandOptions.new(__method__.to_s, options)
     recursive = opts.recursive?
     self.commit_msg = opts.message  # (Will be used by 'close_edit'.)
-    perform_deletion(handle, recursive, target_for, opts.force?)
+    tgt = target_for[handle]
+    perform_deletion(tgt, recursive, target_for, opts.force?)
     self.change_occurred = true
   end
 
@@ -214,7 +215,7 @@ class STodoTargetEditor
       opts = CommandOptions.new(__method__.to_s, options)
       self.commit_msg = opts.message  # (Will be used by 'close_edit'.)
       t = self.target_for[handle]
-      # Remove the old hash entry, associated with the old 'handle' key:
+      # Remove the old entry, associated with the old 'handle' key:
       self.target_for.delete(t.handle)
       t.change_handle(new_handle)
       self.target_for[new_handle] = t

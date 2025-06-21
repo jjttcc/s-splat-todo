@@ -25,7 +25,7 @@ class STodoTarget
     :reminders, :categories, :parent_handle, :notifiers, :children, :state,
     :last_removed_descendant
   # "transitory" commit-message field - not stored:
-  attr_reader :commit
+  attr_accessor :commit
   # Array of attached media files:
   attr_reader :attachments
   # Array of STodoTarget references (via handle):
@@ -650,7 +650,7 @@ class STodoTarget
   attr_writer   :last_removed_descendant
   attr_writer   :last_op_changed_state
   attr_writer   :title, :content, :priority, :comment, :reminders,
-    :categories, :state, :attachments, :references, :commit
+    :categories, :state, :attachments, :references
   attr_accessor :email_spec
 
   private   ###  Initialization
@@ -967,31 +967,6 @@ class STodoTarget
     end
     if ! @valid then
       $log.warn $field_invalidity_reason
-    end
-  end
-
-#!!!!TO-DO: remove this method:
-  pre 'refs exist' do ! self.references.nil? end
-  pre 'spec exists' do |spec| ! spec.nil? end
-  pre 'extargets exist' do |spec| ! spec.existing_targets.nil? end
-  pre 'extargets is-hash' do |spec|
-    spec.existing_targets.respond_to?(:has_key?)
-  end
-  def remove___check_references spec
-    ex_targets = spec.existing_targets
-    myhandle = self.handle
-    valid_refs = self.references.select do |r|
-#!!!to-do: If this method cannot be removed, Get rid of 'has_key?' call -
-# it is inefficient:
-      if ex_targets.has_key?(r) then
-        true
-      else
-        $log.warn "candidate ref for #{myhandle} is invalid: #{r}"
-        false
-      end
-    end
-    if spec.reject_false_references then
-      self.references = valid_refs
     end
   end
 

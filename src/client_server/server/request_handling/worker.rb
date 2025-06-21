@@ -15,8 +15,6 @@ class Worker < Publisher
 
   private
 
-#!!!rm:  attr_accessor :config
-
   def initialize(config)
     init_crh_attributes(config)
     super(SERVER_RESPONSE_CHANNEL)

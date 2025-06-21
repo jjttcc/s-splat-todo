@@ -10,6 +10,18 @@
 #   |  /   \
 #   E  F    G
 
+setup() {
+  create=create
+  delete=delete
+  remove_desc=remove_desc
+  if [ "$TEST_REPL" ]; then
+    create=repl_create
+    delete=repl_delete
+    remove_desc=repl_remove_desc
+  echo add $ST_TYPE $STODO_OPTS|$repl $user $appname
+  fi
+}
+
 # (define env. var. STODO_KEEP_ARTIFACTS to force any new items to NOT
 # be deleted.)
 
@@ -59,6 +71,7 @@ mainttl="remove-descendants-$$"
 newttl="This is remove-descendants test number $$."
 newttlregex="This.is.remove.*number"
 
+setup
 stodo starttran
 testcount=0
 successcount=0
@@ -67,13 +80,13 @@ successcount=0
 testhndl=$ancestorA
 set_main_vars
 # Create the ancestor.
-create
+$create
 intended_parent=$ancestorA
 for testhndl in $parentB $parentC $parentD; do
   echo $testhndl
   set_main_vars
   # Create the target (child) item.
-  create
+  $create
   if ! checkparent $testhndl $intended_parent; then
     echo "error: $intended_parent is not parent of $testhndl" >&2
   fi
@@ -83,7 +96,7 @@ for testhndl in $childE; do
   echo $testhndl
   set_main_vars
   # Create the target (child) item.
-  create
+  $create
   if ! checkparent $testhndl $intended_parent; then
     echo "error: $intended_parent is not parent of $testhndl" >&2
   fi
@@ -93,13 +106,14 @@ for testhndl in $childF $childG; do
   echo $testhndl
   set_main_vars
   # Create the target (child) item.
-  create
+  $create
   if ! checkparent $testhndl $intended_parent; then
     echo "error: $intended_parent is not parent of $testhndl" >&2
   fi
 done
 #$ancestorA $parentB $parentC $parentD $childE $childF $childG
-stodo remove_d $ancestorA $parentB
+#!!!stodo remove_d $ancestorA $parentB
+$remove_desc $ancestorA $parentB
 ##### Check that 'remove_d $ancestorA $parentB' performed correctly.
 par=$ancestorA
 ### Check $ancestorA's children:
@@ -134,7 +148,8 @@ for tgt in $childF $childG; do
   ((++testcount))
 done
 
-stodo remove_d $ancestorA $childG
+#!!!stodo remove_d $ancestorA $childG
+$remove_desc $ancestorA $childG
 ##### Check that 'remove_d $ancestorA $childG' performed correctly.
 par=$parentC
 ### Check $parentC's children:
@@ -173,7 +188,7 @@ for h in $removedlist; do
 done
 [ $successcount = $testcount ]
 status=$?
-delete $ancestorA $parentB $parentC $parentD $childE $childF $childG
+$delete $ancestorA $parentB $parentC $parentD $childE $childF $childG
 stodo endtran
 testreport $testcount $successcount
 exit $status

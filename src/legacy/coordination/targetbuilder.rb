@@ -159,7 +159,6 @@ logf.flush
     @edited_targets = []
     @time_changed_for = {}
     self.processing_mode = CREATE_MODE
-#!!!    init_target_factory(config.stodo_target_child_container_factory)
     init_target_factory(config)
   end
 

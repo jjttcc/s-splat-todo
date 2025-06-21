@@ -1,17 +1,19 @@
 require 'work_command'
 
-#!!!!See NOTE in WorkCommand!!!
 class RemoveDescendantCommand < WorkCommand
   include CommandConstants, Contracts::DSL
 
   def do_execute(the_caller)
-    # strip out the command:
-    opt_args = request.arguments[1 .. -1]
-    handle = opt_args[0]
-    command_and_args = [REMOVE_DESC_CMD, opt_args[1]]
-#!!!to-do: Replace these two commands with equivalent code:
-    manager.edit_target(handle, command_and_args)
-    manager.close_edit
+    ancestor_h = arg1
+    descendant_h = arg2
+    ancestor = database[ancestor_h]
+    ancestor.remove_descendant(descendant_h)
+    if ! ancestor.last_removed_descendant.nil? then
+      removed_item = ancestor.last_removed_descendant
+      database.delete(removed_item.handle)
+      ancestor.clear_last_removed_descendant
+    end
+    git_commit(ancestor)
   end
 
 end
