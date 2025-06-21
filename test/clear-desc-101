@@ -10,6 +10,17 @@
 #   |  /   \
 #   E  F    G
 
+setup() {
+  create=create
+  delete=delete
+  clear_d=clear_desc
+  if [ "$TEST_REPL" ]; then
+    create=repl_create
+    delete=repl_delete
+    clear_d=repl_clear_desc
+  fi
+}
+
 # (define env. var. STODO_KEEP_ARTIFACTS to force any new items to NOT
 # be deleted.)
 
@@ -59,6 +70,7 @@ mainttl="new-task-$$"
 newttl="This is clear desc test number $$."
 newttlregex="This.is.clear.*number"
 
+setup
 stodo starttran
 testcount=0
 successcount=0
@@ -67,13 +79,13 @@ successcount=0
 testhndl=$ancestorA
 set_main_vars
 # Create the ancestor.
-create
+$create
 intended_parent=$ancestorA
 for testhndl in $parentB $parentC $parentD; do
   echo $testhndl
   set_main_vars
   # Create the target (child) item.
-  create
+  $create
   if ! checkparent $testhndl $intended_parent; then
     echo "error: $intended_parent is not parent of $testhndl" >&2
   fi
@@ -83,7 +95,7 @@ for testhndl in $childE; do
   echo $testhndl
   set_main_vars
   # Create the target (child) item.
-  create
+  $create
   if ! checkparent $testhndl $intended_parent; then
     echo "error: $intended_parent is not parent of $testhndl" >&2
   fi
@@ -93,7 +105,7 @@ for testhndl in $childF $childG; do
   echo $testhndl
   set_main_vars
   # Create the target (child) item.
-  create
+  $create
   if ! checkparent $testhndl $intended_parent; then
     echo "error: $intended_parent is not parent of $testhndl" >&2
   fi
@@ -101,7 +113,7 @@ done
 
 keeplist="$childF:$parentD"
 # Clear the descendants of $ancestorA except for those on $keeplist.
-stodo clear_d $ancestorA:$keeplist
+$clear_d $ancestorA:$keeplist -m '"clear_d git test"'
 par=$ancestorA
 # Check that clear_d performed correctly.
 for tgt in $parentC $parentD; do
@@ -129,7 +141,7 @@ for h in $removedlist; do
 done
 [ $successcount = $testcount ]
 status=$?
-delete $ancestorA $parentB $parentC $parentD $childE $childF $childG
+$delete $ancestorA $parentB $parentC $parentD $childE $childF $childG
 stodo endtran
 testreport $testcount $successcount
 exit $status

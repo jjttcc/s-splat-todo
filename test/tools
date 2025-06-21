@@ -205,6 +205,27 @@ repl_chhandle() {
   echo change_handle $1 $2 |$repl $user $appname
 }
 
+# Usage: clear_desc <hndlspec>
+clear_desc() {
+  if [ $# -lt 1 ]; then
+    echo "clear_desc: fatal error: missing arg."
+    return 28
+  fi
+  local hndlspec=$1;shift
+  eval stodo clear_d "$hndlspec" $@
+}
+
+# Usage: repl_clear_desc <hndlspec>
+# clear_desc using 'stodo_client_repl'.
+repl_clear_desc() {
+  if [ $# -lt 1 ]; then
+    echo "clear_desc: fatal error: missing arg."
+    return 29
+  fi
+  local hndlspec=$1;shift
+  echo clear_descendants "$hndlspec" $@ | $repl $user $appname
+}
+
 remove_desc() {
   if [ $# -lt 2 ]; then
     echo "chhandle: fatal error: missing arg(s)."
