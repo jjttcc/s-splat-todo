@@ -157,7 +157,16 @@ change_state() {
   if [ $# -lt 2 ]; then
     echo "change_state: fatal: too few arguments ($*)"
   fi
-  eval stodo stat $1 $2
+  eval stodo stat $1 $2 $@
+}
+
+# Usage: change_state <state-change-cmd> <handle>
+# Uses 'stodo_client_repl'.
+repl_change_state() {
+  if [ $# -lt 2 ]; then
+    echo "change_state: fatal: too few arguments ($*)"
+  fi
+  echo change_state $1 $2 $@| $repl $user $appname
 }
 
 # Usage: delete <handle> ...

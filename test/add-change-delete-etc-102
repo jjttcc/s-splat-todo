@@ -1,15 +1,18 @@
 #!/bin/bash
 # (define env. var. STODO_KEEP_ARTIFACTS to force any new items to NOT
 # be deleted.)
+# vim: ts=2 sw=2 expandtab
 
 setup() {
   create=create
   delete=delete
   modify=modify
+  change_state=change_state
   if [ "$TEST_REPL" ]; then
     create=repl_create
     delete=repl_delete
     modify=repl_modify
+    change_state=repl_change_state
   fi
 }
 
@@ -51,7 +54,7 @@ create_test() {
 
 state_test() {
   local result=0
-  change_state $newstatecmd $testhndl
+  $change_state $newstatecmd $testhndl -m test-commit-message
   if report $testhndl|awk 'BEGIN { state_is_correct = 0 }
     /status: *'$newstate'/ { state_is_correct = 1; state=$2; exit }
     END {

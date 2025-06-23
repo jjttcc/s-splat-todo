@@ -1,6 +1,7 @@
 require 'fileutils'
 require 'ruby_contracts'
 require 'stodogit'
+require 'state_change_facilities'
 require 'commandoptions'
 require 'editingtogitfacilities'
 require 'deletion_logic'
@@ -8,7 +9,7 @@ require 'deletion_logic'
 # Editors of "STodoTarget"s
 class STodoTargetEditor
   include SpecTools, ErrorTools, EditingToGitFacilities, DeletionLogic
-  include Contracts::DSL
+  include StateChangeFacilities, Contracts::DSL
 
   public
 
@@ -372,9 +373,6 @@ class STodoTargetEditor
     end
   end
 
-  # state change commands
-  CANCEL, RESUME, FINISH, SUSPEND = 'cancel', 'resume', 'finish', 'suspend'
-
   # Change the state of the target IDd by 'handle' to 'state'
   pre "No data change yet" do self.change_occurred == false end
   def modify_state handle, state, *options
@@ -391,45 +389,6 @@ class STodoTargetEditor
     else
       $log.warn "Expected target for handle #{handle} not found."
     end
-  end
-
-  ###  Helpers/utilities
-
-  # Execute a "guarded" state-change - i.e., iff 'statechg' is valid,
-  # execute the change.
-  # Return whether or not the specified change was valid/executed.
-  post 'return boolean' do |result|
-    ! result.nil? && [true, false].include?(result)
-  end
-  def execute_guarded_state_change(target, statechg)
-      current_state = target.state
-      old_state = current_state.value
-      valid = false
-      case statechg
-      when FINISH
-        if TargetStateValues::IN_PROGRESS == old_state then
-          current_state.send(statechg); valid = true
-        end
-      when RESUME
-        if TargetStateValues::SUSPENDED == old_state then
-          current_state.send(statechg); valid = true
-        end
-      when CANCEL
-        if
-          [TargetStateValues::IN_PROGRESS,
-           TargetStateValues::SUSPENDED].include?(old_state)
-        then
-          current_state.send(statechg); valid = true
-        end
-      when SUSPEND
-        if TargetStateValues::IN_PROGRESS == old_state then
-          current_state.send(statechg); valid = true
-        end
-      end
-      if not valid then
-        $log.warn "Invalid state change request: #{old_state} => #{statechg}"
-      end
-      valid
   end
 
 end
