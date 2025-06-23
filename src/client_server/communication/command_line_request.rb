@@ -1,7 +1,6 @@
 require 'ruby_contracts'
 
 # Request objects whose structure mimic the 'stodo' command line
-# !!!This might need a name change to something like: ClientRequest.
 class CommandLineRequest
   include Contracts::DSL
 

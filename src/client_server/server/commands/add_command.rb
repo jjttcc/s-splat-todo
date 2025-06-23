@@ -32,29 +32,14 @@ class AddCommand < WorkCommand
     if ! spec.nil? then
       builder = target_factory_for[spec.type]
       target = new_stodo_target(builder, spec)
-      store(target)
       add_parent(target)
+      store(target)
       git_commit(target)
       initiate(target)
     else
       self.execution_succeeded = false
       self.fail_msg = spec_error
     end
-  end
-
-  def new_spec
-    result = nil
-    # strip out the 'command: add'
-    options = TemplateOptions.new(request.arguments[1 .. -1], true)
-    spec = StubbedSpec.new(options)
-    spec.database = database
-    if ! valid_type(spec.type) then
-      @spec_error = "invalid stodo item type: #{spec.type}"
-      $log.error(spec_error)
-    else
-      result = spec
-    end
-    result
   end
 
   # Store 'target' in the database.
@@ -69,6 +54,7 @@ class AddCommand < WorkCommand
 #!!!This method might want to be moved to an ancestor class or utility
 #!!!module.
   def add_parent(target)
+#!!!!Todo: consider failing if parent_handle is invalid!!!
     if ! target.parent_handle.nil? then
       p = database.target_for(target.parent_handle)
       if p then

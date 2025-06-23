@@ -128,4 +128,20 @@ class WorkCommand
     end
   end
 
+  # A new 'StubbedSpec' object constructed from 'args'
+  def new_spec(args = request.arguments[1 .. -1])
+    result = nil
+    # strip out the 'command: add'
+    options = TemplateOptions.new(args, true)
+    spec = StubbedSpec.new(options)
+    spec.database = database
+    if ! valid_type(spec.type) then
+      @spec_error = "invalid stodo item type: #{spec.type}"
+      $log.error(spec_error)
+    else
+      result = spec
+    end
+    result
+  end
+
 end

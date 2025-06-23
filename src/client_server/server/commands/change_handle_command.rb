@@ -1,6 +1,5 @@
 require 'work_command'
 
-#!!!!See NOTE in WorkCommand!!!
 class ChangeHandleCommand < WorkCommand
   include CommandConstants, Contracts::DSL
 
