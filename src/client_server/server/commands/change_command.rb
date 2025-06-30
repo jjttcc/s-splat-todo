@@ -11,15 +11,16 @@ class ChangeCommand < WorkCommand
     spec = new_spec(args)
     if ! spec.nil? then
       if spec.handle then
-        t = database[spec.handle]
-        if t then
-          $log.debug "#{t.handle} found"
-          t.modify_fields(spec, database)
+        target = database[spec.handle]
+        if target then
+          $log.debug "#{target.handle} found"
+          target.modify_fields(spec, database)
         else
-          $log.debug "t NOT found"
+          $log.debug "target with handle #{spec.handle} NOT found"
           self.execution_succeeded = false
           self.fail_msg = "No item with handle '#{spec.handle}' found."
         end
+        git_commit(target)
       else
         self.execution_succeeded = false
         self.fail_msg = "No handle in specification"

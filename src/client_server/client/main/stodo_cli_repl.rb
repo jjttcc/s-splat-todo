@@ -32,10 +32,11 @@ class STodoCliREPL < PublisherSubscriber
   end
 
   def process(exe_args)
+    command_line_request.command = nil
     line = $stdin.gets
     if ! line.nil? then
       components = line.tokenize
-      if components.count > 0 then
+      if components.count > 0 && ! (components[0] =~ /^#/) then
 #!!!Use a filtering tool to correct spelling errors in the
 #!!!command - i.e., if possible if what the user types is
 #!!!close enough, match/change it to the exact command.
@@ -66,10 +67,12 @@ class STodoCliREPL < PublisherSubscriber
   end
 
   def post_process(exe_args)
-    # subscribe to response
-    subscribe_once do
-      # Temporary!!!:
-      puts "got '#{last_message}' from server"
+    if command_line_request.command then
+      # subscribe to response
+      subscribe_once do
+        # Temporary!!!:
+        puts "got '#{last_message}' from server"
+      end
     end
   end
 
