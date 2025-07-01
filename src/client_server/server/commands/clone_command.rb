@@ -19,6 +19,7 @@ class CloneCommand < WorkCommand
         parent = database[target.parent_handle]
         parent.add_child(clone)
       end
+      git_commit(clone)
     else
       msg = "cloning error: handle #{new_handle} is already in use."
       $log.warn msg
