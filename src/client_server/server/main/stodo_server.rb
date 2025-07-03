@@ -12,7 +12,7 @@ require 'worker'
 # Responds to client requests for stodo services (which are modeled after
 # the 'stodo' CLI interface)
 class STodoServer < Subscriber
-  include Service, STodoServicesConstants
+  include Service, STodoServicesConstants, SpecTools
 
   public
 
@@ -53,7 +53,7 @@ probably be a publish/(request from client)/subscribe(response from
 server) situation.
 =end
 
-  if ENV[:STODO_TEST.to_s] then
+  if ENV[STTESTRUN] then
     TESTING = true
   else
     TESTING = false

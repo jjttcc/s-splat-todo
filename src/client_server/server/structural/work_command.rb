@@ -3,7 +3,7 @@ require 'errortools'
 
 # Abstract ancestor - objects for carrying out work for "Worker"s
 class WorkCommand
-  include Contracts::DSL, ErrorTools
+  include Contracts::DSL, ErrorTools, STodoTargetConstants
 
   public
 
@@ -37,6 +37,8 @@ class WorkCommand
   end
 
   private
+
+  attr_reader   :spec_error
 
   # Abstract method
   pre  :request_set do ! self.request.nil? end

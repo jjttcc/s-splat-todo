@@ -36,7 +36,10 @@ class STodoCliREPL < PublisherSubscriber
     line = $stdin.gets
     if ! line.nil? then
       components = line.tokenize
-      if components.count > 0 && ! (components[0] =~ /^#/) then
+      if
+        components.count > 0 && ! (components[0] =~ /^#/) &&
+          ! components[0].nil? && ! components[0].empty?
+      then
 #!!!Use a filtering tool to correct spelling errors in the
 #!!!command - i.e., if possible if what the user types is
 #!!!close enough, match/change it to the exact command.

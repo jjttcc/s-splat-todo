@@ -9,6 +9,14 @@ class StubbedSpec < STodoSpec
     true
   end
 
+  # Override the 'name' setting with 'value'.
+  # 'name' has type Symbol or String.
+  # 'value' has type String or nil.
+  #!!!!Need a precondition re the above!!!
+  def override_setting(name, value)
+    @setting_for[name.to_s] = value
+  end
+
   private
 
   def initialize options, use_defaults = true

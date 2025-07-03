@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+# Driver script for end-to-end tests
+
+tests_dir="$(dirname "$0")"/e2e
+
+status=0
+test_count=0
+failures=0
+
+unset ENABLE_ASSERTION
+
+for f in "$tests_dir"/*; do
+  if [ -f "$f" ] && [ -x "$f" ]; then
+    echo "=============== Executing E2E Test: $(basename "$f") ==============="
+    if "$f"; then
+      echo "$(basename "$f") SUCCEEDED."
+    else
+      echo "$(basename "$f") FAILED."
+      status=1
+      ((++failures))
+    fi
+    ((++test_count))
+    echo "============== (Completed $(basename "$f")) =============="
+  fi
+done
+
+if [ $status -eq 0 ]; then
+  echo "All $test_count E2E tests SUCCEEDED."
+else
+  echo "$failures (out of $test_count) E2E tests FAILED."
+fi
+
+exit $status
