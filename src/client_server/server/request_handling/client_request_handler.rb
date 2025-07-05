@@ -55,7 +55,7 @@ module ClientRequestHandler
 
   private
 
-  attr_accessor :message_broker, :manager
+  attr_accessor :message_broker
   attr_writer   :database, :config
 
   pre  :cfg_exists do |cfg| ! cfg.nil? end
@@ -66,18 +66,7 @@ module ClientRequestHandler
     self.database = config.data_manager
     self.message_broker = app_config.application_message_broker
     initialize_pubsub_broker(app_config)
-    self.manager =
-      config.new_stodo_manager(service_name: Configuration.service_name,
-                               debugging: true)
-    init_command_table(config, manager)
-    # dummy:
-    options = TemplateOptions.new([], true)
-    # !!!!To-do: If possible, don't rely on (get rid of) 'target_builder' and
-    # 'manager'.
-    target_builder = TemplateTargetBuilder.new(options,
-                                     manager.existing_targets, nil, config)
-#!!!:    target_builder.set_processing_mode TemplateTargetBuilder::CREATE_MODE
-    manager.target_builder = target_builder
+    init_command_table(config)
   end
 
 end
