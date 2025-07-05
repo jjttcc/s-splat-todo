@@ -14,7 +14,6 @@ run_test() {
 
   echo "--- Running Test: $test_name ---"
   # Execute the command and capture output
-echo args: "${command_args[*]}"
   output=$(echo "${command_args[*]}" | "$STODO_CLIENT_REPL" "$USER_ID" "$APP_NAME" 2>&1)
   local exit_code=$?
 

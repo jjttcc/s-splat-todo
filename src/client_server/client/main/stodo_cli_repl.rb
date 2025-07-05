@@ -8,17 +8,7 @@ require 'service'
 require 'command_line_request'
 require 'command_constants'
 require 'client_session'
-
-# From:
-#https://stackoverflow.com/questions/11566094/trying-to-split-string-into-single-words-or-quoted-words-and-want-to-keep-the
-class String
-  def tokenize
-    self.
-      split(/\s(?=(?:[^'"]|'[^']*'|"[^"]*")*$)/).
-      select {|s| not s.empty? }.
-      map {|s| s.gsub(/(^ +)|( +$)|(^["']+)|(["']+$)/,'')}
-  end
-end
+require 'string_extensions'
 
 # Makes requests for stodo services to implement a REPL interface that
 # mimics the 'stodo' CLI.

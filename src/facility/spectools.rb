@@ -62,6 +62,7 @@ module SpecTools
   ONGOING_EMAIL_TAG = '[ongoing]'
   NONE = 'none'
   NONE_SPEC = '{none}'  # spec indicating no <x>s (e.g., reminders, parent)
+  NO_PARENT = NONE_SPEC
 
   # application-level error messages
   HANDLE_TAG = '<handle>'

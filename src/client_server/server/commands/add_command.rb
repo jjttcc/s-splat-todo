@@ -42,15 +42,14 @@ class AddCommand < WorkCommand
             store(target)
             git_commit(target)
             initiate(target)
+            self.execution_succeeded = true
           end
         end
       end
       if ! new_target_failure_reason.nil? then
-        self.execution_succeeded = false
         self.fail_msg = new_target_failure_reason
       end
     else
-      self.execution_succeeded = false
       self.fail_msg = spec_error
     end
   end
@@ -61,7 +60,7 @@ class AddCommand < WorkCommand
 
   # Store 'target' in the database.
   def store(target)
-    replace = false
+    replace = true
 #!!!!to-do: decide whether 'replace' logic should be specified by user!!
     database.store_target(target, replace)
   end

@@ -7,6 +7,7 @@ require 'change_handle_command'
 require 'clear_descendants_command'
 require 'remove_descendant_command'
 require 'clone_command'
+require 'report_command'
 require 'session_request_command'
 require 'state_change_command'
 
@@ -29,7 +30,8 @@ module CommandFacilities
       DELETE_CMD       => DeleteCommand.new(config, manager),
       REMOVE_DESC_CMD  => RemoveDescendantCommand.new(config, manager),
       STATE_CHANGE_CMD => StateChangeCommand.new(config, manager),
-      SESSION_REQ_CMD  => SessionRequestCommand.new(config, manager)
+      SESSION_REQ_CMD  => SessionRequestCommand.new(config, manager),
+      REPORT_CMD       => ReportCommand.new(config, manager)
     }
   end
 

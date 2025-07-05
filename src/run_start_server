@@ -1,0 +1,4 @@
+STODO_PATH=$PWD
+. $STODO_PATH/start_up/server_setup
+set_rubylib
+./start_server

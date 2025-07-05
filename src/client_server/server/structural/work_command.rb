@@ -30,7 +30,7 @@ class WorkCommand
     if request.arguments.count > 3 then
       process_remaining_arguments
     end
-    self.execution_succeeded = true
+    self.execution_succeeded = false
     self.fail_msg = ""
     self.database = the_caller.database
     do_execute(the_caller)
@@ -42,10 +42,10 @@ class WorkCommand
 
   # Abstract method
   pre  :request_set do ! self.request.nil? end
-  pre  :start_with_success do execution_succeeded end
+  pre  :start_with_failure do ! execution_succeeded end
   pre  :database do ! self.database.nil? end
   def do_execute(the_caller)
-    # descendant should set 'execution_succeeded' to false if it failed.
+    # descendant should set 'execution_succeeded' to true if it succeeds.
   end
 
   # Convenience queries for 'do_execute':
