@@ -33,9 +33,9 @@ run_test() {
 cleanup() {
   echo "--- Cleaning up test data ---"
   # Delete items created during tests to ensure isolation
-#  echo "delete report_test_task_1" | "$STODO_CLIENT_REPL" "$USER_ID" "$APP_NAME" > /dev/null 2>&1
-#  echo "delete report_test_task_2" | "$STODO_CLIENT_REPL" "$USER_ID" "$APP_NAME" > /dev/null 2>&1
-#  echo "delete report_test_note_1" | "$STODO_CLIENT_REPL" "$USER_ID" "$APP_NAME" > /dev/null 2>&1
+  echo "delete report_test_task_1" | "$STODO_CLIENT_REPL" "$USER_ID" "$APP_NAME" > /dev/null 2>&1
+  echo "delete report_test_task_2" | "$STODO_CLIENT_REPL" "$USER_ID" "$APP_NAME" > /dev/null 2>&1
+  echo "delete report_test_note_1" | "$STODO_CLIENT_REPL" "$USER_ID" "$APP_NAME" > /dev/null 2>&1
 }
 
 # Ensure cleanup runs on exit
@@ -48,15 +48,6 @@ echo "add task -h report_test_task_2 -t 'Report Task 2' -d 'Desc 2' -pr 2" | "$S
 sleep 1.5
 echo "add note -h report_test_note_1 -t 'Report Note 1' -d 'Desc 3' -pr 1" | "$STODO_CLIENT_REPL" "$USER_ID" "$APP_NAME"
 sleep 0.5
-echo added
-read xxx
-
-# Debug: Check Redis directly
-echo "--- Redis Check ---"
-redis-cli PING
-redis-cli KEYS "*${APP_NAME}*"
-redis-cli GET "test_app_report_e2e_debug.test_user_report_e2e.stodo-database:report_test_task_1"
-echo "-------------------"
 
 # Test cases
 tests_passed=0

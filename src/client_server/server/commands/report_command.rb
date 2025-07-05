@@ -27,7 +27,6 @@ class ReportCommand < WorkCommand
     fail_msg_local = ""
     execution_succeeded_local = false
     report_content = nil
-binding.irb
     if report_type.nil? || report_type.empty? then
       # Default behavior: list all target handles
       handles = database.handles
