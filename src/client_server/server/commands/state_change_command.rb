@@ -11,7 +11,7 @@ class StateChangeCommand < WorkCommand
       msg = "No target found with handle #{handle}."
       $log.warn msg
       self.execution_succeeded = false
-      self.fail_msg = msg
+      self.response = msg
     else
       target = database[handle]
       if target != nil then
@@ -25,12 +25,12 @@ class StateChangeCommand < WorkCommand
             msg = state_ch_error_msg
           end
           self.execution_succeeded = false
-          self.fail_msg = msg
+          self.response = msg
         end
       else
         msg = "Expected target for handle #{handle} not found."
         self.execution_succeeded = false
-        self.fail_msg = msg
+        self.response = msg
       end
     end
   end

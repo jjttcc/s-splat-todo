@@ -111,9 +111,10 @@ class ReportManager
     targets.each do |t|
       if verbose then
         puts "\n[#{t.handle}]:"
-        puts "title: #{t.title}"
+        puts "TITLE: #{t.title}"
       else
-        puts "#{t.title}:"
+        puts "#{t.title}:", ""
+        #puts
       end
       puts t.description
     end

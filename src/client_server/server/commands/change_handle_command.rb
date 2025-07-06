@@ -8,15 +8,15 @@ class ChangeHandleCommand < WorkCommand
     new_handle = arg2
     succeeded_local = false # Assume failure until proven otherwise
     if handle.nil? || handle.empty? then
-      self.fail_msg = "Original handle cannot be empty."
+      self.response = "Original handle cannot be empty."
     elsif new_handle.nil? || new_handle.empty? then
-      self.fail_msg = "New handle cannot be empty."
+      self.response = "New handle cannot be empty."
     elsif handle == new_handle then
-      self.fail_msg = "New handle cannot be the same as the old handle."
+      self.response = "New handle cannot be the same as the old handle."
     else
       target = database[handle]
       if target.nil? then
-        self.fail_msg = "No item with handle '#{handle}' found."
+        self.response = "No item with handle '#{handle}' found."
       else
         begin
           # Attempt to delete the old entry
@@ -29,7 +29,7 @@ class ChangeHandleCommand < WorkCommand
           ### NOTE: This is not good enough - i.e., which of the above
           # operations failed and what should be reported? Should we do
           # some kind of rollback?
-          self.fail_msg = "Failed to delete old entry for handle '#{handle}'."
+          self.response = "Failed to delete old entry for handle '#{handle}'."
         end
       end
     end

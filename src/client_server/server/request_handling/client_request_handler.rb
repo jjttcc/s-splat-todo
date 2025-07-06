@@ -31,15 +31,15 @@ module ClientRequestHandler
       end
       cmd.execute(self)
       if cmd.execution_succeeded then
-        if ! cmd.fail_msg.empty? then # If it succeeded but also has a message
-          publish(cmd.fail_msg)      # Publish the message
+        if ! cmd.response.empty? then # If it succeeded but also has a message
+          publish(cmd.response)      # Publish the message
         else
           publish(SUCCESS_REPORT)    # Otherwise, publish "Succeeded"
         end
       else
         msg = FAIL_BASE
-        if ! cmd.fail_msg.empty? then
-          msg = "#{msg}: #{cmd.fail_msg}"
+        if ! cmd.response.empty? then
+          msg = "#{msg}: #{cmd.response}"
         end
         publish(msg)
       end

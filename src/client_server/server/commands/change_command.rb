@@ -30,13 +30,13 @@ class ChangeCommand < WorkCommand
           end
         else
           $log.debug "target with handle #{spec.handle} NOT found"
-          self.fail_msg = "No item with handle '#{spec.handle}' found."
+          self.response = "No item with handle '#{spec.handle}' found."
         end
       else
-        self.fail_msg = "No handle in specification"
+        self.response = "No handle in specification"
       end
     else
-      self.fail_msg = spec_error
+      self.response = spec_error
     end
   end
 
@@ -58,7 +58,7 @@ class ChangeCommand < WorkCommand
     end
     if ! make_orphan && new_parent.nil? then
       result = false
-      self.fail_msg = "Invalid parent handle '#{new_parent_handle}'"
+      self.response = "Invalid parent handle '#{new_parent_handle}'"
     else
       if target.parent_handle then
         old_parent = database[target.parent_handle]

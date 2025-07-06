@@ -1,29 +1,27 @@
 require_relative 'base_report'
 
 class CompleteReport < BaseReport
+
   def report(criteria)
     result = []
-    fail_msg_local = ""
-
+    message_local = ""
     if criteria.nil? || criteria.empty? then
-      fail_msg_local = "'complete' report type requires a handle as criteria."
+      message_local = "'complete' report type requires a handle as criteria."
     else
       criteria.each do |handle|
         target = @database[handle]
         if target.nil? then
           result << "Warning: Item with handle '#{handle}' not found."
         else
-          result << generate_single_report(target)
+          result << stodo_item_report(target)
         end
       end
-
       if result.empty? then
-        fail_msg_local = "No items found for report."
+        message_local = "No items found for report."
       end
     end
-
-    if ! fail_msg_local.empty? then
-      set_fail_msg(fail_msg_local)
+    if ! message_local.empty? then
+      set_message(message_local)
       result = nil
     else
       result = result.join("\n---\n") # Separate reports with a line
@@ -33,8 +31,11 @@ class CompleteReport < BaseReport
 
   private
 
-  def generate_single_report(target)
-    report_str = "Handle: #{target.handle}\n"
+  # A report for the specified STodoTarget item - 'target'
+  def stodo_item_report(target)
+#!!!to-do: Need an indent
+#!!!![reminder: Get rid of 'got ' in the response]
+    result = "Handle: #{target.handle}\n"
     labels = [
       "Type:",
       "Title:",
@@ -45,17 +46,21 @@ class CompleteReport < BaseReport
       "Priority:"
     ]
     max_label_len = labels.map(&:length).max
-
-    report_str += "  #{labels[0].ljust(max_label_len)} #{target.type}\n"
-    report_str += "  #{labels[1].ljust(max_label_len)} #{target.title}\n"
-    report_str += "  #{labels[2].ljust(max_label_len)} #{target.description}\n"
-    report_str += "  #{labels[3].ljust(max_label_len)} " +
+    result += "  #{labels[0].ljust(max_label_len)} #{target.type}\n"
+    result += "  #{labels[1].ljust(max_label_len)} #{target.title}\n"
+    result += "  #{labels[2].ljust(max_label_len)} #{target.description}\n"
+    result += "  #{labels[3].ljust(max_label_len)} " +
                   "#{target.parent_handle || 'None'}\n"
-    report_str += "  #{labels[4].ljust(max_label_len)} " +
+    result += "  #{labels[4].ljust(max_label_len)} " +
                   "#{(target.children || []).map(&:handle).join(', ')}\n"
-    report_str += "  #{labels[5].ljust(max_label_len)} #{target.state.value}\n"
-    report_str += "  #{labels[6].ljust(max_label_len)} #{target.priority}\n"
-    return report_str
+    result += "  #{labels[5].ljust(max_label_len)} #{target.state.value}\n"
+    result += "  #{labels[6].ljust(max_label_len)} #{target.priority}\n"
+    if recursive then
+      target.children.each do |child|
+        result = result + stodo_item_report(child)
+      end
+    end
+    result
   end
 end
 

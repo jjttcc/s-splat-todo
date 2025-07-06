@@ -46,10 +46,10 @@ class AddCommand < WorkCommand
         end
       end
       if ! new_target_failure_reason.nil? then
-        self.fail_msg = new_target_failure_reason
+        self.response = new_target_failure_reason
       end
     else
-      self.fail_msg = spec_error
+      self.response = spec_error
     end
   end
 

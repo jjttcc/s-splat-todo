@@ -2,11 +2,11 @@ require_relative 'base_report'
 
 class HandleReport < BaseReport
 
-  def report(criteria)
+  def report(criteria, recursive = false)
     result = []
-    fail_msg_local = ""
+    message_local = ""
     if criteria.nil? || criteria.empty? then
-      fail_msg_local = "'handle' report type requires a handle as criteria."
+      message_local = "'handle' report type requires a handle as criteria."
     else
       criteria.each do |handle|
         target = @database[handle]
@@ -17,11 +17,11 @@ class HandleReport < BaseReport
         end
       end
       if result.empty? then
-        fail_msg_local = "No items found for report."
+        message_local = "No items found for report."
       end
     end
-    if ! fail_msg_local.empty? then
-      set_fail_msg(fail_msg_local)
+    if ! message_local.empty? then
+      set_message(message_local)
       result = nil
     else
       result = result.join("\n")

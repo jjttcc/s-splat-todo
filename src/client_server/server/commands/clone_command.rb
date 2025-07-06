@@ -24,7 +24,7 @@ class CloneCommand < WorkCommand
       msg = "cloning error: handle #{new_handle} is already in use."
       $log.warn msg
       self.execution_succeeded = false
-      self.fail_msg = msg
+      self.response = msg
     end
   end
 

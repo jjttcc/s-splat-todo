@@ -7,7 +7,9 @@ class WorkCommand
 
   public
 
-  attr_accessor :client_session, :execution_succeeded, :fail_msg
+  attr_accessor :client_session, :execution_succeeded
+  # Client-response string - data, or error message on failure
+  attr_accessor :response
 
   pre  :caller_exists do |callr| ! callr.nil? end
   pre  :request_exists do |callr| ! callr.request.nil? end
@@ -25,7 +27,7 @@ class WorkCommand
       process_remaining_arguments
     end
     self.execution_succeeded = false
-    self.fail_msg = ""
+    self.response = ""
     self.database = the_caller.database
     database.set_appname_and_user(request.app_name, request.user_id)
     do_execute(the_caller)

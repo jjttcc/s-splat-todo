@@ -15,9 +15,9 @@ class DeleteCommand < WorkCommand
       if ! deleted_target.nil? then
         git_commit(deleted_target)
       end
+      self.execution_succeeded = true
     else
-      self.execution_succeeded = false
-      self.fail_msg = "'#{handle}' is not the handle of an existing item."
+      self.response = "'#{handle}' is not the handle of an existing item."
     end
   end
 

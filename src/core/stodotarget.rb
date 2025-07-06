@@ -608,6 +608,7 @@ class STodoTarget
     @email_spec = ""
     @notification_subject = ""
     @full_notification_message = ""
+    @last_removed_descendant = nil
     if defined?(@notification_email_addrs) then
       remove_instance_variable(:@notification_email_addrs)
     end
