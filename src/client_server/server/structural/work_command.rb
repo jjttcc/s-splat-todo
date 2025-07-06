@@ -59,7 +59,6 @@ class WorkCommand
   attr_accessor :config
 
   def initialize(config = nil)
-    self.manager = manager
     if ! config.nil? then
       self.config = config
     end

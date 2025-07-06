@@ -10,8 +10,8 @@ class ReportCommand < WorkCommand
 
   attr_reader :report_dispatch
 
-  def initialize(config, manager)
-    super(config, manager)
+  def initialize(config)
+    super(config)
     @report_dispatch = {
       "handle"   => HandleReport,
       "complete" => CompleteReport

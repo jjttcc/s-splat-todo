@@ -19,7 +19,6 @@ module CommandFacilities
 
   private
 
-  pre :manager_good do ! manager.nil? end
   def init_command_table(config)
     @command_for = {
       ADD_CMD          => AddCommand.new(config),

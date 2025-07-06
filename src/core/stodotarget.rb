@@ -405,8 +405,8 @@ class STodoTarget
       end
     else
       detach child
-      self.last_removed_descendant = child
       update
+      self.last_removed_descendant = child
     end
   end
 

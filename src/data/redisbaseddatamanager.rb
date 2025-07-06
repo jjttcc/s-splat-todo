@@ -130,19 +130,22 @@ class RedisBasedDataManager
   # Store STodoTarget 't' in the databae. Iff 'replace', then replace the
   # old object (with the key formed from t.handle) if it is already in the
   # database.
+  # Raises an exception if the write fails.
   def store_target(t, replace = true)
     key = key_for(t.handle)
     if database.exists(key) and ! replace then
-      $log.debug "object with handle #{t.handle} is already stored."
+      $log.warn "object with handle #{t.handle} is already stored."
     else
       begin
         database.set_object(key, t)
+        database.add_to_set(db_key, key)
       rescue Exception => e
-        $log.warn("database.set_object failed: #{e}\n" +
-                  "#{e.backtrace.join("\n")}")
+        msg = "database.set_object failed: #{e}\n" +
+                  "#{e.backtrace.join("\n")}"
+        $log.warn(msg)
+        raise msg
       end
     end
-    database.add_to_set(db_key, key)
   end
 
   private   ###  Implementation

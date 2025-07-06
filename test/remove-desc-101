@@ -112,7 +112,6 @@ for testhndl in $childF $childG; do
   fi
 done
 #$ancestorA $parentB $parentC $parentD $childE $childF $childG
-#!!!stodo remove_d $ancestorA $parentB
 $remove_desc $ancestorA $parentB
 ##### Check that 'remove_d $ancestorA $parentB' performed correctly.
 par=$ancestorA
@@ -148,7 +147,6 @@ for tgt in $childF $childG; do
   ((++testcount))
 done
 
-#!!!stodo remove_d $ancestorA $childG
 $remove_desc $ancestorA $childG
 ##### Check that 'remove_d $ancestorA $childG' performed correctly.
 par=$parentC

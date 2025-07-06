@@ -12,11 +12,10 @@ class AddCommand < WorkCommand
 
   ###  Initialization
 
-#!!!!!GOAL: get rid of need for 'manager' argument!!!!!
-  def initialize(config, manager)
+  def initialize(config)
     self.target_factory_for = STodoTargetFactory.new(config)
     @mailer = Mailer.new(config)
-    super(config, manager)
+    super(config)
   end
 
   private
