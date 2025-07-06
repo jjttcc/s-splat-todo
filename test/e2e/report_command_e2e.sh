@@ -43,11 +43,8 @@ trap cleanup EXIT
 
 # Pre-create items for report tests
 echo "add task -h report_test_task_1 -t 'Report Task 1' -d 'Desc 1' -pr 1" | "$STODO_CLIENT_REPL" "$USER_ID" "$APP_NAME"
-sleep 1.5
 echo "add task -h report_test_task_2 -t 'Report Task 2' -d 'Desc 2' -pr 2" | "$STODO_CLIENT_REPL" "$USER_ID" "$APP_NAME"
-sleep 1.5
 echo "add note -h report_test_note_1 -t 'Report Note 1' -d 'Desc 3' -pr 1" | "$STODO_CLIENT_REPL" "$USER_ID" "$APP_NAME"
-sleep 0.5
 
 # Test cases
 tests_passed=0

@@ -27,6 +27,7 @@ class WorkCommand
     self.execution_succeeded = false
     self.fail_msg = ""
     self.database = the_caller.database
+    database.set_appname_and_user(request.app_name, request.user_id)
     do_execute(the_caller)
   end
 
