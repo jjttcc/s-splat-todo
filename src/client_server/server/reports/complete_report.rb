@@ -32,32 +32,27 @@ class CompleteReport < BaseReport
   private
 
   # A report for the specified STodoTarget item - 'target'
-  def stodo_item_report(target)
-#!!!to-do: Need an indent
-#!!!![reminder: Get rid of 'got ' in the response]
-    result = "Handle: #{target.handle}\n"
-    labels = [
-      "Type:",
-      "Title:",
-      "Description:",
-      "Parent:",
-      "Children:",
-      "Status:",
-      "Priority:"
-    ]
-    max_label_len = labels.map(&:length).max
-    result += "  #{labels[0].ljust(max_label_len)} #{target.type}\n"
-    result += "  #{labels[1].ljust(max_label_len)} #{target.title}\n"
-    result += "  #{labels[2].ljust(max_label_len)} #{target.description}\n"
-    result += "  #{labels[3].ljust(max_label_len)} " +
-                  "#{target.parent_handle || 'None'}\n"
-    result += "  #{labels[4].ljust(max_label_len)} " +
-                  "#{(target.children || []).map(&:handle).join(', ')}\n"
-    result += "  #{labels[5].ljust(max_label_len)} #{target.state.value}\n"
-    result += "  #{labels[6].ljust(max_label_len)} #{target.priority}\n"
+  def stodo_item_report(target, indent = "")
+    report_lines = []
+    # Define labels and their corresponding values/methods
+    report_data = {
+      "Handle:"     => target.handle,
+      "Type:"       => target.type,
+      "Title:"      => target.title,
+      "Description:"=> target.description,
+      "Parent:"     => target.parent_handle || 'None',
+      "Children:"   => (target.children || []).map(&:handle).join(', '),
+      "Status:"     => target.state.value,
+      "Priority:"   => target.priority
+    }
+    max_label_len = report_data.keys.map(&:length).max
+    report_data.each do |label, value|
+      report_lines << "#{indent}#{label.ljust(max_label_len)} #{value}".rstrip
+    end
+    result = report_lines.join("\n") + "\n"   # End with a newline.
     if recursive then
       target.children.each do |child|
-        result = result + stodo_item_report(child)
+        result += stodo_item_report(child, indent + "  ")
       end
     end
     result

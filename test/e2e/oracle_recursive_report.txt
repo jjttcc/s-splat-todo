@@ -1,0 +1,32 @@
+Handle:      task-parent
+Type:        task
+Title:       Parent Task
+Description:
+Parent:      None
+Children:    task-child-1, task-child-2
+Status:      in-progress
+Priority:
+  Handle:      task-child-1
+  Type:        task
+  Title:       Child Task 1
+  Description:
+  Parent:      task-parent
+  Children:    task-grandchild-1
+  Status:      in-progress
+  Priority:
+    Handle:      task-grandchild-1
+    Type:        task
+    Title:       Grandchild Task 1
+    Description:
+    Parent:      task-child-1
+    Children:
+    Status:      in-progress
+    Priority:
+  Handle:      task-child-2
+  Type:        task
+  Title:       Child Task 2
+  Description:
+  Parent:      task-parent
+  Children:
+  Status:      in-progress
+  Priority:

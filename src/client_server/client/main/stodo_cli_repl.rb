@@ -63,8 +63,7 @@ class STodoCliREPL < PublisherSubscriber
     if command_line_request.command then
       # subscribe to response
       subscribe_once do
-        # Temporary!!!:
-        puts "got '#{last_message}' from server"
+        puts last_message
       end
     end
   end

@@ -18,14 +18,49 @@ class WorkCommand
   end
   def execute(the_caller)
     self.request = the_caller.request
-    @remaining_args = nil
+    @command = request.command
+
+    # Initialize
     @recursive = false
     @force = false
-    @command, @arg1, @arg2 =
-      request.command, request.arguments[1], request.arguments[2]
-    if request.arguments.count > 3 then
-      process_remaining_arguments
+    @commit_msg = nil
+
+    # Separate options from positional args
+    @positional_args = []
+    args = request.arguments[1..-1] || []
+    i = 0
+    while i < args.count
+      arg = args[i]
+      if arg.start_with?(OPT_CHAR)
+        case arg
+        when RECURSIVE_OPT
+          @recursive = true
+        when FORCE_OPT
+          @force = true
+        when GIT_MSG_OPT
+          if (i + 1) < args.count
+            @commit_msg = args[i+1]
+            i += 1 # Skip next arg
+          end
+        else
+          # Unknown option, treat as positional
+          @positional_args << arg
+        end
+      else
+        @positional_args << arg
+      end
+      i += 1
     end
+
+    # Now, assign positional args to @arg1, @arg2, etc.
+    @arg1 = positional_args[0]
+    @arg2 = positional_args[1]
+    if positional_args.count > 2
+      @remaining_args = positional_args[2..-1]
+    else
+      @remaining_args = []
+    end
+
     self.execution_succeeded = false
     self.response = ""
     self.database = the_caller.database
@@ -35,7 +70,7 @@ class WorkCommand
 
   private
 
-  attr_reader   :spec_error
+  attr_reader   :spec_error, :positional_args
 
   # Abstract method
   pre  :request_set do ! self.request.nil? end
@@ -89,43 +124,12 @@ class WorkCommand
     end
   end
 
-  # Process 'remaining_args' into named options/arguments.
-  post :remaining_args do
-    ! self.remaining_args.nil? && self.remaining_args.count > 0
-  end
+  # This method is now obsolete. Argument parsing is handled in 'execute'.
   def process_remaining_arguments
-    if ! arg2.nil? then
-      if arg2[0] == OPT_CHAR then
-        @remaining_args = request.arguments[2 .. -1]
-      else
-        @remaining_args = request.arguments[3 .. -1]
-      end
-      i = 0
-      while i < remaining_args.count do
-        if remaining_args[i][0] == OPT_CHAR then
-          next_arg = remaining_args[i+1]
-          case remaining_args[i]
-          when GIT_MSG_OPT
-            if ! next_arg.nil? then
-              @commit_msg = next_arg
-              i = i + 1
-            end
-          when RECURSIVE_OPT
-            @recursive = true
-          when FORCE_OPT
-            @force = true
-          else
-          end
-        end
-        i = i + 1
-      end
-    else
-      @remaining_args = []
-    end
   end
 
   # A new 'StubbedSpec' object constructed from 'args'
-  def new_spec(args = request.arguments[1 .. -1])
+  def new_spec(args = positional_args)
     result = nil
     # strip out the 'command: add'
     options = TemplateOptions.new(args, true)

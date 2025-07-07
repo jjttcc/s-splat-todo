@@ -2,7 +2,8 @@
 
 # End-to-end test for the 'report' command
 
-STODO_CLIENT_REPL="$(dirname "$0")"/../../src/stodo_client_repl
+basedir="$(dirname $0)"
+STODO_CLIENT_REPL=$basedir/../../src/stodo_client_repl
 USER_ID="test_user_report_e2e"
 APP_NAME="test_app_report_e2e_$(date +%s)"
 
@@ -15,7 +16,7 @@ run_test() {
   local command_args=("${@:3}")
 
   echo "--- Running Test: $test_name ---"
-  output=$(echo "${command_args[*]}" | "$STODO_CLIENT_REPL" "$USER_ID" "$APP_NAME" 2>&1)
+  output=$(echo "${command_args[*]}" | "$STODO_CLIENT_REPL" "$USER_ID" "$APP_NAME" 2>&1 | sed -e "s/^> //g" -e "s/' from server$//g")
   local exit_code=$?
 
   if echo "$output"|grep -Pzo "$expected_output_regex"; then
@@ -52,7 +53,7 @@ tests_failed=0
 
 # Test 1: report complete type:task
 if run_test "report complete type:task" \
-  ">? *(?s)(?=.*Handle: report_test_task_1.*Type:        task)(?=.*Handle: report_test_task_2.*Type:        task).*" \
+  "(?s)(?=.*Handle:      report_test_task_1.*Type:        task)(?=.*Handle:      report_test_task_2.*Type:        task).*" \
   "report complete type:task"; then
   ((tests_passed++))
 else
@@ -60,7 +61,7 @@ else
 fi
 
 # Test 2: report complete stat:in-progress
-rx2=">? *(?s)(?=.*Handle: report_test_task_1.*Status:      in-progress)(?=.*Handle: report_test_task_2.*Status:      in-progress)(?=.*Handle: report_test_note_1.*Status:      in-progress).*"
+rx2="(?s)(?=.*Handle:      report_test_task_1.*Status:      in-progress)(?=.*Handle:      report_test_task_2.*Status:      in-progress)(?=.*Handle:      report_test_note_1.*Status:      in-progress).*"
 if run_test "report complete stat:in-progress" \
   "$rx2" \
   "report complete stat:in-progress"; then
@@ -70,7 +71,7 @@ else
 fi
 
 # Test 3: report complete pri:1
-rx3=">? *(?s)(?=.*Handle: report_test_task_1.*Priority:    1)(?=.*Handle: report_test_note_1.*Priority:    1).*"
+rx3="(?s)(?=.*Handle:      report_test_task_1.*Priority:    1)(?=.*Handle:      report_test_note_1.*Priority:    1).*"
 if run_test "report complete pri:1" \
   "$rx3" \
   "report complete pri:1"; then
@@ -81,7 +82,7 @@ fi
 
 # Test 4: report complete pri:2
 if run_test "report complete pri:2" \
-  ">? *(?s)(?=.*Handle: report_test_task_2.*Priority:    2).*" \
+  "(?s)(?=.*Handle:      report_test_task_2.*Priority:    2).*" \
   "report complete pri:2"; then
   ((tests_passed++))
 else
@@ -90,7 +91,7 @@ fi
 
 # Test 5: report complete handle:report_test_task_1 report_test_note_1
 if run_test "report complete multiple handles" \
-  ">? *(?s)(?=.*Handle: report_test_task_1)(?=.*Handle: report_test_note_1).*" \
+  "(?s)(?=.*Handle:      report_test_task_1)(?=.*Handle:      report_test_note_1).*" \
   "report complete report_test_task_1 report_test_note_1"; then
   ((tests_passed++))
 else
@@ -102,7 +103,7 @@ fi
 # but type:memo is not accepted by the server - it should be as a synonym.
 # Changed to use type:project - for a negative test.
 if run_test "report complete type:project (negative)" \
-  ">? *Command failed: No items matching any of the provided values found.' from server" \
+  "Command failed: No items matching any of the provided values found." \
   "report complete type:memo"; then
   ((tests_passed++))
 else
@@ -111,7 +112,7 @@ fi
 
 # Test 7: report complete pri:99 (negative test)
 if run_test "report complete pri:99 (negative)" \
-  ">? *Command failed: No items matching any of the provided values found.' from server" \
+  "Command failed: No items matching any of the provided values found." \
   "report complete pri:99"; then
   ((tests_passed++))
 else
@@ -120,7 +121,7 @@ fi
 
 # Test 8: report complete stat:completed (negative test)
 if run_test "report complete stat:completed (negative)" \
-  ">? *Command failed: No items matching any of the provided values found.' from server" \
+  "Command failed: No items matching any of the provided values found." \
   "report complete stat:completed"; then
   ((tests_passed++))
 else
@@ -129,7 +130,7 @@ fi
 
 # Test 9: report complete handle:non_existent_handle (negative test)
 if run_test "report complete handle:non_existent_handle (negative)" \
-  ">? *Warning: Item with handle 'non_existent_handle' not found.' from server" \
+  "Warning: Item with handle 'non_existent_handle' not found." \
   "report complete non_existent_handle"; then
   ((tests_passed++))
 else
@@ -138,7 +139,7 @@ fi
 
 # Test 10: report complete type:task,note
 if run_test "report complete type:task,note" \
-  ">? *(?s)(?=.*Handle: report_test_task_1)(?=.*Handle: report_test_task_2)(?=.*Handle: report_test_note_1).*" \
+  "(?s)(?=.*Handle:      report_test_task_1)(?=.*Handle:      report_test_task_2)(?=.*Handle:      report_test_note_1).*" \
   "report complete type:task,note"; then
   ((tests_passed++))
 else
@@ -147,7 +148,7 @@ fi
 
 # Test 11: report handle handle:report_test_task_1
 if run_test "report handle handle:report_test_task_1" \
-  ">? *(?s)report_test_task_1.*" \
+  "(?s)report_test_task_1.*" \
   "report handle handle:report_test_task_1"; then
   ((tests_passed++))
 else
@@ -156,7 +157,7 @@ fi
 
 # Test 12: report handle handle:report_test_.* (regex match)
 if run_test "report handle handle:report_test_.*" \
-  ">? *(?s)(?=.*report_test_task_1)(?=.*report_test_task_2)(?=.*report_test_note_1).*" \
+  "(?s)(?=.*report_test_task_1)(?=.*report_test_task_2)(?=.*report_test_note_1).*" \
   "report handle handle:report_test_.*"; then
   ((tests_passed++))
 else
@@ -164,8 +165,8 @@ else
 fi
 
 # Test 13: report (default, list all handles)
-if run_test "report" \
-  ">? *(?s)(?=.*report_test_task_1)(?=.*report_test_task_2)(?=.*report_test_note_1).*" \
+if run_test "report (default, list all handles)" \
+  "(?s)(?=.*report_test_task_1)(?=.*report_test_task_2)(?=.*report_test_note_1).*" \
   "report"; then
   ((tests_passed++))
 else
