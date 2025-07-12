@@ -2,13 +2,21 @@
 # vim: sw=2 ts=2 expandtab
 # Clear descendants test
 
-# family tree diagram for test:
+# Original family tree diagram:
 #
 #        A
 #    /   |   \
 #   B    C    D
 #   |  /   \
 #   E  F    G
+
+# Family tree diagram after removals:
+#
+#        A
+#        |   \
+#        C    D
+#      /
+#      F
 
 setup() {
   create=create

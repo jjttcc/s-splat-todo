@@ -111,9 +111,9 @@ fi
 
 # Final result
 if [ $tests_failed -eq 0 ]; then
-  echo "\nAll change command E2E tests passed!"
+  echo -e "\nAll change command E2E tests passed!"
   exit 0
 else
-  echo "\n$tests_failed change command E2E test(s) failed."
+  echo -e "\n$tests_failed change command E2E test(s) failed."
   exit 1
 fi

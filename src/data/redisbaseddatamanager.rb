@@ -69,7 +69,8 @@ class RedisBasedDataManager
     result
   end
 
-  # "STodoTarget" whose handle is 'handle'
+  # "STodoTarget" whose handle is 'handle' - nil if there is no stored item
+  # with a handle of 'handle'.
   def target_for(handle)
     result = database.object(key_for(handle))
     if ! result.nil? then

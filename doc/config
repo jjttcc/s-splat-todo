@@ -1,24 +1,35 @@
-# Change these settings as needed/desired.
-specpath = /home/mylogin/.stodo/specs
-datapath = /home/mylogin/.stodo/data
+# The application/database name:
+app_name = main
+#app_name = side-issue
+# database type - file or redis (default to file)
+database_type = redis
+#database_type = file
+# invalid:
+#database_type = void
+specpath = /home/jtc/.stodo/specs
+datapath = /home/jtc/.stodo/data
 # Default path for user files, such as attachments:
-userpath = /home/mylogin/.stodo/user
+userpath = /home/jtc/.stodo/user
 ## Override the path of the "stodo git repository" -
 # (default is <datapath>/git) - uncomment/modify to change:
 #gitpath = /home/mylogin/mystodo/git
 # Example override of standard (/usr/bin) git executable location:
 #gitexe = /usr/local/bin/git
 # Default email address to use if not specified elsewhere:
-default_email = defaultuser@default.org
+default_email = jim.cochrane@gmail.com
 # comma-separated list of one or more backup paths:
-backuppath = /home2/backups/mylogin/stodo,/home3/backups/misc/mylogin/stodo/
-emailtemplate = mutt -s <subject> <addrs>
-# Path of directory in which to create log files:
-logpath = /tmp
-# Uncomment this line to log via 'syslog' instead of regular log files:
-#logtype = syslog
+#backuppath = /nfs/neptune/data/backups/stodo/maindb
+backuppath = /home2/backups/jtc/stodo
+emailtemplate = /home/jtc/bin/mutt -s <subject> <addrs>
+#emailtemplate = /bin/mutt -s <subject> <addrs>
+# dummy email client:
+#emailtemplate = /home/jtc/bin/mutt -s <subject> <addrs>
 # To use a user name other than your UNIX login name, edit/uncomment this:
 #user = mymyselfandi
+#logtype = syslog
+logtype = redis
+# The path of the gcalcli script (obsolete):
+#calendarcmd = /home/mylogin/lib/python2/bin/gcalcli
 # prefix to use for categories in some reports:
 categoryprefix = cat-
 # To specify no category prefix, uncomment this line:

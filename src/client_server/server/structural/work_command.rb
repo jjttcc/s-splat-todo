@@ -19,48 +19,8 @@ class WorkCommand
   def execute(the_caller)
     self.request = the_caller.request
     @command = request.command
-
-    # Initialize
-    @recursive = false
-    @force = false
-    @commit_msg = nil
-
-    # Separate options from positional args
-    @positional_args = []
     args = request.arguments[1..-1] || []
-    i = 0
-    while i < args.count
-      arg = args[i]
-      if arg.start_with?(OPT_CHAR)
-        case arg
-        when RECURSIVE_OPT
-          @recursive = true
-        when FORCE_OPT
-          @force = true
-        when GIT_MSG_OPT
-          if (i + 1) < args.count
-            @commit_msg = args[i+1]
-            i += 1 # Skip next arg
-          end
-        else
-          # Unknown option, treat as positional
-          @positional_args << arg
-        end
-      else
-        @positional_args << arg
-      end
-      i += 1
-    end
-
-    # Now, assign positional args to @arg1, @arg2, etc.
-    @arg1 = positional_args[0]
-    @arg2 = positional_args[1]
-    if positional_args.count > 2
-      @remaining_args = positional_args[2..-1]
-    else
-      @remaining_args = []
-    end
-
+    process_arguments(args)
     self.execution_succeeded = false
     self.response = ""
     self.database = the_caller.database
@@ -109,9 +69,16 @@ class WorkCommand
   RECURSIVE_OPT = '-r'
   FORCE_OPT     = '-f'
 
-  # If 'target.commit' is not empty, do a "git commit" on 'target', with
-  # 'got.commit' as the commit message.
+  # If a "git commit" is pending, obtain the commit message and use the
+  # configured STodoGit object to "add" 'target' to the git repo and commit
+  # it.
+  # NOTE: This method has been converted into a "null op" to prevent the
+  # 'git-lock' problems that occur due to multiple processes accessing the
+  # same git repository at the same time. This will likely remain as a
+  # null-op until the problem is solved or use of git for versioning has
+  # been removed.
   def git_commit(target)
+    if false then
     if ! commit_msg.nil? && ! commit_msg.empty?  then
       if target.commit.nil? || target.commit.empty? then
         target.commit = commit_msg
@@ -122,10 +89,47 @@ class WorkCommand
       repo.update_item(target)
       repo.commit target.commit
     end
+    end
   end
 
-  # This method is now obsolete. Argument parsing is handled in 'execute'.
-  def process_remaining_arguments
+  def process_arguments(args)
+    # Initialize
+    @recursive = false
+    @force = false
+    @commit_msg = nil
+    # Separate options from positional args
+    @positional_args = []
+    i = 0
+    while i < args.count
+      arg = args[i]
+      if arg.start_with?(OPT_CHAR)
+        case arg
+        when RECURSIVE_OPT
+          @recursive = true
+        when FORCE_OPT
+          @force = true
+        when GIT_MSG_OPT
+          if (i + 1) < args.count
+            @commit_msg = args[i+1]
+            i += 1 # Skip next arg
+          end
+        else
+          # Unknown option, treat as positional
+          @positional_args << arg
+        end
+      else
+        @positional_args << arg
+      end
+      i += 1
+    end
+    # Now, assign positional args to @arg1, @arg2, etc.
+    @arg1 = positional_args[0]
+    @arg2 = positional_args[1]
+    if positional_args.count > 2
+      @remaining_args = positional_args[2..-1]
+    else
+      @remaining_args = []
+    end
   end
 
   # A new 'StubbedSpec' object constructed from 'args'

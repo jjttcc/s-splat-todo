@@ -13,11 +13,12 @@ class ClearDescendantsCommand < WorkCommand
       orig_descs = target.descendants
       orig_desc_count = orig_descs.count
       target.remove_descendants(exceptions)
-      orig_descs = orig_descs - target.descendants
-      orig_descs.each do |d|
+      delete_list = orig_descs - target.descendants
+      delete_list.each do |d|
         database.delete(d.handle)
       end
       git_commit(target)
+      self.execution_succeeded = true
     end
   end
 
