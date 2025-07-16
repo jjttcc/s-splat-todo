@@ -51,6 +51,8 @@ class WorkCommand
   # Has the client requested that an attempt be made to force the operation
   # to be carried out if a "problem" is encountered?
   attr_reader   :force
+  # Has the client requested a short format for reports?
+  attr_reader   :short_format
 
   attr_accessor :request, :database
 
@@ -68,6 +70,7 @@ class WorkCommand
   GIT_MSG_OPT   = '-m'
   RECURSIVE_OPT = '-r'
   FORCE_OPT     = '-f'
+  SHORT_OPT     = '-s'
 
   # If a "git commit" is pending, obtain the commit message and use the
   # configured STodoGit object to "add" 'target' to the git repo and commit
@@ -97,6 +100,7 @@ class WorkCommand
     @recursive = false
     @force = false
     @commit_msg = nil
+    @short_format = false
     # Separate options from positional args
     @positional_args = []
     i = 0
@@ -108,6 +112,8 @@ class WorkCommand
           @recursive = true
         when FORCE_OPT
           @force = true
+        when SHORT_OPT
+          @short_format = true
         when GIT_MSG_OPT
           if (i + 1) < args.count
             @commit_msg = args[i+1]

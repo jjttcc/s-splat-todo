@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# vim: ts=2 sw=2 expandtab
+
+# Wrapper script for the stodo_client_repl
+# Usage: stodo-cli <command> [args...]
+# Requires STODO_USER_ID and STODO_APP_NAME environment variables to be set.
+
+if [ -z "$STODO_PATH" ]; then
+  STODO_CLIENT_REPL="$(dirname "$0")"/../src/stodo_client_repl
+else
+  STODO_CLIENT_REPL="$STODO_PATH"/stodo_client_repl
+fi
+
+# Check for required environment variables
+if [ -z "$STODO_USER_ID" ]; then
+  echo "Error: STODO_USER_ID environment variable is not set." >&2
+  exit 1
+fi
+
+if [ -z "$STODO_APP_NAME" ]; then
+  echo "Error: STODO_APP_NAME environment variable is not set." >&2
+  exit 1
+fi
+
+# Construct the command string from arguments passed to stodo-cli
+COMMAND_STRING="$*"
+
+# Execute stodo_client_repl, piping the command string to its stdin
+# Pass --no-prompt as a command-line argument to suppress its prompt
+echo "$COMMAND_STRING" | "$STODO_CLIENT_REPL" "$STODO_USER_ID" "$STODO_APP_NAME" "--no-prompt"

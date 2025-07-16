@@ -1,10 +1,11 @@
 class BaseReport
-  attr_reader :database, :message, :recursive
+  attr_reader :database, :message, :recursive, :short_format
 
-  def initialize(database, recursive = false)
+  def initialize(database, recursive = false, short_format = false)
     @database = database
     @message = ""
     @recursive = recursive
+    @short_format = short_format
   end
 
   # Abstract method to be implemented by subclasses

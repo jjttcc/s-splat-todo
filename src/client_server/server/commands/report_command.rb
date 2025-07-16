@@ -2,6 +2,7 @@ require 'work_command'
 require 'base_report'
 require 'handle_report'
 require 'complete_report'
+require 'children_report'
 require 'string_extensions'
 require 'fileutils'
 
@@ -14,7 +15,8 @@ class ReportCommand < WorkCommand
     super(config)
     @report_dispatch = {
       "handle"   => HandleReport,
-      "complete" => CompleteReport
+      "complete" => CompleteReport,
+      "children" => ChildrenReport
     }
   end
 
@@ -38,6 +40,17 @@ class ReportCommand < WorkCommand
       end
     else
       processed_criteria = criteria(criteria_arg)
+      if report_type == "children" && (criteria_arg.nil? || criteria_arg.empty?) then
+        # For 'report children' without a specific handle, get all top-level items
+        processed_criteria = database.handles.select do |h|
+          target = database[h]
+          target && target.parent_handle.nil?
+        end.sort
+        if processed_criteria.empty? then
+          failure_message = "No top-level items found."
+        end
+      end
+
       if processed_criteria.nil? then
         # Error in processing criteria, message already set by process_criteria
         failure_message = self.response # Copy message from process_criteria
@@ -50,7 +63,7 @@ class ReportCommand < WorkCommand
         if report_class.nil? then
           failure_message = "Report type '#{report_type}' not yet implemented."
         else
-          report_generator = report_class.new(database, recursive)
+          report_generator = report_class.new(database, recursive, short_format)
           report_content =
             report_generator.report(processed_criteria)
           if report_content.nil? then

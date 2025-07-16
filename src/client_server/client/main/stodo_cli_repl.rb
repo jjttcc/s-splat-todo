@@ -18,7 +18,9 @@ class STodoCliREPL < PublisherSubscriber
   private
 
   def pre_process(exe_args)
-    print PROMPT
+    if ! suppress_prompt then
+      print PROMPT
+    end
   end
 
   def process(exe_args)
@@ -72,6 +74,7 @@ class STodoCliREPL < PublisherSubscriber
 
   attr_accessor :message_broker, :command_line_request, :database
   attr_accessor :user_id, :app_name, :session
+  attr_reader   :suppress_prompt
 
   CLI_KEY_BASE = 'client-repl-request'
   PROMPT       = '> '
@@ -81,6 +84,17 @@ class STodoCliREPL < PublisherSubscriber
     Configuration.debugging = false
     config = Configuration.instance
     self.database = config.data_manager
+
+    # Parse command-line arguments for --no-prompt / -np
+    @suppress_prompt = false
+    ARGV.each_with_index do |arg, i|
+      if arg == '--no-prompt' || arg == '-np' then
+        @suppress_prompt = true
+        ARGV.delete_at(i) # Remove the argument from ARGV
+        break
+      end
+    end
+
     set_user_and_appname
     app_config = config.app_configuration
     self.message_broker = app_config.application_message_broker
