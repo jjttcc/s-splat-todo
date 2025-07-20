@@ -1,6 +1,8 @@
-require_relative 'base_report'
+require 'timetools'
+require 'base_report'
 
 class CompleteReport < BaseReport
+  include TimeTools
 
   def report(criteria)
     result = []
@@ -50,6 +52,26 @@ class CompleteReport < BaseReport
       report_lines << "#{indent}#{label.ljust(max_label_len)} #{value}".rstrip
     end
     result = report_lines.join("\n") + "\n"   # End with a newline.
+
+    # Add Reminders section
+    if ! target.reminders.empty? then
+      report_lines << "#{indent}Reminders:"
+      target.reminders.each do |reminder|
+        reminder_details = ""
+        if
+          reminder.respond_to?(:period_spec) && ! reminder.period_spec.nil?
+        then
+          reminder_details = "Periodic (every #{reminder.period_spec}) - "
+        else
+          reminder_details = "One-Time - "
+        end
+        reminder_details += "Due: #{time_24hour(reminder.date_time)}"
+        report_lines << "#{indent}  - #{reminder_details}"
+      end
+    end
+
+    result = report_lines.join("\n") + "\n"   # End with a newline.
+
     if recursive then
       target.children.each do |child|
         result += stodo_item_report(child, indent + "  ")

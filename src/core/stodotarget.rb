@@ -1205,19 +1205,24 @@ class STodoTarget
     end
     old_date_for = {}
     rems.each { |r| old_date_for[r] = r.date_time.getlocal; r.trigger }
-    rems.each do |r|
-      if ! @ongoing_email_addrs.empty? then
-        # Set notification components to be used by the 'notifiers'.
-        @notification_subject = r.addendum + message_subject_label +
-          current_message_subject + subject_suffix(client) +
-          " #{old_date_for[r]}"
-        @full_notification_message = current_message + current_message_appendix
-        @notification_email_addrs = @ongoing_email_addrs
-        @short_notification_message = ""
-        notifiers.each do |n|
-          n.send_message self
+    begin
+      rems.each do |r|
+        if ! @ongoing_email_addrs.empty? then
+          # Set notification components to be used by the 'notifiers'.
+          @notification_subject = r.addendum + message_subject_label +
+            current_message_subject + subject_suffix(client) +
+            " #{old_date_for[r]}"
+          @full_notification_message = current_message +
+            current_message_appendix
+          @notification_email_addrs = @ongoing_email_addrs
+          @short_notification_message = ""
+          notifiers.each do |n|
+            n.send_message self
+          end
         end
       end
+    rescue Exception => e
+      raise e
     end
     if ! rems.empty? then
       update    # The 'reminders' that were due likely changed state.

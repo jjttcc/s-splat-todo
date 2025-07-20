@@ -467,7 +467,9 @@ class Configuration
 
   def initialize_database
     if database_type == REDIS_TYPE_TAG then
-      self.db_config = RedisDBConfig.new(self)
+      skip_add_to_global_set = (service_name == 'notification-service')
+      self.db_config = RedisDBConfig.new(self,
+                         skip_global_set_add: skip_add_to_global_set)
       @data_manager = db_config.data_manager
     else
       check('file db type') do

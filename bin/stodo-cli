@@ -22,9 +22,41 @@ if [ -z "$STODO_APP_NAME" ]; then
   exit 1
 fi
 
-# Construct the command string from arguments passed to stodo-cli
-COMMAND_STRING="$*"
+# The first argument is the command
+COMMAND="$1"
+shift
 
-# Execute stodo_client_repl, piping the command string to its stdin
+# Initialize the JSON arguments array, starting with the command itself.
+ARGS_JSON="[\"$COMMAND\""
+
+# Prepare arguments for processing
+ARGS_TO_PROCESS=()
+case "$COMMAND" in
+  add)
+    # For the 'add' command, if the first argument is not an option, it's
+    # the type.  If no type is specified, default to 'task'.
+    if [[ $# -gt 0 && "$1" != -* ]]; then
+      ARGS_TO_PROCESS+=("$1")
+      shift
+    else
+      ARGS_TO_PROCESS+=("task")
+    fi
+    ;;
+esac
+
+# Add remaining original arguments
+ARGS_TO_PROCESS+=("$@")
+
+# Process the full list of arguments into the JSON string
+for arg in "${ARGS_TO_PROCESS[@]}"; do
+  ARGS_JSON+=",\"$arg\""
+done
+
+ARGS_JSON+="]"
+
+# Construct the final JSON command
+JSON_COMMAND="{\"command\":\"$COMMAND\",\"args\":$ARGS_JSON}"
+
+# Execute stodo_client_repl, piping the JSON command to its stdin
 # Pass --no-prompt as a command-line argument to suppress its prompt
-echo "$COMMAND_STRING" | "$STODO_CLIENT_REPL" "$STODO_USER_ID" "$STODO_APP_NAME" "--no-prompt"
+echo "$JSON_COMMAND" | "$STODO_CLIENT_REPL" "$STODO_USER_ID" "$STODO_APP_NAME" "--no-prompt"

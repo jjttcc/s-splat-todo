@@ -13,6 +13,7 @@ class WorkServer < PublisherSubscriber
 
   public
 
+  # (Make the 'process_request' method private:)
   private :process_request
 
   private

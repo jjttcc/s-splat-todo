@@ -40,3 +40,5 @@ test/attachments
 /tools/
 Gemfile.lock
 scripts/.notes
+gemini/
+sysadmin/

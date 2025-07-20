@@ -8,6 +8,7 @@ class SessionRequestCommand < WorkCommand
     session = ClientSession.new(new_session_id, request.user_id,
                                 request.app_name)
     the_caller.send_session(session)
+    self.execution_succeeded = true
   end
 
   def new_session_id

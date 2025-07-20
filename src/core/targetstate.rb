@@ -1,9 +1,10 @@
 require 'ruby_contracts'
 require 'targetstatevalues'
+require 'timetools'
 
 # Abstraction for the status of a STodoTarget
 class TargetState
-  include TargetStateValues
+  include TargetStateValues, TimeTools
   include Contracts::DSL
 
   public

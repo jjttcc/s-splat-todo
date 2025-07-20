@@ -19,12 +19,12 @@ class RedisDBConfig
   attr_writer :data_manager
 
   pre :config_exists do |config| ! config.nil? end
-  def initialize(config)
+  def initialize(config, skip_global_set_add: false)
     self.config = config
     broker = ApplicationConfiguration.application_message_broker
-    ###Note: Will need to add config.app_name:
+
     self.data_manager = RedisBasedDataManager.new(broker, config.user,
-                                                 config.app_name)
+                                                 config.app_name, skip_global_set_add: skip_global_set_add)
   end
 
 end

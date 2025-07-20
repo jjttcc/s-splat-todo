@@ -1,5 +1,6 @@
 require 'ruby_contracts'
 require 'errortools'
+require 'stodo_global_constants'
 
 # Data manager that uses Redis for its implementation
 #!!!!Note: may need to use redis transactions:
@@ -7,7 +8,7 @@ require 'errortools'
 #  https://redis.io/ebook/part-2-core-concepts/chapter-4-keeping-data-safe-and-ensuring-performance/4-4-redis-transactions/
 #  https://medium.com/redis-with-raphael-de-lio/understanding-transactions-in-redis-how-to-3220e83f215c
 class RedisBasedDataManager
-  include Contracts::DSL, ErrorTools
+  include Contracts::DSL, ErrorTools, STodoGlobalConstants
 
   public  ###  app_name and user access/setting
 
@@ -17,12 +18,22 @@ class RedisBasedDataManager
   # The user name associated with a particular user-client-session
   attr_reader  :user
 
+  attr_accessor :skip_global_set_add # Added accessor for the flag
+
   # Set 'app_name' and 'user'.
-  pre :args_exist do |aname, u| ! (aname.nil? || u.nil?) end
+  pre :args_exist do |aname, u|
+    ! (aname.nil? || u.nil?) && ! (aname.empty? || u.empty?)
+  end
   def set_appname_and_user(aname, u)
     @app_name = aname
     @user = u
     self.db_key = key_for(DB_KEY_BASE)
+    # Add the user:app combination to the global set
+    if ! skip_global_set_add then # Check the flag
+      database.add_to_set(
+        STodoGlobalConstants::ALL_USER_APP_COMBINATIONS_KEY,
+        "#{user}:#{app_name}")
+    end
   end
 
   public  ###  Basic operations - Query
@@ -69,8 +80,7 @@ class RedisBasedDataManager
     result
   end
 
-  # "STodoTarget" whose handle is 'handle' - nil if there is no stored item
-  # with a handle of 'handle'.
+  # "STodoTarget" whose handle is 'handle'
   def target_for(handle)
     result = database.object(key_for(handle))
     if ! result.nil? then
@@ -169,13 +179,13 @@ class RedisBasedDataManager
     end
   end
 
-  # The string 's' with "#{self.user}." prepended to it and, if app_name is
-  # not nil, "#{self.app_name}." is prepended to the above
+  # The string 's' with "#{self.user}." and #{self.app_name}." prepended
+  # to it
+  pre :args_exist do
+    ! (user.nil? || app_name.nil?) && ! (user.empty? || app_name.empty?)
+  end
   def key_for(s)
-    result = "#{user}.#{s}"
-    if ! app_name.nil? && ! app_name.empty? then
-      result = "#{self.app_name}.#{result}"
-    end
+    result = "#{user}.#{app_name}.#{s}"
     result
   end
 
@@ -212,14 +222,19 @@ class RedisBasedDataManager
 
   DB_KEY_BASE = 'stodo-database'
 
-  pre  :db_exists do |db| ! db.nil? end
-  pre  :user_exists do |user| ! user.nil? end
+  pre :usr_appname_exist do |db, u, aname|
+    ! (aname.nil? || u.nil?) && ! (aname.empty? || u.empty?)
+  end
   post :db_set do |res, db| self.database == db end
   post :user_set do |res, user| self.database == user end
-  def initialize(db, user, appname = '')
+  def initialize(db, user, appname, skip_global_set_add: false)
+    self.skip_global_set_add = skip_global_set_add
     self.database = db
     if ! user.nil? && ! appname.nil? then
       set_appname_and_user(appname, user)
+    else
+      raise "RedisBasedDataManager.initialize: user and appname must not" +
+        "be nil"
     end
   end
 

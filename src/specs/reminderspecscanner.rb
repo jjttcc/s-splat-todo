@@ -1,4 +1,5 @@
 require 'datetimenotificationtools'
+require 'dateparser'
 
 # Instances of this class, when created, scan the given reminder specs and
 # the date_time, period_count, and period_spec.
@@ -15,116 +16,45 @@ class ReminderSpecScanner
 
   ### Regular expressions for reminder-spec components
   COMMA = Regexp.new(' *, *| *at *')    # i.e., match a comma or an "at"
-  ## date types (re the specification):
-  YMD, MDY, WKDAY = 1, 2, 3
 
   # Scan the contents of 'reminder_spec' and store the appropriate
   # specification from the spec into date_time, period_count, and period_spec.
   def initialize(reminder_spec)
-    @date_time = ""
-    # (comma-separated parts:)
+    @date_time = nil
+    @period_count = nil
+    @period_spec = nil
+
+    # First, try to extract period info
     c_s_parts = reminder_spec.split(COMMA).map { |w| w.downcase }
     word_groups = []
     c_s_parts.each do |p|
       word_groups << p.split()
     end
-    date_type = date_type_for(word_groups)
-    if word_groups.count > 1 then
-      # period_count and period_spec, if they exist are always in the last
-      # element of word_groups.
+
+    if word_groups.count > 0 then
       @period_count, @period_spec = period_info(word_groups.last)
     end
-    case date_type
-    when YMD
-      @date_time = date_time_from_ymd(word_groups, self.period_spec != nil)
-    when MDY
-      @date_time = date_time_from_mdy(word_groups, self.period_spec != nil)
-    when WKDAY
-      @date_time = date_time_from_wkday(word_groups, self.period_spec != nil)
-    end
-  end
 
-  def date_type_for(groups)
-    weekdays = ["monday", "tuesday", "wednesday", "thursday", "friday",
-                "saturday", "sunday", "today"]
-    result = nil
-    if
-      groups.count > 1 &&
-      groups[1][0] =~ /^\d{4}$/ && groups[0].count == 2
-    then
-      result = MDY
-    elsif groups[0][0] =~ /^\d{4}-\d\d?-\d\d?$/ then
-      result = YMD
-    else
-      first_part = groups[0]
-      target = first_part[0]
-      if target =~ /next/i then
-        target = first_part[1]
-      end
-      if weekdays.include?(target.downcase) then
-        result = WKDAY
-      end
+    # Now, try to parse the date/time component
+    date_time_string = reminder_spec
+    if @period_spec then
+      # If a period is found, remove it from the string before parsing date
+      # This is a simplification; a more robust parser would handle this better
+      date_time_string =
+        reminder_spec.sub(
+          /every \d+ (minute|hour|day|week|month|year)s?/i, '').strip
     end
-    result
-  end
 
-  def date_time_from_ymd(word_groups, ignore_last_group)
-    result = word_groups[0][0]
-    time_index = nil
-    if ignore_last_group then
-      if word_groups.count >= 3 then
-        time_index = word_groups.count - 2
-      end
-    else
-      if word_groups.count >= 2 then
-        time_index = 1
-      end
-    end
-    if time_index != nil then
-      result = "#{result} #{word_groups[time_index][0]}"
-    end
-    result
-  end
+    date_parser = DateParser.new([date_time_string], true)
+    parsed_dates = date_parser.result
 
-  def date_time_from_mdy(word_groups, ignore_last_group)
-    result = "#{word_groups[0][0]} #{word_groups[0][1]}"  # month, day
-    result = "#{result}, #{word_groups[1][0]}"            # year
-    time_index = nil
-    if ignore_last_group then
-      if word_groups.count >= 4 then
-        time_index = word_groups.count - 2
-      end
-    else
-      if word_groups.count >= 3 then
-        time_index = 2
-      end
+    if parsed_dates && ! parsed_dates.empty? && parsed_dates[0] then
+      @date_time = parsed_dates[0]
+    elsif @period_spec then
+      # If it's a periodic reminder and no specific date was parsed,
+      # default to now.
+      @date_time = Time.now.to_s # Convert to string here
     end
-    if time_index != nil then
-      result = "#{result} #{word_groups[time_index][0]}"
-    end
-    result
-  end
-
-  def date_time_from_wkday(word_groups, ignore_last_group)
-    result = word_groups[0][0]
-    if word_groups[0].count > 1 then
-      # Assume result == "next" before this assignment.
-      result = "#{result} #{word_groups[0][1]}"
-    end
-    time_index = nil
-    if ignore_last_group then
-      if word_groups.count >= 3 then
-        time_index = word_groups.count - 2
-      end
-    else
-      if word_groups.count >= 2 then
-        time_index = 1
-      end
-    end
-    if time_index != nil then
-      result = "#{result} #{word_groups[time_index][0]}"
-    end
-    result
   end
 
   # An array: [period_count, period_spec], extracted from 'period_array'

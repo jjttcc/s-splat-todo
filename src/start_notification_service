@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# vim: ts=2 sw=2 expandtab
+
+# Startup script for the stodo Notification Service.
+
+progname=$(basename "$0")
+stodo_envpath="$STODO_PATH"
+
+# Source the server_setup script to set RUBYLIB and other environment vars.
+. "$stodo_envpath"/start_up/server_setup
+
+# Call the function to set RUBYLIB.
+set_rubylib
+
+# Define the path to the NotificationService Ruby runner script.
+NOTIFICATION_SERVICE_RUNNER="$stodo_envpath"/main/stodo_notify_runner.rb
+
+# Check if the script exists.
+if [ ! -f "$NOTIFICATION_SERVICE_RUNNER" ]; then
+  echo "Error: Notification service runner script not found at " \
+       "$NOTIFICATION_SERVICE_RUNNER" >&2
+  exit 1
+fi
+
+# Execute the NotificationService runner.
+# The 'exec' command replaces the current shell process with the Ruby process,
+# which is good for long-running services.
+exec "$NOTIFICATION_SERVICE_RUNNER"

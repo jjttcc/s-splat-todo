@@ -14,7 +14,7 @@ set_rubylib() {
   dirlist="$dirlist lib/util lib/util/redis external/util"
   dirlist="$dirlist $clsrv/support $clsrv/communication $clntd/main"
   dirlist="$dirlist $clsrv/structural $clsrv/facility $clsrv/login"
-  dirlist="$dirlist $clsrv/command_facilities"
+  dirlist="$dirlist $clsrv/command_facilities $clsrv/data"
   rubylib="RUBYLIB=$stodo_envpath/core"
   for d in $dirlist; do
     rubylib="$rubylib:$stodo_envpath/$d"
