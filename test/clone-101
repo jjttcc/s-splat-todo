@@ -14,10 +14,16 @@ setup() {
   create=create
   delete=delete
   clone=clone
+  check_parent_func=checkparent
+  check_child_func=checkchild
+  check_no_children_func=check_no_children
   if [ "$TEST_REPL" ]; then
     create=repl_create
     delete=repl_delete
     clone=repl_clone
+    check_parent_func=repl_checkparent
+    check_child_func=repl_checkchild
+    check_no_children_func=repl_check_no_children
   fi
 }
 
@@ -95,7 +101,7 @@ for testhndl in $parentB $parentC $parentD; do
   set_main_vars
   # Create the target (child) item.
   $create
-  if ! checkparent $testhndl $intended_parent; then
+  if ! $check_parent_func $testhndl $intended_parent; then
     echo "error: $intended_parent is not parent of $testhndl" >&2
   fi
 done
@@ -105,7 +111,7 @@ for testhndl in $childE; do
   set_main_vars
   # Create the target (child) item.
   $create
-  if ! checkparent $testhndl $intended_parent; then
+  if ! $check_parent_func $testhndl $intended_parent; then
     echo "error: $intended_parent is not parent of $testhndl" >&2
   fi
 done
@@ -115,7 +121,7 @@ for testhndl in $childF $childG; do
   set_main_vars
   # Create the target (child) item.
   $create
-  if ! checkparent $testhndl $intended_parent; then
+  if ! $check_parent_func $testhndl $intended_parent; then
     echo "error: $intended_parent is not parent of $testhndl" >&2
   fi
 done
@@ -127,7 +133,8 @@ clonefile=$(mktemp /tmp/clone$$.XXXXX)
 stodo rep comp $parentC >$orig_after_file
 stodo rep comp $cloneA >$clonefile
 
-if ! check_no_children $cloneA; then
+stodo rep comp $cloneA
+if ! $check_no_children_func $cloneA; then
   echo "$cloneA incorrectly has children:" >&2
   echo -e "  \c"
   grep children: $clonefile >&2
@@ -136,14 +143,15 @@ else
 fi
 ((++testcount))
 
-if ! checkchild $ancestorA $cloneA; then
+stodo rep comp $ancestorA
+if ! $check_child_func $ancestorA $cloneA; then
   echo "error: $cloneA is not one of $ancestorA's children" >&2
 else
   ((++successcount))
 fi
 ((++testcount))
 
-if ! checkparent $cloneA $ancestorA; then
+if ! $check_parent_func $cloneA $ancestorA; then
   echo "error: $ancestorA is not parent of $cloneA" >&2
 else
   ((++successcount))

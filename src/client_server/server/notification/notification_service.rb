@@ -10,12 +10,16 @@ require 'global_notification_data_manager'
 class NotificationService
   include Service, STodoServicesConstants
 
+  public
+
   # The interval (in seconds) between checks for due reminders.
   CHECK_INTERVAL_SECONDS = 60
 
+  attr_accessor :dirty
+
   private
 
-  attr_accessor :global_data_manager, :mailer, :email_notifier, :dirty
+  attr_accessor :global_data_manager, :mailer, :email_notifier
   attr_writer   :config
 
   public
@@ -50,33 +54,45 @@ class NotificationService
   # Checks all stodo items for due reminders and sends notifications.
   def process(exe_args)
     puts "Checking for due reminders..."
+#!!!binding.irb
+    database = RedisBasedDataManager.new(
+      config.app_configuration.application_message_broker, nil, nil,
+      skip_global_set_add: true)
     all_grouped_targets = global_data_manager.all_targets
     all_grouped_targets.each do |combo, targets_for_combo|
-      puts "Processing reminders for user/app: #{combo}"
+puts "Processing reminders for user/app: #{combo}"
       changed_items_for_combo = []
       # Instantiate RedisBasedDataManager for this specific combo to
       # save changes
       app_name, user_id = combo.split(':', 2)
-      data_manager_for_combo = RedisBasedDataManager.new(
-        config.app_configuration.application_message_broker, user_id, app_name)
+      database.set_appname_and_user(app_name, user_id)
+binding.irb
       targets_for_combo.values.each do |target|
         self.dirty = false    # Reset dirty flag for each target
+        target.db = database
         target.add_notifier(email_notifier)
         target.perform_ongoing_actions(self)
+#!!!binding.irb
         if self.dirty then
           changed_items_for_combo << target
         end
       end
+binding.irb
       if ! changed_items_for_combo.empty? then
         puts "Persisting #{changed_items_for_combo.count} changed items" +
           "for #{combo}."
+#!!!Is this loop needed, or did they already update themselves?
         changed_items_for_combo.each do |target|
-          data_manager_for_combo.store_target(target)
+#!!!          database.store_target(target)
+#!!!?:          target.force_update
         end
+binding.irb
       end
     end
   rescue StandardError => e
     $log.error("Error in process (NotificationService): #{e.message}")
+binding.irb
+    raise e
     # Consider more robust error handling, e.g., retry logic, dead-letter queue
   end
 

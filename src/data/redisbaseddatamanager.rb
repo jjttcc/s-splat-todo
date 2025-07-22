@@ -18,7 +18,8 @@ class RedisBasedDataManager
   # The user name associated with a particular user-client-session
   attr_reader  :user
 
-  attr_accessor :skip_global_set_add # Added accessor for the flag
+  # Boolean: Skip adding user/appname to ALL_USER_APP_COMBINATIONS_KEY set?
+  attr_accessor :skip_global_set_add
 
   # Set 'app_name' and 'user'.
   pre :args_exist do |aname, u|
@@ -28,8 +29,9 @@ class RedisBasedDataManager
     @app_name = aname
     @user = u
     self.db_key = key_for(DB_KEY_BASE)
-    # Add the user:app combination to the global set
-    if ! skip_global_set_add then # Check the flag
+    if ! skip_global_set_add then
+      # Add the user:app combination to the global set
+binding.irb
       database.add_to_set(
         STodoGlobalConstants::ALL_USER_APP_COMBINATIONS_KEY,
         "#{user}:#{app_name}")
@@ -222,19 +224,22 @@ class RedisBasedDataManager
 
   DB_KEY_BASE = 'stodo-database'
 
-  pre :usr_appname_exist do |db, u, aname|
-    ! (aname.nil? || u.nil?) && ! (aname.empty? || u.empty?)
-  end
+  pre :db_exists do |db| ! db.nil? end
+#!!!remove these pre/post?:
+#  pre :usr_appname_exist do |db, u, aname|
+#    ! (aname.nil? || u.nil?) && ! (aname.empty? || u.empty?)
+#  end
+#  post :user_set do |res, user| self.database == user end
   post :db_set do |res, db| self.database == db end
-  post :user_set do |res, user| self.database == user end
   def initialize(db, user, appname, skip_global_set_add: false)
     self.skip_global_set_add = skip_global_set_add
     self.database = db
     if ! user.nil? && ! appname.nil? then
       set_appname_and_user(appname, user)
-    else
-      raise "RedisBasedDataManager.initialize: user and appname must not" +
-        "be nil"
+#    else
+#[obsolete - remove this else block]
+#      raise "RedisBasedDataManager.initialize: user and appname must not" +
+#        "be nil"
     end
   end
 

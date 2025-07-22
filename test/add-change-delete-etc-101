@@ -7,10 +7,12 @@ setup() {
   create=create
   delete=delete
   modify=modify
+  report=report
   if [ "$TEST_REPL" ]; then
     create=repl_create
     delete=repl_delete
     modify=repl_modify
+    report=repl_report
   fi
 }
 
@@ -27,12 +29,12 @@ parse_args() {
 create_test() {
   local result=0
   $create $testhndl
-  if report $testhndl|awk 'BEGIN { hitcount = 0; EXPCOUNT = 5 }
-    /handle: *'$testhndl'/ {  ++hitcount }
-    /title: *'"$origttl"'/ {  ++hitcount }
-    /email: *'$email'/ {  if (! emailset) { ++hitcount}; ++emailset }
-    /description: *'"$desc"'/ {  ++hitcount }
-    /type: *'$testtype'/ {  ++hitcount }
+  local report_output=$($report $testhndl)
+  if echo "$report_output" | awk 'BEGIN { hitcount = 0; EXPCOUNT = 4 }
+    /> Handle: *'$testhndl'/ {  ++hitcount }
+    /Title: *'"$origttl"'/ {  ++hitcount }
+    /Description: *'"$desc"'/ {  ++hitcount }
+    /Type: *'$testtype'/ {  ++hitcount }
     END {
       if (hitcount != EXPCOUNT) {
         print "(expected " EXPCOUNT " matches, got: " hitcount ")"
@@ -53,13 +55,13 @@ create_test() {
 modify_test() {
   local result=0
   $modify $testhndl
-  if report $testhndl|awk 'BEGIN { hitcount = 0; EXPCOUNT = 6 }
-    /handle: *'$testhndl'/ {  ++hitcount }
-    /title: *'"$newttlregex"'/ {  ++hitcount }
-    /email: *'$email'/ {  if (! emailset) { ++hitcount}; ++emailset }
-    /description: *'"$desc"'/ {  ++hitcount }
-    /type: *'$testtype'/ {  ++hitcount }
-    /priority: *'$newprio'/ {  ++hitcount }
+  local report_output=$($report $testhndl)
+  if echo "$report_output" | awk 'BEGIN { hitcount = 0; EXPCOUNT = 5 }
+    /> Handle: *'$testhndl'/ {  ++hitcount }
+    /Title: *'"$newttlregex"'/ {  ++hitcount }
+    /Description: *'"$desc"'/ {  ++hitcount }
+    /Type: *'$testtype'/ {  ++hitcount }
+    /Priority: *'$newprio'/ {  ++hitcount }
     END {
       if (hitcount != EXPCOUNT) {
         print "(expected " EXPCOUNT " matches, got: " hitcount ")"
@@ -81,7 +83,7 @@ ac_delete_test() {
   local result=0
   if ! [ "$STODO_KEEP_ARTIFACTS" ]; then
     $delete $testhndl
-    if report $testhndl|grep -q "$testhndl"; then
+    if $report $testhndl|grep -qi "handle: *$testhndl$"; then
       echo "deletion test FAILED in deletion of $testhndl"
       result=97
     else

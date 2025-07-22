@@ -419,6 +419,11 @@ class STodoTarget
   # Note: No databse update is done. The caller is expected to change
   # the copy(self)'s handle after calling 'clone' and then calling
   # 'force_update' to "force" the clone to be updated.
+  #
+  # This method ensures that:
+  # 1. The cloned object inherits the `parent_handle` from the original.
+  # 2. The cloned object does NOT inherit children from the original; its
+  #    `children` collection is explicitly cleared.
   pre  :invariant do invariant end
   post :parent_h_match do |result, orig|
     self.parent_handle == orig.parent_handle

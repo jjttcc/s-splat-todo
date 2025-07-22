@@ -24,8 +24,6 @@ class STodoGit
   attr_reader :path
 
   # The handle of each item in the stodo git repository, as an array
-  post 'repo_handles exists' do ! @repo_handles.nil? end
-  post 'repo_handles hash_exists' do ! @repo_handles_hash.nil? end
   def handles_in_repo
     # Ensure that cache (@repo_handles and @repo_handles_hash) exists:
     build_repo_handles_hash
@@ -39,7 +37,6 @@ class STodoGit
   ###  Status report
 
   # Is the item associated with 'handle' in the git repository (class)?
-  pre 'handle' do |handle| ! handle.nil? end
   def in_git(handle)
     # Ensure that cache (@repo_handles and @repo_handles_hash) exists:
     build_repo_handles_hash
@@ -62,7 +59,6 @@ class STodoGit
   # Display the git log for the specified handles. If 'hndls' is nil,
   # display the entire log.
   # Return the result as an array as well.
-  pre 'hndls is array' do |hndls| hndls.nil? || hndls.is_a?(Array) end
   def show_git_log hndls = [], outfile = $stdout
     outer_sep = '=' * 50
     report = ""
@@ -98,8 +94,6 @@ class STodoGit
 
   # Display the contents of the specified (via 'handles') items of the
   # specified commit.
-  pre 'id-exists' do |cid| ! cid.nil? && ! cid.empty? end
-  pre 'handles: array' do |c, h| ! h.nil? && h.is_a?(Array) end
   def show_git_version(commit_id, handles, outfile = $stdout)
     outer_sep = '=' * 50
     report = ""
@@ -133,9 +127,6 @@ class STodoGit
   # 'item' and 'git add' it. If the file associated with 'item' does not
   # exist (i.e., item is not yet in the git repository), create it before
   # writing item's contents to it and git-adding it.
-  pre  'item-good' do |item| ! item.nil? && item.is_a?(STodoTarget) end
-  post 'u-count incremented by 1' do update_count > 0 end
-  post 'commit pending' do commit_pending end
   def update_file item
     filepath = File.join(path, item.handle)
     File.open(filepath, "w") do |f|
@@ -150,10 +141,6 @@ class STodoGit
   # 'item_list' (STodoTarget objects) and 'git add' them.
   # If 'only_git_items' then only do an update for members of 'items' that
   # are already in git - i.e., bypass non-git items.
-  pre  'items-good' do |ilist| ! ilist.nil? && ilist.is_a?(Array) end
-  post 'counted if not only_git_items' do |il, ogi|
-    implies(! ogi && il.count > 0, update_count > 0)
-  end
   def update_files item_list, only_git_items = false
     items = item_list
     if only_git_items then
@@ -172,7 +159,6 @@ class STodoGit
   # Do an 'update_items' on 'items' and 'commit'.
   # If 'only_git_items' then only do an update for members of 'items' that
   # are already in git - i.e., bypass non-git items.
-  pre  'items-good' do |items| ! items.nil? && items.is_a?(Array) end
   def update_files_and_commit(items, commit_msg, only_git_items = false)
     old_update_count = update_count
     update_items(items, only_git_items)
@@ -185,11 +171,6 @@ class STodoGit
 
   # Move ('git mv') the specified file/handle (old_and_new_hndl[0]) to have
   # the new name (old_and_new_hndl[1]).
-  pre  'hndl-array' do |oanh|
-    ! oanh.nil? && oanh.is_a?(Array) && oanh.count >= 2
-  end
-  pre  'old-handle-in-git' do |oanh| in_git(oanh[0]) end
-  post 'commit pending' do commit_pending end
   def move_file old_and_new_hndl
     config = Configuration.instance
     old_handle, new_handle = old_and_new_hndl[0], old_and_new_hndl[1]
@@ -202,9 +183,6 @@ class STodoGit
   end
 
   # Remove the specified file/item (IDd with item.handle).
-  pre  'item-good' do |item| ! item.nil? && item.is_a?(STodoTarget) end
-  pre  'item-in-git' do |item| in_git(item.handle) end
-  post 'commit pending' do commit_pending end
   def delete_file item
     git.rm item.handle
     # Force the "handles" cache to be rebuilt.
@@ -215,8 +193,6 @@ class STodoGit
   alias_method :delete_item, :delete_file
 
   # git-commit any pending, "staged" changes.
-  post 'count reset' do update_count == 0 end
-  post 'commit NOT pending' do ! commit_pending end
   def commit commit_msg = nil
     if commit_pending then
       if ! commit_msg.nil? && ! commit_msg.empty? then
@@ -260,7 +236,6 @@ class STodoGit
   ### Implementation - utilities
 
   # A readable report based on commit 'c'
-  pre 'c exists' do |c| ! c.nil? end
   def commit_report c
     "sha:     #{c.sha}\n" +
     "date:    #{c.date}\n" +
@@ -269,7 +244,6 @@ class STodoGit
   end
 
   # If 'force', (re-)build @repo_handles even if it already exists.
-  post 'repo_handles exists' do ! @repo_handles.nil? end
   def build_repo_handles force = false
     if force || @repo_handles.nil? then
       config = Configuration.instance
@@ -282,8 +256,6 @@ class STodoGit
 
   # If 'force', (re-)build @repo_handles and @repo_handles_hash even if
   # they already exist.
-  post 'repo_handles hash_exists' do ! @repo_handles_hash.nil? end
-  post 'repo_handles exists' do ! @repo_handles.nil? end
   def build_repo_handles_hash force = false
     if force then
       @repo_handles = nil

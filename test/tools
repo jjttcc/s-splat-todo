@@ -84,6 +84,30 @@ repl_create() {
   echo add $ST_TYPE $STODO_OPTS|$repl $user $appname
 }
 
+repl_checkparent() {
+  local h=$1 p=$2
+  local output=$(echo "report complete $h" | $repl $user $appname)
+  echo "$output" | grep -q "^Parent: *$p$"
+}
+
+repl_checkchild() {
+  local prnt=$1 chld=$2
+  result=101
+  local output=$(echo "report complete $prnt" | $repl $user $appname)
+  echo "$output" | grep -q "Children: *.*\<$chld\>"
+  result=$?
+  return $result
+}
+
+repl_check_no_children() {
+  local hndl=$1
+  result=101
+  local output=$(echo "report complete $hndl" | $repl $user $appname)
+  echo "$output" | grep -q 'Children: *$'
+  result=$?
+  return $result
+}
+
 specpath() {
     stodo set|awk '/^spec_path/ {print $NF}'
 }
@@ -130,7 +154,24 @@ report() {
     no_h=true set_opts_from_env
     hndl=$ST_HANDLE
   fi
-  eval stodo rep comp $hndl
+  if [ "$TEST_REPL" ]; then
+    echo "report complete $hndl" | $repl $user $appname | sed -e "s/^> //g" -e '$s/\n*$//' -e '/^temporary-session-id/d'
+  else
+    eval stodo rep comp $hndl
+  fi
+}
+
+repl_report() {
+  local hndl=$1
+  if ! handle_exists; then
+    echo "report: fatal: ST_HANDLE is not set." >&2
+    return 7
+  fi
+  if [ ! "$hndl" ]; then
+    no_h=true set_opts_from_env
+    hndl=$ST_HANDLE
+  fi
+  echo "report complete $hndl" | $repl $user $appname
 }
 
 modify() {

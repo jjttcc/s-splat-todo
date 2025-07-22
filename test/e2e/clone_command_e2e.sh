@@ -61,6 +61,13 @@ cleanup() {
   run_command "delete cloned_parent_recursive" > /dev/null 2>&1
   run_command "delete cloned_child_recursive" > /dev/null 2>&1
   run_command "delete cloned_grandchild_recursive" > /dev/null 2>&1
+  run_command "delete parent_for_clone_test" > /dev/null 2>&1
+  run_command "delete child_for_clone_test" > /dev/null 2>&1
+  run_command "delete cloned_parent_for_clone_test" > /dev/null 2>&1
+  run_command "delete parent_of_complex_item" > /dev/null 2>&1
+  run_command "delete complex_item" > /dev/null 2>&1
+  run_command "delete child_of_complex_item" > /dev/null 2>&1
+  run_command "delete cloned_complex_item" > /dev/null 2>&1
 }
 
 # Ensure cleanup runs on exit
@@ -90,7 +97,74 @@ else
   ((tests_failed++))
 fi
 
-# --- Test 2: Recursive Clone ---
+# --- Test 2: Clone with Parent and Children (Children should NOT be cloned) ---
+run_command "add task -h parent_for_clone_test -t 'Parent for Clone Test'" > /dev/null
+run_command "add task -h child_for_clone_test -t 'Child for Clone Test' -p parent_for_clone_test" > /dev/null
+
+if run_test "Clone with Parent and Children" "Succeeded" "clone parent_for_clone_test cloned_parent_for_clone_test"; then
+  ((tests_passed++))
+  cloned_parent_report=$(run_command "report complete cloned_parent_for_clone_test")
+  if echo "$cloned_parent_report" | grep -q "Title:       Parent for Clone Test" && \
+     echo "$cloned_parent_report" | grep -q "Parent:      None" && \
+     echo "$cloned_parent_report" | grep -q "Children: *$"; then
+    echo "PASS: Cloned parent has correct properties (inherited parent, no children)."
+  else
+    echo "FAIL: Cloned parent has incorrect properties."
+    echo "Full report for cloned_parent_for_clone_test:"
+    echo "$cloned_parent_report"
+    ((tests_failed++))
+  fi
+
+  # Verify the original child is NOT a child of the cloned parent
+  if ! run_command "report children cloned_parent_for_clone_test" | grep -q "child_for_clone_test"; then
+    echo "PASS: Original child is NOT a child of the cloned parent."
+  else
+    echo "FAIL: Original child IS a child of the cloned parent."
+    ((tests_failed++))
+  fi
+
+
+else
+  ((tests_failed++))
+fi
+
+# --- Test 3: Clone an item with both a parent and children ---
+run_command "add task -h parent_of_complex_item -t 'Parent of Complex Item'" > /dev/null
+run_command "add task -h complex_item -t 'Complex Item' -p parent_of_complex_item" > /dev/null
+run_command "add task -h child_of_complex_item -t 'Child of Complex Item' -p complex_item" > /dev/null
+
+if run_test "Clone Complex Item (with parent and children)" "Succeeded" "clone complex_item cloned_complex_item"; then
+  ((tests_passed++))
+  cloned_complex_report=$(run_command "report complete cloned_complex_item")
+  if echo "$cloned_complex_report" | grep -q "Title:       Complex Item" &&      echo "$cloned_complex_report" | grep -q "Parent:      parent_of_complex_item" &&      echo "$cloned_complex_report" | grep -q "Children: *$"; then
+    echo "PASS: Cloned complex item has correct properties (no children, no parent)."
+  else
+    echo "FAIL: Cloned complex item has incorrect properties."
+    echo "Full report for cloned_complex_item:"
+    echo "$cloned_complex_report"
+    ((tests_failed++))
+  fi
+
+  # Verify original parent *is* parent of cloned item
+  if run_command "report children parent_of_complex_item" | grep -q "cloned_complex_item"; then
+    echo "PASS: Original parent IS parent of cloned item."
+  else
+    echo "FAIL: Original parent IS NOT parent of cloned item."
+    ((tests_failed++))
+  fi
+
+  # Verify original child is NOT child of cloned item
+  if ! run_command "report children cloned_complex_item" | grep -q "child_of_complex_item"; then
+    echo "PASS: Original child is NOT child of cloned item."
+  else
+    echo "FAIL: Original child IS child of cloned item."
+    ((tests_failed++))
+  fi
+else
+  ((tests_failed++))
+fi
+
+# --- Test 4: Recursive Clone (Currently Disabled) ---
 if $recursion_implemented; then     # (recursion is not yet implemented)
 run_command "add task -h source_parent_recursive -t 'Source Parent Recursive'" > /dev/null
 run_command "add task -h source_child_recursive -t 'Source Child Recursive' -p source_parent_recursive" > /dev/null

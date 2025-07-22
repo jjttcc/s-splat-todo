@@ -21,7 +21,6 @@ module ConfigTools
   end
 
   # The "global" git-repository object
-  post 'exists' do |result| ! result.nil? && result.is_a?(STodoGit) end
   def stodo_git
     raise "abstract method: #{__method__}"  # Redefine to use.
   end
@@ -137,6 +136,7 @@ https://stackoverflow.com/questions/1386291/git-git-dir-not-working-as-expected
   SYSLOG_TYPE_TAG      = 'syslog'
   REDIS_TYPE_TAG       = 'redis'
   FILE_TYPE_TAG        = 'file'
+  GIT_ENABLED_TAG      = 'git_enabled' # New tag for enabling/disabling Git
   DEFAULT_CAT_PREFIX   = 'cat:'
   ATTCH_ACTION_EDIT    = 'edit'
   ATTCH_ACTION_VIEW    = 'view'

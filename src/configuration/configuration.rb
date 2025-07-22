@@ -11,6 +11,7 @@ require 'spectools'
 require 'configtools'
 require 'mediaconfigtools'
 require 'stodogit'
+require 'null_stodogit'
 require 'application_configuration'
 require 'redis_log_config'
 require 'redis_db_config'
@@ -147,6 +148,7 @@ class Configuration
   attr_reader :edit_attachment
 
   # The "global" git-repository object
+  attr_reader :git_enabled
   attr_reader :stodo_git
 
   VERSION =  '1.0.1'
@@ -213,9 +215,7 @@ class Configuration
   attr_writer   :service_name, :debugging, :log_config, :db_config
   attr_accessor :settings
 
-  post 'important objects exist' do
-    ! data_manager.nil? && ! stodo_git.nil?
-  end
+  post 'important objects exist' do ! data_manager.nil?  end
   def initialize
     self.service_name = @@service_name
     if defined? @@debugging then
@@ -234,11 +234,15 @@ class Configuration
   end
 
   def initialized_stodo_git
-    # The git path might not exist at this point.
-    if ! Dir.exist? git_path then
-      FileUtils.mkdir_p git_path
+    if @git_enabled then
+      # The git path might not exist at this point.
+      if ! Dir.exist? git_path then
+        FileUtils.mkdir_p git_path
+      end
+      STodoGit.new(git_path)
+    else
+      NullSTodoGit.new
     end
-    STodoGit.new(git_path)
   end
 
   def set_config_vars settings
@@ -273,6 +277,7 @@ class Configuration
     @post_init_spec_path =
       ConfigTools::constructed_path([data_path, OLD_SPECS_TAG])
     @templated_email_command = settings[EMAIL_TEMPLATE_TAG]
+    @git_enabled = settings[GIT_ENABLED_TAG] == 'true' # Read from config file
     set_calendar_tool
     @backup_paths = scanned_backup_paths(settings[BACKUP_PATH_TAG])
     validate_paths({:spec_path => spec_path, :data_path => data_path,
