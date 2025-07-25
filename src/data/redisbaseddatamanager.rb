@@ -31,7 +31,6 @@ class RedisBasedDataManager
     self.db_key = key_for(DB_KEY_BASE)
     if ! skip_global_set_add then
       # Add the user:app combination to the global set
-binding.irb
       database.add_to_set(
         STodoGlobalConstants::ALL_USER_APP_COMBINATIONS_KEY,
         "#{user}:#{app_name}")

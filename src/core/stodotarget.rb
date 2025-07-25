@@ -65,7 +65,23 @@ class STodoTarget
 
   # "final" reminder - e.g., based on expiration date or due date
   def final_reminder
-    nil
+    result = nil
+    if ! @final_reminder.nil? then
+      result = @final_reminder
+    elsif ! final_reminder_date.nil? then
+      result = OneTimeReminder.new(final_reminder_date)
+      @final_reminder = result
+    end
+    result
+  end
+
+  # "final" reminder - e.g., based on expiration date or due date
+  def old_final_reminder
+    result = nil
+    if ! @final_reminder.nil? then
+      result = @final_reminder
+    end
+    result
   end
 
   # self's fields, labeled with associated tags, for use as a template in a
@@ -1202,11 +1218,12 @@ class STodoTarget
       assert('r not nil') { r != nil }
       if r.is_due? then rems << r end
     end
+    fin_rem = final_reminder
     if
-      final_reminder != nil and final_reminder.is_due?
+      fin_rem != nil and fin_rem.is_due?
     then
-      rems << final_reminder
-      final_reminder.addendum = "Final "
+      rems << fin_rem
+      fin_rem.addendum = "Final "
     end
     old_date_for = {}
     rems.each { |r| old_date_for[r] = r.date_time.getlocal; r.trigger }

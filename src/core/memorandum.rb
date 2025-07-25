@@ -25,12 +25,17 @@ class Memorandum < STodoTarget
     result
   end
 
-  def final_reminder
-    if @final_reminder == nil and expiration_date != nil then
-        @final_reminder = OneTimeReminder.new(expiration_date)
-    end
-    @final_reminder
+  def final_reminder_date
+    expiration_date
   end
+
+#!!!remove:
+#  def final_reminder
+#    if @final_reminder == nil and expiration_date != nil then
+#        @final_reminder = OneTimeReminder.new(expiration_date)
+#    end
+#    @final_reminder
+#  end
 
   def to_s_appendix
     "#{EXPIRATION_DATE_KEY}: #{time_24hour(expiration_date)}\n"

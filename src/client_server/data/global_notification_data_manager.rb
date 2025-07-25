@@ -30,8 +30,8 @@ class GlobalNotificationDataManager
   # Retrieves all STodoTarget items across all users and applications,
   # grouped by their "app_name:user_id" combination.
   # @return [Hash<String, Hash<String, STodoTarget>>] A hash where keys are
-  #   "app_name:user_id" strings and values are hashes of targets for that
-  #   combination (keyed by handle).
+  #   "<user_id>:<app_name>" strings, and values are hashes of targets for
+  #   that combination (keyed by handle).
   def all_targets
     result = {}
     user_app_combinations = message_broker.redis.smembers(

@@ -11,6 +11,10 @@ class Project < Task
     result
   end
 
+  def final_reminder_date
+    nil
+  end
+
   ###  Status report
 
   def spec_type; PROJECT end

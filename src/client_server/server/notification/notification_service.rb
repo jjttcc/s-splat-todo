@@ -46,15 +46,14 @@ class NotificationService
   # Hook method from Service: Perform any needed preparation before starting
   # the main 'while' loop.
   def prepare_for_main_loop(exe_args)
-    puts "NotificationService started. Checking for reminders every " +
+puts "NotificationService started. Checking for reminders every " +
          "#{CHECK_INTERVAL_SECONDS} seconds."
   end
 
   # Hook method from Service: Perform the main processing.
   # Checks all stodo items for due reminders and sends notifications.
   def process(exe_args)
-    puts "Checking for due reminders..."
-#!!!binding.irb
+puts "Checking for due reminders..."
     database = RedisBasedDataManager.new(
       config.app_configuration.application_message_broker, nil, nil,
       skip_global_set_add: true)
@@ -64,34 +63,32 @@ puts "Processing reminders for user/app: #{combo}"
       changed_items_for_combo = []
       # Instantiate RedisBasedDataManager for this specific combo to
       # save changes
-      app_name, user_id = combo.split(':', 2)
+      user_id, app_name = combo.split(':', 2)
       database.set_appname_and_user(app_name, user_id)
-binding.irb
       targets_for_combo.values.each do |target|
+#Check:
+# if target.in_progress? then
         self.dirty = false    # Reset dirty flag for each target
         target.db = database
         target.add_notifier(email_notifier)
         target.perform_ongoing_actions(self)
-#!!!binding.irb
         if self.dirty then
           changed_items_for_combo << target
         end
+# end [#Check: # if target.in_progress?...]
       end
-binding.irb
       if ! changed_items_for_combo.empty? then
-        puts "Persisting #{changed_items_for_combo.count} changed items" +
+puts "Persisting #{changed_items_for_combo.count} changed items" +
           "for #{combo}."
 #!!!Is this loop needed, or did they already update themselves?
         changed_items_for_combo.each do |target|
 #!!!          database.store_target(target)
 #!!!?:          target.force_update
         end
-binding.irb
       end
     end
   rescue StandardError => e
     $log.error("Error in process (NotificationService): #{e.message}")
-binding.irb
     raise e
     # Consider more robust error handling, e.g., retry logic, dead-letter queue
   end

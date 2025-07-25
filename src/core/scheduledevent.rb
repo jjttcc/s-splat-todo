@@ -16,11 +16,8 @@ class ScheduledEvent < STodoTarget
     date_time
   end
 
-  def final_reminder
-    if @final_reminder == nil && date_time != nil then
-      @final_reminder = OneTimeReminder.new(date_time)
-    end
-    @final_reminder
+  def final_reminder_date
+    date_time
   end
 
   def to_s_appendix

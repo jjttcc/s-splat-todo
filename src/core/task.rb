@@ -14,11 +14,8 @@ class Task < STodoTarget
     due_date
   end
 
-  def final_reminder
-    if @final_reminder == nil and due_date != nil then
-        @final_reminder = OneTimeReminder.new(due_date)
-    end
-    @final_reminder
+  def final_reminder_date
+    due_date
   end
 
   def to_s_appendix
