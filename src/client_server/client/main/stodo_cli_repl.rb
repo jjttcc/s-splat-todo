@@ -40,14 +40,14 @@ class STodoCliREPL < PublisherSubscriber
             ! components[0].nil? && ! components[0].empty?
         then
           command_line_request.command = components[0]
-          # For plain text, the arguments array should include the command itself
+          # For plain text, the arguments array should include the
+          # command itself
           command_line_request.arguments = components
         else
           # Empty or commented line, do nothing
           return
         end
       end
-
       key = new_key
       message_broker.set_object(key, command_line_request)
       publish(key)
@@ -105,38 +105,6 @@ class STodoCliREPL < PublisherSubscriber
         break
       end
     end
-    app_config = config.app_configuration
-    self.message_broker = app_config.application_message_broker
-    initialize_pubsub_broker(app_config)
-    init_pubsub(default_pubchan: SERVER_REQUEST_CHANNEL,
-                default_subchan: SERVER_RESPONSE_CHANNEL)
-    self.command_line_request = CommandLineRequest.new(user_id, app_name)
-    request_client_session
-  end
-
-  def old_initialize
-    Configuration.service_name = 'cli-client'
-    Configuration.debugging = false
-    config = Configuration.instance
-    self.database = config.data_manager
-    # Extract user_id and app_name first
-    if ARGV.count < 2 then
-      usage
-      exit ERROR_EXIT
-    end
-    self.user_id = ARGV[0]
-    self.app_name = ARGV[1]
-    ARGV.shift(2) # Remove user_id and app_name from ARGV
-    # Parse command-line arguments for --no-prompt / -np
-    @suppress_prompt = false
-    ARGV.each_with_index do |arg, i|
-      if arg == '--no-prompt' || arg == '-np' then
-        @suppress_prompt = true
-        ARGV.delete_at(i) # Remove the argument from ARGV
-        break
-      end
-    end
-    set_user_and_appname
     app_config = config.app_configuration
     self.message_broker = app_config.application_message_broker
     initialize_pubsub_broker(app_config)

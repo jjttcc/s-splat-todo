@@ -1,10 +1,5 @@
-#require 'publisher'
 require 'work_server'
 require 'work_server_process'
-#require 'stodo_services_constants'
-#require 'command_line_request'
-#require 'templatetargetbuilder'
-#require 'templateoptions'
 
 # Coordinates worker processes to carry out client requests.
 class WorkCoordinator

@@ -75,15 +75,6 @@ class STodoTarget
     result
   end
 
-  # "final" reminder - e.g., based on expiration date or due date
-  def old_final_reminder
-    result = nil
-    if ! @final_reminder.nil? then
-      result = @final_reminder
-    end
-    result
-  end
-
   # self's fields, labeled with associated tags, for use as a template in a
   # specification file
   def to_s(template = false)
